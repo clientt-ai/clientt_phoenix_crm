@@ -56,8 +56,6 @@ brew install starship
 # Terminal Notifier
 brew install terminal-notifier
 
-```
-
 
 ```
 
