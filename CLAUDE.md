@@ -26,7 +26,7 @@ mix setup
 
 # Start development server
 mix phx.server
-# Server runs on http://localhost:4000 by default (configurable via PORT env var)
+# Server runs on http://localhost:4002 by default (configurable via PORT env var)
 
 # Development mailbox available at /dev/mailbox
 # LiveDashboard available at /dev/dashboard
@@ -192,7 +192,7 @@ end
 
 ### Phoenix Configuration
 
-- **Development**: Runs on port 4000 (configurable via PORT env var)
+- **Development**: Runs on port 4002 (configurable via PORT env var)
 - **Test**: Runs on port 4002, uses SQL sandbox for test isolation
 - **Database**: PostgreSQL (dev: `clientt_crm_app_dev`, test: `clientt_crm_app_test`)
 - **Mailer**: Development uses Swoosh local adapter (preview at /dev/mailbox)
