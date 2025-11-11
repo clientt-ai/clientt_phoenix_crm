@@ -15,7 +15,8 @@ defmodule ClienttCrmApp.Application do
       # Start a worker by calling: ClienttCrmApp.Worker.start_link(arg)
       # {ClienttCrmApp.Worker, arg},
       # Start to serve requests, typically the last entry
-      ClienttCrmAppWeb.Endpoint
+      ClienttCrmAppWeb.Endpoint,
+      {AshAuthentication.Supervisor, [otp_app: :clientt_crm_app]}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
