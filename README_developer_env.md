@@ -109,29 +109,3 @@ asdf set elixir 1.18.4-otp-27 --home
 
 ```
 
-## Postgres@18 additional commands
-
-
-```
-nano ~/.zshrc
-```
-
-
-```
-# If you need to have postgresql@17 first in your PATH, run:
-export PATH="/opt/homebrew/opt/postgresql@18/bin:$PATH"
-
-# For compilers to find postgresql@17 you may need to set:
-export LDFLAGS="-L/opt/homebrew/opt/postgresql@18/lib"
-export CPPFLAGS="-I/opt/homebrew/opt/postgresql@18/include" 
-```
-
-## Starship setup
-```
-nano ~/.zshrc
-```
-
-```
-eval "$(starship init zsh)"
-
-```
