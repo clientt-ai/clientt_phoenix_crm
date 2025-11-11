@@ -9,7 +9,7 @@ defmodule ClienttCrmApp.Repo.Migrations.InitializeAndAddAuthenticationResourcesA
 
   def up do
     create table(:users, primary_key: false) do
-      add :id, :uuid, null: false, default: fragment("gen_random_uuid()"), primary_key: true
+      add :id, :uuid, null: false, default: fragment("uuid_generate_v7()"), primary_key: true
       add :email, :citext, null: false
       add :hashed_password, :text
       add :confirmed_at, :utc_datetime_usec
