@@ -1,6 +1,6 @@
 ---
 name: ash-guidelines
-description: Provides Ash Framework guidelines
+description: Comprehensive conventions for modeling domains and actions with the Ash framework
 ---
 
 
