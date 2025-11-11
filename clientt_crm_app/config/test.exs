@@ -1,4 +1,7 @@
 import Config
+config :clientt_crm_app, token_signing_secret: "iNWhmoPxCnw74NBoUQ6SEN90OVCXVE9G"
+config :bcrypt_elixir, log_rounds: 1
+config :ash, policies: [show_policy_breakdowns?: true], disable_async?: true
 
 # Configure your database
 #
