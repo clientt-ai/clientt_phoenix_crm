@@ -62,6 +62,9 @@ brew install --cask cursor
 # Open sourced version of vs code
 brew install --cask vscodium
 
+# node! For playwright
+brew install node
+
 ```
 
 
