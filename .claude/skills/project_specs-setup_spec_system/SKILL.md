@@ -1,10 +1,32 @@
+---
+name: project_specs-setup_spec_system
+description: Set up BDD/DDD specification folder structure and initial files for a project
+---
+
 # Spec System Setup Skill
 
 ## Purpose
 Set up BDD/DDD specification folder structure and initial files for a project.
 
 ## When to Use
-When starting a new project or adding specifications to existing project.
+
+**Use this skill FIRST** when initializing a specification system. This is the entry point for spec creation.
+
+Trigger this skill when:
+- Starting a new project that needs specifications
+- Adding specifications to an existing project
+- User asks to "set up specs" or "create a spec system"
+
+**After Setup:**
+- Use `project_specs-generation` to create individual specification documents
+- Use `project_specs-quick_reference` for fast template lookups
+
+**Proactive Usage:**
+When starting a new feature or domain, suggest setting up specs first if they don't exist yet.
+
+**Integration:**
+- Specs should be created before implementing code (see `ash-guidelines`, `liveview-guidelines`)
+- Use git to track spec changes alongside code changes
 
 ## Folder Structure to Create
 
