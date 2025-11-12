@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "figma-chunked": {
+    "figma": {
       "env": {
         "FIGMA_ACCESS_TOKEN": "your-figma-token-here"
       }

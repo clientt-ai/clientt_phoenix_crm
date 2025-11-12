@@ -2,6 +2,11 @@
 
 This directory contains the Figma MCP Chunked server, which enables AI assistants to work with large Figma files by processing them in manageable chunks.
 
+## Command to run: 
+```
+node figma-mcp-chunked/build/index.js --config=config.json --pageSize=200 --maxMemoryMB=1024
+```
+
 ## Prerequisites
 
 - Node.js installed
