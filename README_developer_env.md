@@ -56,6 +56,11 @@ brew install starship
 # Terminal Notifier
 brew install terminal-notifier
 
+# Cursor, bc they've set up ai pretty well
+brew install --cask cursor
+
+# Open sourced version of vs code
+brew install --cask vscodium
 
 ```
 

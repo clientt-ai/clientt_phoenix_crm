@@ -31,7 +31,6 @@ Represents a user's authorization identity within a specific company. Links an a
 - Each (authn_user_id, company_id) pair must be unique
 - If team_role is set, team_id MUST be set (CHECK constraint)
 - If team_id is set, team must belong to same company
-- Cannot remove last admin from a company
 
 ### Validations
 - **role**: Required, must be one of: admin, manager, user
@@ -111,7 +110,6 @@ Represents a user's authorization identity within a specific company. Links an a
 
 - **Update Role**: Changes role (admin/manager/user)
   - Restricted to admins
-  - Validates not removing last admin
   - Sends notification email to user
   - Records audit log entry
 
@@ -122,7 +120,6 @@ Represents a user's authorization identity within a specific company. Links an a
 
 - **Suspend/Reactivate**: Changes status
   - Restricted to admins
-  - Validates not suspending last admin
   - Invalidates user sessions if suspended
   - Records audit log entry
 
@@ -148,7 +145,6 @@ end
 
 update :update_role do
   accept [:role]
-  validate ValidateNotLastAdmin, where: [changing(:role), from: :admin]
   change SendRoleChangeNotification
   change CreateAuditLog
 end
@@ -163,7 +159,6 @@ end
 update :suspend do
   accept []
   change set_attribute(:status, :inactive)
-  validate ValidateNotLastAdmin
   change InvalidateUserSessions
   change CreateAuditLog
 end
@@ -253,18 +248,16 @@ validate check_constraint(:team_role_requires_team,
 ## Security Considerations
 
 - Cannot bypass company_id filter through direct IDs
-- Last admin protection prevents orphaned companies
 - Role changes trigger email notifications
 - Suspended users have sessions invalidated immediately
 - Audit log records all role/status changes
+- If a company has no admins, DBA can manually restore access
 
 ## Testing Checklist
 
 - [ ] Can create authz_user with valid data
 - [ ] Cannot create duplicate authz_user for same (authn_user, company)
 - [ ] First authz_user of company must be admin
-- [ ] Cannot remove last admin from company
-- [ ] Cannot change last admin's role to non-admin
 - [ ] Can assign user to team
 - [ ] Cannot assign to team from different company
 - [ ] team_role requires team_id (database constraint)
