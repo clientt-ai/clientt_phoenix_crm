@@ -50,7 +50,7 @@ config :spark,
 config :clientt_crm_app,
   ecto_repos: [ClienttCrmApp.Repo],
   generators: [timestamp_type: :utc_datetime],
-  ash_domains: [ClienttCrmApp.Accounts]
+  ash_domains: [ClienttCrmApp.Accounts, ClienttCrmApp.Authorization]
 
 # Configures the endpoint
 config :clientt_crm_app, ClienttCrmAppWeb.Endpoint,
