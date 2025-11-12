@@ -143,6 +143,31 @@ Add to your VS Code settings or workspace configuration:
 }
 ```
 
+### For Claude Code CLI
+
+Edit your Claude Code settings file (`~/.claude/settings.json`):
+
+```json
+{
+  "mcpServers": {
+    "figma-chunked": {
+      "command": "node",
+      "args": [
+        "/Users/jeffreyleng/Clientt/ClienttPhoenixCRM/clientt_phoenix_crm_01/figma_integration/figma_mcp_chunker/figma-mcp-chunked/build/index.js",
+        "--config=/Users/jeffreyleng/Clientt/ClienttPhoenixCRM/clientt_phoenix_crm_01/figma_integration/figma_mcp_chunker/config.json",
+        "--pageSize=200",
+        "--maxMemoryMB=1024"
+      ],
+      "env": {
+        "FIGMA_ACCESS_TOKEN": "your-figma-token-here"
+      }
+    }
+  }
+}
+```
+
+**Note**: After adding the configuration, restart Claude Code to load the MCP server. The server will automatically use your `config.json` file for design mappings and settings.
+
 ## Running the Server
 
 ### Direct Execution
