@@ -54,15 +54,14 @@ Manages multi-tenant authorization for the ClienttCRM application, separating au
 ## Core Business Rules
 
 1. **Separation of Authentication and Authorization**: A single authn_user (login identity) can have multiple authz_users (one per company membership), enabling multi-company access with different roles
-2. **Last Admin Protection**: A company must always have at least one admin - cannot remove or downgrade the last admin
-3. **Unique Company Membership**: Each (authn_user_id, company_id) pair must be unique - a user can only have one authorization identity per company
-4. **Row-Level Tenancy**: All tenant-scoped queries MUST be filtered by company_id through Ash policies
-5. **Team Role Constraints**: If team_role is set, team_id MUST be set (enforced at database level)
-6. **Invitation Uniqueness**: Only one pending invitation allowed per (email, company_id) combination
-7. **Invitation Expiration**: Invitations expire after 7 days
-8. **Immutable Audit Logs**: Audit log entries cannot be updated or deleted - only created
-9. **Slug Uniqueness**: Company slugs must be globally unique and URL-safe
-10. **First User is Admin**: When creating a company, the first user automatically becomes admin with full permissions
+2. **Unique Company Membership**: Each (authn_user_id, company_id) pair must be unique - a user can only have one authorization identity per company
+3. **Row-Level Tenancy**: All tenant-scoped queries MUST be filtered by company_id through Ash policies
+4. **Team Role Constraints**: If team_role is set, team_id MUST be set (enforced at database level)
+5. **Invitation Uniqueness**: Only one pending invitation allowed per (email, company_id) combination
+6. **Invitation Expiration**: Invitations expire after 7 days
+7. **Immutable Audit Logs**: Audit log entries cannot be updated or deleted - only created
+8. **Slug Uniqueness**: Company slugs must be globally unique and URL-safe
+9. **First User is Admin**: When creating a company, the first user automatically becomes admin with full permissions
 
 ## Domain Events
 

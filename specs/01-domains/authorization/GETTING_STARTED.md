@@ -19,18 +19,38 @@ All located in `resources/`:
 5. **company_settings.md** - Company configuration and limits
 6. **audit_log.md** - Immutable audit trail
 
-### Folders
-- **features/** - BDD feature scenarios (to be created in Phase 3)
-- **policies/** - Authorization policy specs (to be created in Phase 4)
-- **resources/** - Entity/resource specifications (complete)
+### Feature Specifications (6 feature files)
+All located in `features/`:
+
+1. **company_management.feature.md** - Company creation, switching, archival
+2. **user_management.feature.md** - Invitations, role changes, member management
+3. **team_management.feature.md** - Team creation, assignments, team roles
+4. **company_settings.feature.md** - Settings management, feature flags, limits
+5. **audit_logging.feature.md** - Audit trail, logging, compliance
+6. **multi_tenancy.feature.md** - Data isolation, row-level security
+
+### Policy Specifications (3 policy files)
+All located in `policies/`:
+
+1. **row_level_security.md** - Multi-tenancy enforcement, company_id filtering
+2. **role_based_access.md** - RBAC authorization matrix for admin/manager/user
+3. **invitation_security.md** - Token generation, validation, security
+
+### Integration Specifications (2 integration files)
+Located in `../../03-integrations/`:
+
+1. **accounts_to_authorization_integration.md** - Foreign key reference, user lifecycle events
+2. **authorization_to_email_integration.md** - Email notifications for invitations and role changes
 
 ## Quick Navigation
 
 ### For Developers
 1. **Start here**: Read `domain.md` to understand the domain
 2. **Then**: Review each resource spec in `resources/`
-3. **Implementation**: Follow the Ash Resource Implementation Notes in each spec
-4. **Reference**: Keep resource specs open while coding
+3. **BDD Scenarios**: Review feature specs in `features/` for acceptance criteria
+4. **Authorization**: Review policy specs in `policies/` for security requirements
+5. **Implementation**: Follow the Ash Resource Implementation Notes in each spec
+6. **Testing**: Use feature specs for test-driven development
 
 ### For Architects
 1. Review `domain.md` for domain boundaries and integration points
@@ -39,10 +59,11 @@ All located in `resources/`:
 4. Validate business rules and invariants
 
 ### For QA/Product
-1. Review `domain.md` for business rules
-2. Reference original user stories in `dev_task_prompts/20251111-01-multitenancy/USER_STORIES.md`
-3. BDD features will be created in `features/` during implementation
-4. Use resource specs for acceptance criteria
+1. Review `domain.md` for business rules and invariants
+2. **Primary**: Use BDD feature specs in `features/` for test scenarios (complete with Gherkin scenarios)
+3. Reference original user stories in `dev_task_prompts/20251111-01-multitenancy/USER_STORIES.md`
+4. Use resource specs for detailed acceptance criteria
+5. Use policy specs for security testing requirements
 
 ## Implementation Order
 
@@ -52,25 +73,25 @@ Based on IMPLEMENTATION_PLAN.md:
 1. Create `lib/clientt_crm_app/authorization.ex` (domain)
 2. Implement `company.ex` resource per `resources/company.md`
 3. Implement `authz_user.ex` resource per `resources/authz_user.md`
-4. Add policies for row-level tenancy
-5. Write tests
+4. Implement policies per `policies/row_level_security.md` and `policies/role_based_access.md`
+5. Write tests using scenarios from `features/company_management.feature.md` and `features/user_management.feature.md`
 
 ### Phase 2 (Week 3): Teams & Settings
 1. Implement `team.ex` per `resources/team.md`
 2. Implement `company_settings.ex` per `resources/company_settings.md`
-3. Write tests
+3. Write tests using scenarios from `features/team_management.feature.md` and `features/company_settings.feature.md`
 
 ### Phase 3 (Week 4): Invitations
 1. Implement `invitation.ex` per `resources/invitation.md`
-2. Create BDD features in `features/`
-3. Implement email workflow
-4. Write tests
+2. Implement invitation security per `policies/invitation_security.md`
+3. Implement email integration per `../../03-integrations/authorization_to_email_integration.md`
+4. Write tests using invitation scenarios from `features/user_management.feature.md`
 
 ### Phase 4 (Week 5): Audit Logging
 1. Implement `audit_log.ex` per `resources/audit_log.md`
-2. Create policy specs in `policies/`
+2. Verify all policies are implemented (see `policies/` folder)
 3. Add change hooks to all resources
-4. Write tests
+4. Write tests using scenarios from `features/audit_logging.feature.md`
 
 ### Phase 5-6 (Weeks 6-8): UI & Migration
 See IMPLEMENTATION_PLAN.md for details
@@ -136,15 +157,58 @@ specs/
 └── 99-coverage/          # Implementation tracking
 ```
 
-## Why Weren't the Skills Used Initially?
+## Specification Completion Status
 
-**Investigation Result**:
-The `project_specs-setup_spec_system` and `project_specs-generation` skills exist in `.claude/skills/` but are **not registered** in the available skills list. This means they exist as documentation but can't be invoked programmatically.
+### ✅ Completed (2025-11-11)
 
-**What Was Done**:
-1. Original specs created in `dev_task_prompts/20251111-01-multitenancy/` (comprehensive but not following project structure)
-2. After investigation, manually followed the skill instructions to create proper `/specs` structure
-3. Migrated content into organized spec system following BDD/DDD templates
+**Domain Specifications** (1/1): ✅
+- domain.md
+
+**Resource Specifications** (6/6): ✅
+- company.md, authz_user.md, team.md, invitation.md, company_settings.md, audit_log.md
+
+**Feature Specifications** (6/6): ✅ **NEW**
+- company_management.feature.md
+- user_management.feature.md
+- team_management.feature.md
+- company_settings.feature.md
+- audit_logging.feature.md
+- multi_tenancy.feature.md
+
+**Policy Specifications** (3/3): ✅ **NEW**
+- row_level_security.md
+- role_based_access.md
+- invitation_security.md
+
+**Integration Specifications** (2/2): ✅ **NEW**
+- accounts_to_authorization_integration.md
+- authorization_to_email_integration.md
+
+**Total**: 18 specification files covering all aspects of the Authorization domain
+
+**Note**: Last admin protection is not enforced. If a company has no admins, a DBA will manually restore access.
+
+### What Was Added (2025-11-11)
+
+Following project_specs skill guidelines, the following specifications were created to complete the BDD/DDD system:
+
+1. **6 Feature Files**: Extracted from USER_STORIES.md, converted to proper Gherkin format with tags, covering all 21 user stories across 7 epics
+
+2. **3 Policy Files**: Explicit authorization policies with authorization matrices, security considerations, and testing requirements
+
+3. **2 Integration Files**: Cross-domain integration specifications with event contracts, data contracts, and error handling
+
+### Why These Were Added
+
+**Original State**:
+- Original specs created in `dev_task_prompts/20251111-01-multitenancy/` (comprehensive but not following project structure)
+- Resource and domain specs were excellent but lacked formal BDD features and policy specs
+
+**Improvements**:
+- Feature specs enable test-driven development with executable scenarios
+- Policy specs make security model explicit and auditable
+- Integration specs clarify cross-domain contracts
+- Full compliance with project_specs skill system
 
 **Going Forward**:
 - Use `/specs/01-domains/authorization/` as source of truth
