@@ -1,0 +1,6 @@
+# Sensitive configuration files
+config.json
+
+# Environment files
+.env
+.env.local

@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "figma-chunked": {
+      "env": {
+        "FIGMA_ACCESS_TOKEN": "your-figma-token-here"
+      }
+    }
+  },
+  "designs": {
+    "105 Form design": {
+      "fileId": "xGaucKjUbmEsgDqxjVvnU5",
+      "url": "https://www.figma.com/design/xGaucKjUbmEsgDqxjVvnU5/105-Forms-design",
+      "description": "Forms design for feature 105"
+    }
+  }
+}
