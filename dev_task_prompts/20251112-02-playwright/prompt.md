@@ -1,0 +1,1 @@
+i want to use playwright to test my app.  Please create a folder at the root called 'playwright_tests'.  This folder should run independent of the phoenix application. The package.json should be inthis subfolder. be sure to use the playwright for node.  Essentially the workflow is that every BDD scenario should be testable via playwright.  create skills for playwright as well

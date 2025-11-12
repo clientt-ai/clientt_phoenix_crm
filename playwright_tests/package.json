@@ -1,0 +1,31 @@
+{
+  "name": "clientt-crm-playwright-tests",
+  "version": "1.0.0",
+  "description": "Playwright end-to-end tests for Clientt CRM Phoenix application",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:codegen": "playwright codegen http://localhost:4002",
+    "test:report": "playwright show-report",
+    "test:feature": "playwright test tests/features/",
+    "install:browsers": "playwright install --with-deps"
+  },
+  "keywords": [
+    "playwright",
+    "e2e",
+    "testing",
+    "bdd",
+    "phoenix",
+    "crm"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.48.0",
+    "dotenv": "^16.4.5"
+  },
+  "dependencies": {}
+}
