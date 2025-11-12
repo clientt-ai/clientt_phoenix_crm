@@ -19,6 +19,11 @@ Use for **fast template lookups** when creating specifications. For detailed exa
 ├── 02-features-cross-domain/[feature].feature.md
 ├── 03-integrations/[source]_to_[target]_integration.md
 ├── 04-architecture/[arc42 docs]
+├── 05-ui-design/                     # Cross-domain UI/UX specs
+│   ├── components/                   # Buttons, forms, tables, etc
+│   ├── patterns/                     # CRUD, list-detail, modal forms
+│   ├── screens/[domain]/             # Domain-specific screens
+│   └── figma/                        # Figma links and exports
 ├── 90-generated-bdd/ (auto-generated, don't edit)
 └── 99-coverage/ (reports)
 ```

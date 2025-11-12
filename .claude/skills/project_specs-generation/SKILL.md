@@ -48,6 +48,11 @@ All specifications live in `/specs` with numbered prefixes for natural sorting:
 ├── 02-features-cross-domain/          # Multi-domain features
 ├── 03-integrations/                   # Domain communication specs
 ├── 04-architecture/                   # System architecture (arc42)
+├── 05-ui-design/                      # Cross-domain UI/UX design system
+│   ├── components/                    # Reusable component specs
+│   ├── patterns/                      # Common UI patterns (CRUD, list-detail, etc)
+│   ├── screens/                       # Screen designs organized by domain
+│   └── figma/                         # Figma links and exports
 ├── 90-generated-bdd/                  # Auto-generated aggregated views
 └── 99-coverage/                       # Metrics & tracking
 ```
@@ -422,6 +427,7 @@ When asked to create a spec system:
    ├── 02-features-cross-domain/
    ├── 03-integrations/
    ├── 04-architecture/
+   ├── 05-ui-design/              # Cross-domain UI specs
    ├── 90-generated-bdd/
    └── 99-coverage/
    ```

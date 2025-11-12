@@ -29,18 +29,35 @@ All located in `features/`:
 5. **audit_logging.feature.md** - Audit trail, logging, compliance
 6. **multi_tenancy.feature.md** - Data isolation, row-level security
 
-### Policy Specifications (3 policy files)
+### Policy Specifications (4 policy files)
 All located in `policies/`:
 
 1. **row_level_security.md** - Multi-tenancy enforcement, company_id filtering
 2. **role_based_access.md** - RBAC authorization matrix for admin/manager/user
 3. **invitation_security.md** - Token generation, validation, security
+4. **rate_limiting.md** - Rate limiting for sensitive actions (1 per second per user)
 
 ### Integration Specifications (2 integration files)
 Located in `../../03-integrations/`:
 
-1. **accounts_to_authorization_integration.md** - Foreign key reference, user lifecycle events
+1. **accounts_to_authorization_integration.md** - Foreign key reference, user lifecycle events, first company auto-creation
 2. **authorization_to_email_integration.md** - Email notifications for invitations and role changes
+
+### Database Schema (1 generated file)
+Located in root folder:
+
+1. **DATABASE_SCHEMA.generated.md** - Consolidated database schema (tables, indexes, constraints, foreign keys)
+
+### UI/UX Specifications (cross-domain)
+Located in `../../05-ui-design/`:
+
+- **README.md** - Design system overview, Figma workflow, LiveView implementation guidelines
+- **design-tokens.md** - Global design tokens (colors, typography, spacing) for all domains
+- **figma/FIGMA_LINK.md** - Link to shared Figma file (to be added before Phase 5)
+- **components/** - Reusable component specifications (buttons, forms, tables, modals)
+- **patterns/** - Common UI patterns (CRUD, list-detail, modal forms)
+- **screens/authorization/** - Authorization domain screen specifications
+- **screens/shared/** - Shared screens (dashboard, navigation)
 
 ## Quick Navigation
 
@@ -175,16 +192,21 @@ specs/
 - audit_logging.feature.md
 - multi_tenancy.feature.md
 
-**Policy Specifications** (3/3): ✅ **NEW**
+**Policy Specifications** (4/4): ✅
 - row_level_security.md
 - role_based_access.md
 - invitation_security.md
+- rate_limiting.md
 
 **Integration Specifications** (2/2): ✅ **NEW**
 - accounts_to_authorization_integration.md
 - authorization_to_email_integration.md
 
-**Total**: 18 specification files covering all aspects of the Authorization domain
+**Additional Files**:
+- DATABASE_SCHEMA.generated.md
+- UI/UX specifications (ui/ folder with README, design tokens, Figma link placeholder)
+
+**Total**: 19 core specification files + 1 database schema + UI spec structure
 
 **Note**: Last admin protection is not enforced. If a company has no admins, a DBA will manually restore access.
 
@@ -197,6 +219,22 @@ Following project_specs skill guidelines, the following specifications were crea
 2. **3 Policy Files**: Explicit authorization policies with authorization matrices, security considerations, and testing requirements
 
 3. **2 Integration Files**: Cross-domain integration specifications with event contracts, data contracts, and error handling
+
+### What Was Updated (2025-11-12)
+
+Following comprehensive spec review and clarification, the following updates were made:
+
+1. **Removed Last Admin Invariant**: Removed "must have at least one active admin" invariant from domain.md and company.md (DBA handles edge case)
+
+2. **Added Rate Limiting Policy**: Created `rate_limiting.md` policy for sensitive actions (1 per second per user) to prevent abuse
+
+3. **Database Schema Document**: Created `DATABASE_SCHEMA.generated.md` consolidating all table definitions, indexes, constraints, and foreign keys
+
+4. **Company Archival Cascade**: Updated company.md to include automatic team archival when company is archived
+
+5. **First Company Auto-Creation**: Updated domain.md and integration spec to specify Phase 1 implementation of automatic first company creation
+
+6. **UI/UX Specifications**: Created cross-domain `specs/05-ui-design/` folder with complete design system structure (components, patterns, screens organized by domain)
 
 ### Why These Were Added
 

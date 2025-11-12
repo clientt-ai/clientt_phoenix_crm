@@ -119,16 +119,43 @@ The Authorization domain translates Accounts concepts into its own domain langua
 ```elixir
 defmodule ClienttCrmApp.Authorization.Handlers.UserCreatedHandler do
   def handle(%{data: %{user_id: user_id, email: email}}) do
-    # Optional: Create default company for new user during migration
-    # For normal operation: User creates company manually or accepts invitation
+    # Phase 1: Auto-create first company for new users on first login
+    # This improves onboarding UX by getting users into the app faster
+
+    company_name = generate_default_company_name(email)
+    company_slug = generate_slug(email)
+
+    Company.create(%{
+      name: company_name,
+      slug: company_slug,
+      first_admin_authn_user_id: user_id
+    })
+
     :ok
+  end
+
+  defp generate_default_company_name(email) do
+    # Extract name from email or prompt user
+    # Example: "alice@example.com" → "Alice's Company"
+    name = email |> String.split("@") |> List.first() |> String.capitalize()
+    "#{name}'s Company"
+  end
+
+  defp generate_slug(email) do
+    # Generate URL-safe slug from email
+    email
+    |> String.split("@")
+    |> List.first()
+    |> String.downcase()
+    |> String.replace(~r/[^a-z0-9]+/, "-")
   end
 end
 ```
 
 **Action**:
-- **Current (v1)**: No action (user will create company or accept invitation)
-- **Future**: May auto-create default company for new users
+- **Phase 1**: Auto-create first company for new users on registration/first login
+- Company name: Generated from email (e.g., "Alice's Company") or user can customize
+- User becomes admin of their first company automatically
 
 ---
 

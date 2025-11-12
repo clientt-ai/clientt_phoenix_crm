@@ -23,7 +23,6 @@ Represents a tenant organization in the multi-tenant CRM system. Acts as the agg
 ## Business Rules
 
 ### Invariants
-- Must have at least one active admin authz_user at all times
 - Slug must be globally unique across all companies
 - Once archived, cannot be reactivated (create new company instead)
 - Cannot delete company that has active authz_users (must archive first)
@@ -46,7 +45,7 @@ Represents a tenant organization in the multi-tenant CRM system. Acts as the agg
 
 **Valid Transitions**:
 - `active → archived`: When company ceases operations
-  - Triggers: All authz_users set to inactive, all pending invitations revoked
+  - Triggers: All authz_users set to inactive, all pending invitations revoked, all teams archived
   - Validation: Cannot be undone
 
 ## Relationships
@@ -92,7 +91,7 @@ None
   - Records audit log entry
 
 - **Archive**: Sets status to archived
-  - Cascades: All authz_users → inactive, all pending invitations → revoked
+  - Cascades: All authz_users → inactive, all pending invitations → revoked, all teams → archived
   - Restricted to admins only
   - Requires confirmation
   - Records audit log entry
@@ -121,6 +120,7 @@ update :archive do
   change set_attribute(:status, :archived)
   change ArchiveCompanyMembers  # Sets all authz_users to inactive
   change RevokeCompanyInvitations  # Revokes all pending invitations
+  change ArchiveCompanyTeams  # Archives all teams
 end
 ```
 
@@ -193,5 +193,6 @@ validate string_length(:slug, max: 50)
 - [ ] Only admins can archive company
 - [ ] Archiving company deactivates all authz_users
 - [ ] Archiving company revokes all pending invitations
+- [ ] Archiving company archives all teams
 - [ ] Cannot archive already archived company
 - [ ] Audit logs created for create, update, archive actions

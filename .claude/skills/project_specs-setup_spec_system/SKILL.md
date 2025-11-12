@@ -31,7 +31,7 @@ When starting a new feature or domain, suggest setting up specs first if they do
 ## Folder Structure to Create
 
 ```bash
-mkdir -p specs/{01-domains,02-features-cross-domain,03-integrations,04-architecture,90-generated-bdd/{by-domain,by-persona},99-coverage}
+mkdir -p specs/{01-domains,02-features-cross-domain,03-integrations,04-architecture,05-ui-design/{components,patterns,screens,figma},90-generated-bdd/{by-domain,by-persona},99-coverage}
 ```
 
 Creates:
@@ -41,6 +41,11 @@ specs/
 ├── 02-features-cross-domain/
 ├── 03-integrations/
 ├── 04-architecture/
+├── 05-ui-design/                   # Cross-domain UI/UX specifications
+│   ├── components/                 # Reusable component specs
+│   ├── patterns/                   # Common UI patterns
+│   ├── screens/                    # Screen designs by domain
+│   └── figma/                      # Figma links and exports
 ├── 90-generated-bdd/
 │   ├── by-domain/
 │   └── by-persona/
@@ -76,6 +81,8 @@ This folder contains the specifications for [Project Name].
 - **02-features-cross-domain/** - Features spanning multiple domains
 - **03-integrations/** - Specifications for domain communication
 - **04-architecture/** - System architecture documentation (arc42)
+- **05-ui-design/** - Cross-domain UI/UX design system (DaisyUI, Tailwind, Figma)
+  - Design tokens, components, patterns, screen specs organized by domain
 - **90-generated-bdd/** - Auto-generated aggregated BDD views (don't edit)
 - **99-coverage/** - Implementation tracking and metrics
 
