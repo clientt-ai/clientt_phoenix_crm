@@ -35,6 +35,8 @@ defmodule ClienttCrmAppWeb.Router do
       #
       # If an authenticated user must *not* be present:
       # on_mount {ClienttCrmAppWeb.LiveUserAuth, :live_no_user}
+
+      live "/dashboard", DashboardLive, :index
     end
   end
 
