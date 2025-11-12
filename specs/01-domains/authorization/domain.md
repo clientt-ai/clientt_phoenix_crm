@@ -84,7 +84,7 @@ Manages multi-tenant authorization for the ClienttCRM application, separating au
 
 | Event Name | Source | Handler Action |
 |------------|--------|----------------|
-| accounts.user_created | Accounts domain | Optional: Auto-create default company for new users (migration only) |
+| accounts.user_created | Accounts domain | Auto-create first company for new users on first login (Phase 1) |
 | (Future) billing.subscription_changed | Billing domain | Update company_settings.max_users limit |
 
 ## Resources in This Domain
@@ -112,7 +112,6 @@ Manages multi-tenant authorization for the ClienttCRM application, separating au
 - AuditLog (1:Many) - records all changes
 
 **Invariants**:
-- Must have at least one active admin authz_user
 - Slug must be unique across all companies
 - Status transitions: active → archived (one-way)
 - Cannot delete company with active users (must archive)
@@ -177,6 +176,7 @@ Users can switch between companies they belong to, which updates:
 - Company and AuthzUser resources
 - Row-level tenancy policies
 - Basic CRUD actions
+- First company auto-creation on user registration
 
 ### Phase 2: Organization (Week 3)
 - Team resource
