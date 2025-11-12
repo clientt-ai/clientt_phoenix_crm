@@ -1,7 +1,12 @@
-# Spec System Quick Skill
+---
+name: project_specs-quick_reference
+description: Quick reference templates for BDD/DDD specifications - condensed version for fast lookups
+---
+
+# Spec System Quick Reference
 
 ## When to Use
-Creating BDD/DDD specifications: domains, resources, features, integrations, policies.
+Use for **fast template lookups** when creating specifications. For detailed examples, see `project_specs-generation`. For initial setup, see `project_specs-setup_spec_system`.
 
 ## Folder Structure
 ```

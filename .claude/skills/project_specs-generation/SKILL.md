@@ -1,3 +1,8 @@
+---
+name: project_specs-generation
+description: Generate comprehensive BDD/DDD specifications for domains, resources, features, integrations, and policies
+---
+
 # BDD/DDD Specification Generator Skill
 
 ## Skill Purpose
@@ -6,14 +11,26 @@ This skill enables you to generate comprehensive BDD (Behavior-Driven Developmen
 
 ## When to Use This Skill
 
+**Use this skill to generate individual specification documents** after the spec system has been initialized.
+
 Trigger this skill when you need to:
-- Set up a complete specification system for a project
 - Create domain specifications (bounded contexts)
 - Generate resource specifications (entities, aggregates)
 - Write BDD feature scenarios with Given-When-Then
 - Document integrations between domains
 - Create authorization/validation policy specifications
-- Establish folder structure for specs in a git repository
+
+**Related Skills:**
+- Use `project_specs-setup_spec_system` FIRST to initialize the /specs folder structure
+- Use `project_specs-quick_reference` for fast template lookups when context is tight
+
+**Integration with Implementation:**
+- Specifications should be created BEFORE implementing Ash resources (see `ash-guidelines` skill)
+- BDD features inform LiveView implementations (see `liveview-guidelines` skill)
+- Domain specs guide overall project architecture (see `project-guidelines` skill)
+
+**Proactive Usage:**
+When users discuss requirements, features, domain modeling, or "what should this do?", suggest creating specifications first.
 
 ## Folder Structure
 
@@ -217,7 +234,7 @@ Then [expected handling]
 ```gherkin
 Given [setup with <parameter>]
 When [action with <parameter>]
-Then [outcome with <r>]
+Then [outcome with <result>]
 
 Examples:
 | parameter | result | description |
