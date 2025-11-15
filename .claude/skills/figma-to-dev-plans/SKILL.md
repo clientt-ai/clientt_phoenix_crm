@@ -1,6 +1,6 @@
 ---
 name: figma-to-dev-plans
-description: Convert Figma source exports into comprehensive dev_task-prompts_and_plans with implementation guides, component inventories, and phased planning for Phoenix LiveView
+description: Convert Figma source exports into comprehensive dev_task-prompts_and_plans with implementation guides, component inventories, phased planning, and E2E test plans for Phoenix LiveView
 ---
 
 # Figma to Dev Plans Skill
@@ -635,6 +635,110 @@ For each major feature domain (Analytics, Settings, etc.):
 
 ---
 
+### Step 12: Create E2E Test Documentation for Each Track
+
+**Goal:** Generate E2E test documentation aligned with each implementation track
+
+**Actions:**
+
+1. **Analyze Features by Track:**
+   - Review all MVP tracks (1-5)
+   - Extract user-facing features specific to each track
+   - Identify test priorities per track
+   - Map features to user roles
+
+2. **Define Test Priorities per Track:**
+   - **Track 1 (Dashboard Primary):** P1 Critical path tests
+     - Authentication & authorization
+     - Dashboard KPIs
+     - Form creation/publishing/submission
+     - Role-based access control
+   - **Track 2 (LiveView UI):** P3 Layout/UI tests
+     - Shared layout (header, sidebar)
+     - Responsive design
+     - Dark mode (if MVP)
+     - Accessibility
+   - **Track 3 (Domain Models):** P2 Features + P4 Regression
+     - Forms CRUD operations
+     - Form lifecycle
+     - Submissions management
+     - Validation rules
+     - Edge cases
+   - **Track 4 (Analytics):** P2 Features
+     - Dashboard KPIs
+     - Per-form analytics
+     - Chart visualization
+     - Date range filtering
+   - **Track 5 (Settings):** P2 Features
+     - Profile management
+     - Notification preferences
+     - Integration placeholders
+
+3. **Create E2E-TESTS.md in Each Track Folder:**
+
+   File: `YYYYMMDD-0N-[track-name]/E2E-TESTS.md`
+
+   Contents for each track:
+   - Track name and priority level
+   - Test count estimate
+   - Execution time
+   - When to run (commit/nightly/weekly)
+   - Test location (folder structure)
+   - Test suites with examples
+   - Page objects needed
+   - Test data requirements
+   - Success criteria
+   - Related documentation links
+
+4. **Track-Specific Content:**
+
+   **Track 1 (E2E-TESTS.md):**
+   - 12-15 critical path tests
+   - 5-10 min execution
+   - Run on every commit (blocking CI/CD)
+   - Authentication, form creation, submission, RBAC tests
+
+   **Track 2 (E2E-TESTS.md):**
+   - 16-23 layout/UI tests
+   - 10-15 min execution
+   - Run weekly
+   - Shared layout, responsive, accessibility tests
+
+   **Track 3 (E2E-TESTS.md):**
+   - 18-23 forms management tests
+   - 12-18 min execution
+   - Run nightly + pre-release
+   - CRUD, lifecycle, validation, edge case tests
+
+   **Track 4 (E2E-TESTS.md):**
+   - 5-7 analytics tests
+   - 5-8 min execution
+   - Run nightly
+   - KPI calculations, chart rendering tests
+
+   **Track 5 (E2E-TESTS.md):**
+   - 4-6 settings tests
+   - 4-6 min execution
+   - Run nightly
+   - Profile, notifications, integrations tests
+
+5. **Future Track Placeholders:**
+   Create brief E2E-TESTS.md for future tracks noting:
+   - Status: Coming Soon
+   - E2E tests will be created when track moves to MVP
+   - Placeholder behaviors tested in Settings track
+
+6. **Test Examples in Each File:**
+   - BDD format (Given/When/Then)
+   - Code examples for key test scenarios
+   - Page object usage patterns
+   - Helper function examples
+   - Test data setup
+
+**Output:** E2E test documentation embedded in each track folder, aligned with track features
+
+---
+
 ## Folder Structure Created
 
 ```
@@ -643,20 +747,27 @@ dev_task-prompts_and_plans/
     ├── YYYYMMDD-00-[name]-project-overview/
     │   ├── README.md
     │   ├── FIGMA-COVERAGE-ANALYSIS.md
+    │   ├── ADDITIONAL-BLOCKING-QUESTIONS.md (if needed)
+    │   ├── REVIEW-COMPLETE-SUMMARY.md (if needed)
     │   └── UI-LAYOUT-AND-ROLES.md (optional)
     ├── YYYYMMDD-01-[name]-primary/
-    │   └── 00-PRIMARY-OVERVIEW.md
+    │   ├── 00-PRIMARY-OVERVIEW.md
+    │   └── E2E-TESTS.md                    # ← P1 critical path tests
     ├── YYYYMMDD-02-[name]-liveview-ui/
-    │   └── README.md
+    │   ├── README.md
+    │   └── E2E-TESTS.md                    # ← P3 layout/UI tests
     ├── YYYYMMDD-03-[name]-domain-models/
-    │   └── README.md
+    │   ├── README.md
+    │   └── E2E-TESTS.md                    # ← P2 features + P4 regression
     ├── YYYYMMDD-04-[name]-[feature]/
-    │   └── README.md
+    │   ├── README.md
+    │   └── E2E-TESTS.md                    # ← P2 feature tests
     ├── YYYYMMDD-05-[name]-[feature]/
-    │   └── README.md
-    ├── YYYYMMDD-xx-[name]-future-[feature]/
-    │   └── README.md
-    └── ...
+    │   ├── README.md
+    │   └── E2E-TESTS.md                    # ← P2 feature tests
+    └── YYYYMMDD-xx-[name]-future-[feature]/
+        ├── README.md
+        └── E2E-TESTS.md                    # ← Placeholder (Coming Soon)
 ```
 
 ## Templates
@@ -833,6 +944,13 @@ When using this skill to convert Figma source to dev prompts:
 - [ ] Created future track folders (if applicable)
 - [ ] Created coverage analysis document
 - [ ] Created UI layout spec (if applicable)
+- [ ] Created E2E test documentation for each track
+  - [ ] Created E2E-TESTS.md in Track 1 (critical path tests)
+  - [ ] Created E2E-TESTS.md in Track 2 (layout/UI tests)
+  - [ ] Created E2E-TESTS.md in Track 3 (features + regression)
+  - [ ] Created E2E-TESTS.md in Track 4 (analytics tests)
+  - [ ] Created E2E-TESTS.md in Track 5 (settings tests)
+  - [ ] Created E2E-TESTS.md placeholders in future tracks
 - [ ] Added Figma references to all tracks
 - [ ] Verified component coverage (no gaps)
 - [ ] Fixed any broken documentation links
@@ -851,9 +969,14 @@ Provide user with:
 4. **Page Coverage:** X% of Figma pages mapped to tracks
 5. **Track Count:** N MVP tracks + M future tracks
 6. **MVP Timeline:** Total weeks estimated
-7. **Issues Found:** List of gaps or inconsistencies
-8. **Recommendations:** High/medium/low priority fixes
-9. **Next Steps:** What to do before starting implementation
+7. **E2E Test Plan:** E2E-TESTS.md created in each track with:
+   - Track-specific test documentation
+   - ~X total tests across P1-P4 priorities
+   - Execution times per track
+   - Test priorities aligned with track features
+8. **Issues Found:** List of gaps or inconsistencies
+9. **Recommendations:** High/medium/low priority fixes
+10. **Next Steps:** What to do before starting implementation
 
 ## Example Invocation
 
@@ -884,19 +1007,28 @@ Skill:
 4. Generates:
    - Project overview with navigation
    - Primary overview (executive summary)
-   - LiveView UI conversion guide
-   - Domain models guide
-   - Analytics guide
-   - Settings guide
-   - Future Calendar guide
-   - Future Chatbot guide
+   - LiveView UI conversion guide with E2E-TESTS.md
+   - Domain models guide with E2E-TESTS.md
+   - Analytics guide with E2E-TESTS.md
+   - Settings guide with E2E-TESTS.md
+   - Future Calendar guide with E2E-TESTS.md placeholder
+   - Future Chatbot guide with E2E-TESTS.md placeholder
    - Coverage analysis document
    - UI layout & roles specification
+   - E2E test documentation embedded in each track:
+     - Track 1: P1 critical path tests (12-15 tests)
+     - Track 2: P3 layout/UI tests (16-23 tests)
+     - Track 3: P2 features + P4 regression (18-23 tests)
+     - Track 4: P2 analytics tests (5-7 tests)
+     - Track 5: P2 settings tests (4-6 tests)
 
 5. Reports:
    - 95% component coverage
    - 83% page coverage (2 Contacts pages out of scope)
    - 5 MVP tracks over 6 weeks
+   - E2E test plan: 5 track-specific E2E-TESTS.md files + 2 placeholders
+   - 4 test priorities (P1-P4), ~55-75 tests total
+   - Execution: 5-10 min (P1 critical), 40-60 min (all tests)
    - 1 medium-priority issue (missing figma_src references)
    - 4 low-priority issues
 ```
@@ -913,8 +1045,13 @@ This skill is complete when:
 6. ✅ Database schemas defined
 7. ✅ Implementation phases planned
 8. ✅ Testing strategies documented
-9. ✅ User understands next steps
-10. ✅ Traceability matrix shows component mapping
+9. ✅ E2E test documentation created in each track:
+   - E2E-TESTS.md in all MVP tracks
+   - Track-aligned test priorities
+   - Test examples with code
+   - Page object patterns
+10. ✅ User understands next steps
+11. ✅ Traceability matrix shows component mapping
 
 ## Integration with Development Workflow
 
@@ -933,6 +1070,9 @@ Use `/project_specs-generation` skill to create detailed BDD specs from the dev_
 
 - **figma-import** - For live Figma imports via MCP (different from this skill - that one imports from Figma Desktop app)
 - **project_specs-generation** - Generate BDD/DDD specs from dev_task-prompts_and_plans
+- **playwright-basics** - Core Playwright concepts for implementing E2E tests
+- **playwright-bdd-testing** - Writing BDD-style Playwright tests
+- **playwright-helpers** - Helper functions and page objects for tests
 - **ash-basics** - Understanding Ash resources when implementing
 - **liveview-guidelines** - Phoenix LiveView patterns during implementation
 
@@ -940,9 +1080,16 @@ Use `/project_specs-generation` skill to create detailed BDD specs from the dev_
 
 **Skill Name:** `figma-to-dev-plans`
 **Status:** ✅ Ready to use
-**Version:** 1.1
+**Version:** 2.0
 **Created:** 2025-11-15
-**Updated:** 2025-11-15 (renamed from figma-src-to-dev-prompts)
+**Last Updated:** 2025-11-15
+**Changelog:**
+- v2.0: **BREAKING CHANGE** - E2E test documentation now embedded in each track folder (E2E-TESTS.md) instead of separate playwright_tests_plan/ folder
+- v1.3: Updated Step 12 to create organized Playwright test plan folder
+- v1.2: Added Step 12 (Playwright test plan generation)
+- v1.1: Renamed from figma-src-to-dev-prompts, updated folder references
+- v1.0: Initial creation
 **Based on:** Forms Dashboard conversion (dev_task-prompts_and_plans/20251115-figma_205_forms_dashboard)
 **Output Folder:** Creates `dev_task-prompts_and_plans/YYYYMMDD-[name]/` structure
+**Output Files:** 10-12 track markdown files, each with E2E-TESTS.md (5 MVP tracks + 2 future track placeholders)
 ```
