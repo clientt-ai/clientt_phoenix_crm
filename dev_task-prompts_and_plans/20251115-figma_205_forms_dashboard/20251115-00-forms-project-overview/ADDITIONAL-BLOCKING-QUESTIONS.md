@@ -23,7 +23,7 @@ I've identified **CRITICAL GAPS** that are not addressed in the current question
 ### Q24: Multi-Tenancy / Organization Scoping ⚠️ MOST CRITICAL
 
 **Context:**
-- The project has a `dev_task_prompts/20251111-01-multitenancy/` folder with a complete multi-tenant spec
+- The project has a `dev_task-prompts_and_plans/20251111-01-multitenancy/` folder with a complete multi-tenant spec
 - That spec defines: Companies, Teams, User roles scoped to companies
 - Current Forms database schema has `user_id` but NO `company_id` or `organization_id`
 - User roles specification (UI-LAYOUT-AND-ROLES.md) doesn't mention company scoping

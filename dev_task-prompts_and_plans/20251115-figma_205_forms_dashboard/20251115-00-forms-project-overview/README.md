@@ -30,7 +30,7 @@ This documentation covers the **MVP (Minimum Viable Product)** scope:
 ## Folder Structure
 
 ```
-dev_task_prompts/
+dev_task-prompts_and_plans/
 ├── README.md                                    # Quick start guide
 ├── 20251115-00-project-overview/                # This folder
 │   └── README.md                                # Detailed documentation

@@ -379,4 +379,4 @@ Once you've answered the questions above, I'll update the track READMEs with the
 
 **Status:** 🔴 AWAITING YOUR ANSWERS
 **Last Updated:** 2025-11-15
-**File Location:** `dev_task_prompts/20251115-00-project-overview/MVP-REVIEW-ISSUES-AND-QUESTIONS.md`
+**File Location:** `dev_task-prompts_and_plans/20251115-00-project-overview/MVP-REVIEW-ISSUES-AND-QUESTIONS.md`
