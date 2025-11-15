@@ -1,15 +1,15 @@
 ---
-name: figma-src-to-dev-prompts
-description: Convert Figma source export folders into comprehensive dev_task_prompts with implementation guides, component inventories, and phase planning
+name: figma-to-dev-plans
+description: Convert Figma source exports into comprehensive dev_task-prompts_and_plans with implementation guides, component inventories, and phased planning for Phoenix LiveView
 ---
 
-# Figma Source to Dev Task Prompts Skill
+# Figma to Dev Plans Skill
 
-Convert exported Figma code folders (React/TypeScript) into comprehensive development task prompts with implementation guides, coverage analysis, and phased planning for Phoenix LiveView conversion.
+Convert exported Figma code folders (React/TypeScript) into comprehensive development task prompts and plans with implementation guides, coverage analysis, and phased planning for Phoenix LiveView conversion.
 
 ## Overview
 
-This skill automates the process of analyzing a Figma source export and generating a complete `dev_task_prompts` folder structure with:
+This skill automates the process of analyzing a Figma source export and generating a complete `dev_task-prompts_and_plans` folder structure with:
 - Component and page inventories
 - Technology conversion matrices (React → Phoenix LiveView)
 - Database schema requirements
@@ -488,7 +488,7 @@ For each major feature domain (Analytics, Settings, etc.):
 
 **Date:** [YYYY-MM-DD]
 **Figma Source:** `figma_src/[folder]/`
-**Dev Task Prompts:** `dev_task_prompts/[parent-folder]/`
+**Dev Task Prompts:** `dev_task-prompts_and_plans/[parent-folder]/`
 
 ## Executive Summary
 [Coverage status, issues found, component coverage %]
@@ -638,7 +638,7 @@ For each major feature domain (Analytics, Settings, etc.):
 ## Folder Structure Created
 
 ```
-dev_task_prompts/
+dev_task-prompts_and_plans/
 └── YYYYMMDD-[name]/
     ├── YYYYMMDD-00-[name]-project-overview/
     │   ├── README.md
@@ -857,8 +857,13 @@ Provide user with:
 
 ## Example Invocation
 
+**Using the skill:**
 ```
-User: "Convert the figma_src/205 Forms Dashboard to dev_task_prompts"
+User: "Convert the figma_src/205 Forms Dashboard folder to dev plans"
+# Or invoke directly: /figma-to-dev-plans
+```
+
+**Workflow:**
 
 Skill:
 1. Analyzes figma_src/205 Forms Dashboard/
@@ -872,7 +877,7 @@ Skill:
    - "Should Calendar and Chatbot be 'Coming Soon'?"
 
 3. Creates structure:
-   - dev_task_prompts/20251115-figma_205_forms_dashboard/
+   - dev_task-prompts_and_plans/20251115-figma_205_forms_dashboard/
    - 8 track folders (5 MVP + 2 Future + 1 Overview)
    - 11 markdown documentation files
 
@@ -913,7 +918,7 @@ This skill is complete when:
 
 ## Integration with Development Workflow
 
-The generated dev_task_prompts serve as:
+The generated dev_task-prompts_and_plans serve as:
 
 1. **Planning Reference** - Before writing code
 2. **Implementation Guide** - During development
@@ -922,19 +927,22 @@ The generated dev_task_prompts serve as:
 5. **Spec Source** - For creating BDD/DDD specs
 
 **Next Step After Skill Completion:**
-Use `/project_specs-generation` skill to create detailed BDD specs from the dev_task_prompts.
+Use `/project_specs-generation` skill to create detailed BDD specs from the dev_task-prompts_and_plans.
 
 ## Related Skills
 
-- **figma-import** - For live Figma imports via MCP (different from this skill)
-- **project_specs-generation** - Generate BDD/DDD specs from dev_task_prompts
+- **figma-import** - For live Figma imports via MCP (different from this skill - that one imports from Figma Desktop app)
+- **project_specs-generation** - Generate BDD/DDD specs from dev_task-prompts_and_plans
 - **ash-basics** - Understanding Ash resources when implementing
 - **liveview-guidelines** - Phoenix LiveView patterns during implementation
 
 ---
 
-**Status:** Ready to use
-**Version:** 1.0
+**Skill Name:** `figma-to-dev-plans`
+**Status:** ✅ Ready to use
+**Version:** 1.1
 **Created:** 2025-11-15
-**Based on:** Forms Dashboard conversion (dev_task_prompts/20251115-figma_205_forms_dashboard)
+**Updated:** 2025-11-15 (renamed from figma-src-to-dev-prompts)
+**Based on:** Forms Dashboard conversion (dev_task-prompts_and_plans/20251115-figma_205_forms_dashboard)
+**Output Folder:** Creates `dev_task-prompts_and_plans/YYYYMMDD-[name]/` structure
 ```

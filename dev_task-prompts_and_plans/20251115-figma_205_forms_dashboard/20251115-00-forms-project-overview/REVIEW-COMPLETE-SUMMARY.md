@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-I performed a comprehensive review of the Forms Dashboard dev_task_prompts against the Figma source export and existing project requirements. Here's what I found:
+I performed a comprehensive review of the Forms Dashboard dev_task-prompts_and_plans against the Figma source export and existing project requirements. Here's what I found:
 
 ### ✅ What's Good (No Issues)
 - **95% component coverage** - Nearly all Figma components documented
@@ -86,7 +86,7 @@ I performed a comprehensive review of the Forms Dashboard dev_task_prompts again
 
 ## Critical Finding: Multi-Tenancy Gap 🚨
 
-**Issue:** The project has a complete multi-tenancy system (`dev_task_prompts/20251111-01-multitenancy/`) but the Forms Dashboard implementation ignores it.
+**Issue:** The project has a complete multi-tenancy system (`dev_task-prompts_and_plans/20251111-01-multitenancy/`) but the Forms Dashboard implementation ignores it.
 
 **Current State:**
 ```sql
@@ -328,7 +328,7 @@ Before proceeding to each phase:
 
 **CONCLUSION:**
 
-The dev_task_prompts are **COMPREHENSIVE and WELL-STRUCTURED**, but **CANNOT PROCEED to implementation** until the **CRITICAL QUESTIONS** are answered, especially:
+The dev_task-prompts_and_plans are **COMPREHENSIVE and WELL-STRUCTURED**, but **CANNOT PROCEED to implementation** until the **CRITICAL QUESTIONS** are answered, especially:
 
 🚨 **Q24: Multi-Tenancy Scoping** (affects 50%+ of implementation)
 

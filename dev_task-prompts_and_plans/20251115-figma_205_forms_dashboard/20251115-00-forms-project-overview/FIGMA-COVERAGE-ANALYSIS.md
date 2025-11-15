@@ -2,7 +2,7 @@
 
 **Date:** 2025-11-15
 **Figma Source:** `figma_src/205 Forms Dashboard/`
-**Dev Task Prompts:** `dev_task_prompts/20251115-figma_205_forms_dashboard/`
+**Dev Task Prompts:** `dev_task-prompts_and_plans/20251115-figma_205_forms_dashboard/`
 
 ---
 
@@ -389,7 +389,7 @@ This matrix ensures every Figma page can be traced to implementation documentati
 
 ### Overall Assessment: ✅ Excellent Coverage
 
-The dev_task_prompts comprehensively cover the Figma export with:
+The dev_task-prompts_and_plans comprehensively cover the Figma export with:
 - **95% component coverage** (2 minor auth components not explicitly mentioned)
 - **83% page coverage** (2 Contacts pages intentionally out of scope)
 - **Clear MVP vs Future separation**
