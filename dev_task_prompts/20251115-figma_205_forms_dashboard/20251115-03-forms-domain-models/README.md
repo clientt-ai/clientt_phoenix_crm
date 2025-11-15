@@ -4,6 +4,11 @@
 
 This track covers creating all Ash resources, domains, and database schema for the Forms Dashboard functionality.
 
+**Figma Source:**
+- `figma_src/205 Forms Dashboard/src/components/pages/FormBuilderPage.tsx` (field types, validation rules)
+- `figma_src/205 Forms Dashboard/src/components/pages/FormsPage.tsx` (form attributes, status)
+- `figma_src/205 Forms Dashboard/src/components/pages/SettingsPage.tsx` (configuration options)
+
 **Target Location:** `lib/clientt_crm_app/`
 **Database:** PostgreSQL via AshPostgres
 

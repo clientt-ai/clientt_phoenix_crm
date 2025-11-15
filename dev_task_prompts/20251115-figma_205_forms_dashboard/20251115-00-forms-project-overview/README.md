@@ -470,9 +470,10 @@ When building the UI (Track 2 & 5), show placeholders for future features:
 - [Heroicons](https://heroicons.com/)
 
 ### Figma Source Files
-- `figma_src/205 Forms Dashboard/` - Full export
-- `figma_src/205 Forms Dashboard/src/START_HERE.md` - Figma documentation
-- `figma_src/205 Forms Dashboard/src/FEATURE_DOCUMENTATION.md` - Feature details
+- `figma_src/205 Forms Dashboard/` - Full export (82 TSX files)
+- `figma_src/205 Forms Dashboard/README.md` - Figma export README
+- `figma_src/205 Forms Dashboard/package.json` - Dependencies reference
+- See `FIGMA-COVERAGE-ANALYSIS.md` in this folder for complete component inventory
 
 ---
 
