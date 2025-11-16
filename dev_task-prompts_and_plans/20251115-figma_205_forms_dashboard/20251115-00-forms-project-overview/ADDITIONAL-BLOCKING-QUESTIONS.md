@@ -56,8 +56,24 @@ I've identified **CRITICAL GAPS** that are not addressed in the current question
 - ⛔ Cannot implement role-based access correctly
 - ⛔ May need to rebuild database if wrong choice made
 
-**Your Answer:** _______________________
-**Notes:** _______________________
+**Your Answer:** ✅ **OPTION A - YES, Forms belong to companies**
+
+**Decision Date:** 2025-11-16
+**Rationale:**
+- Project has existing multi-tenancy system with Companies, AuthzUsers, Teams
+- Specs folder (`specs/01-domains/authorization/policies/row_level_security.md:20`) explicitly states "All future tenant-scoped resources (Contacts, Deals, etc.)" must have company_id
+- Forms are tenant-scoped resources requiring complete data isolation
+- Consistency with existing architecture is critical
+
+**Implementation Impact:**
+- ✅ Add `company_id UUID REFERENCES authz_companies(id)` to forms, form_fields, submissions tables
+- ✅ Implement Ash policies following row_level_security.md patterns
+- ✅ All queries automatically filtered by `current_company_id` from session
+- ✅ Forms created with automatic company_id from actor context
+- ✅ Company_id is immutable after creation
+- ✅ LiveView pages require company context via `on_mount` hook
+
+**Notes:** This decision aligns with the comprehensive multi-tenancy architecture already implemented in the Authorization domain. See `specs/01-domains/authorization/` for detailed patterns to follow.
 
 ---
 
@@ -68,37 +84,84 @@ I've identified **CRITICAL GAPS** that are not addressed in the current question
 - Also mentions super_admin role
 - No specification for HOW users get these roles
 
-**Questions:**
+**Decision Date:** 2025-11-16
 
-**Q25a: Who can assign roles?**
-- **Options:**
-  - A) Only super_admin can assign all roles
-  - B) Company admin can assign roles within their company
-  - C) form_admin can grant form_viewer role (escalation prevention)
-  - D) Self-service: Users can request roles, admin approves
+**✅ ROLE STORAGE ARCHITECTURE: Feature Roles (JSONB)**
 
-**Your Answer:** _______________________
+**Implementation:**
+- Add `feature_roles JSONB DEFAULT '{}'` to existing `authz_users` table
+- Store form roles in JSONB: `%{forms: :form_admin}`
+- Supports future features: `%{forms: :form_admin, calendar: :calendar_admin}`
+- Roles and permissions defined in Elixir code (NOT database tables)
 
-**Q25b: Role assignment UI - where does it live?**
-- **Options:**
-  - A) In Settings page (for MVP)
-  - B) Separate admin panel (future)
-  - C) No UI for MVP (assign via console/seeds)
+**Migration:**
+```sql
+ALTER TABLE authz_users
+  ADD COLUMN feature_roles JSONB DEFAULT '{}';
 
-**Your Answer:** _______________________
+CREATE INDEX idx_authz_users_feature_roles_forms
+  ON authz_users ((feature_roles->>'forms'));
+```
 
-**Q25c: Default role for new users?**
-- **Options:**
-  - A) No roles by default (must be explicitly granted)
-  - B) Everyone gets form_viewer by default
-  - C) Configurable per company
+**Permission Mapping (in code):**
+```elixir
+# lib/clientt_crm_app/authorization/permissions.ex
+defmodule ClienttCrmApp.Authorization.Permissions do
+  @form_permissions %{
+    form_admin: [:create_form, :update_form, :delete_form, :publish_form,
+                 :view_form, :view_all_submissions, :delete_submission, :export_submissions],
+    form_viewer: [:view_form, :view_published_forms_only],
+    lead_admin: [:view_all_submissions, :update_submission, :delete_submission,
+                 :export_submissions, :add_submission_notes],
+    lead_viewer: [:view_submissions, :export_submissions]
+  }
 
-**Your Answer:** _______________________
+  def has_form_permission?(authz_user, permission) do
+    form_role = get_in(authz_user.feature_roles, ["forms"])
+    permission in Map.get(@form_permissions, form_role, [])
+  end
+end
+```
 
-**Impact if not answered:**
-- ⛔ Cannot create role assignment workflow
-- ⛔ Cannot test the application (how do you become form_admin?)
-- ⛔ Settings page scope unclear
+**Rationale:**
+- Roles/permissions in code = version controlled, environment-agnostic
+- JSONB enables multiple feature-specific roles per user
+- No additional tables needed
+- Clear separation: company role vs feature roles
+
+---
+
+**Q25a: Who can assign roles?** ✅ **OPTION B - Company admin assigns roles**
+
+**Answer:** Company `admin` role can assign any form role within their company.
+
+**Implementation:**
+- Ash policy: `authorize_if actor_attribute_equals(:role, :admin)`
+- Only admins can update `feature_roles` field
+- Form roles are scoped to company (via authz_user's company_id)
+
+---
+
+**Q25b: Role assignment UI - where does it live?** ✅ **OPTION A - Settings page (for MVP)**
+
+**Answer:** Settings page includes "Team & Permissions" section
+
+**Implementation:**
+- Settings page has tab: "Team Members"
+- Shows all authz_users in current company
+- Admin can edit feature_roles for each user
+- Simple dropdown: [No Form Role, Form Admin, Form Viewer, Lead Admin, Lead Viewer]
+
+---
+
+**Q25c: Default role for new users?** ✅ **OPTION A - No roles by default**
+
+**Answer:** New authz_users have `feature_roles: %{}` (no form role)
+
+**Rationale:**
+- Explicit permission grants (security best practice)
+- Company admin must explicitly assign form roles
+- Prevents accidental access to sensitive form data
 
 ---
 
@@ -111,41 +174,63 @@ I've identified **CRITICAL GAPS** that are not addressed in the current question
 
 **Questions:**
 
-**Q26a: What statuses are allowed?**
-- **Options:**
-  - A) Draft, Published, Archived (as suggested)
-  - B) Draft, Published only (no archiving for MVP)
-  - C) Draft, Active, Paused, Archived (more granular)
+**Decision Date:** 2025-11-16
 
-**Your Answer:** _______________________
+**✅ STATUS PATTERN: Following Authorization Domain Conventions**
 
-**Q26b: Can you unpublish a form?**
-- **Options:**
-  - A) Yes - Published → Draft (stops accepting submissions)
-  - B) No - Published is permanent (must archive instead)
-  - C) Yes - But only if no submissions exist
+**Q26a: What statuses are allowed?** ✅ **OPTION A - Draft, Published, Archived**
 
-**Your Answer:** _______________________
+**Implementation:**
+```elixir
+attribute :status, :atom do
+  constraints one_of: [:draft, :published, :archived]
+  default :draft
+end
+```
 
-**Q26c: Can archived forms be unarchived?**
-- **Options:**
-  - A) Yes - reversible operation
-  - B) No - archiving is permanent
+**Rationale:** Matches existing pattern in Authorization domain (Company, Team use active/archived pattern)
 
-**Your Answer:** _______________________
+---
 
-**Q26d: What happens to existing submissions when form is archived?**
-- **Options:**
-  - A) Submissions remain viewable (read-only)
-  - B) Submissions are hidden
-  - C) Submissions are soft-deleted (can be recovered)
+**Q26b: Can you unpublish a form?** ✅ **OPTION A - Yes, Published → Draft**
 
-**Your Answer:** _______________________
+**Answer:** Forms can be unpublished (reverted to draft status)
 
-**Impact if not answered:**
-- ⛔ Cannot implement form management UI correctly
-- ⛔ Cannot write proper Ash actions for status changes
-- ⛔ User experience unclear (can I unpublish?)
+**Implementation:**
+- Action: `update :unpublish` changes status from `:published` to `:draft`
+- Form stops accepting new submissions when in draft
+- Existing submissions remain intact
+- form_admin permission required
+
+**Use Case:** Stop accepting submissions temporarily (e.g., form needs updates, max submissions reached)
+
+---
+
+**Q26c: Can archived forms be unarchived?** ✅ **OPTION A - Yes, reversible**
+
+**Answer:** Archiving is reversible (can unarchive to draft status)
+
+**Implementation:**
+- Action: `update :unarchive` changes status from `:archived` to `:draft`
+- Cannot unarchive directly to published (must go through draft → publish workflow)
+- form_admin permission required
+
+**Rationale:** Flexibility without risk (unarchive to draft, review, then re-publish if needed)
+
+---
+
+**Q26d: What happens to existing submissions when form is archived?** ✅ **OPTION A - Remain viewable (read-only)**
+
+**Answer:** Submissions remain visible and exportable when form is archived
+
+**Implementation:**
+- Archived forms show in forms list with "Archived" badge
+- Submissions table still shows all historical submissions
+- Cannot add new submissions to archived forms
+- Can still export, view, and analyze existing submissions
+- lead_admin and lead_viewer can still access submission data
+
+**Rationale:** Data preservation - never lose submission history
 
 ---
 
@@ -157,71 +242,173 @@ I've identified **CRITICAL GAPS** that are not addressed in the current question
 
 **Questions:**
 
-**Q27a: Can users edit their own submissions?**
-- **Options:**
-  - A) Yes - within time window (e.g., 1 hour after submission)
-  - B) Yes - anytime before form is archived
-  - C) No - submissions are immutable once submitted
+**Decision Date:** 2025-11-16
 
-**Recommendation:** Option C - Immutable submissions for data integrity
-**Your Answer:** _______________________
+**Q27a: Can users edit their own submissions?** ✅ **OPTION C - Immutable submissions**
 
-**Q27b: Can lead_admin edit submissions?**
-- **Options:**
-  - A) Yes - can edit any field
-  - B) Yes - can edit notes/tags only (not form data)
-  - C) No - can only view
+**Answer:** Submissions cannot be edited after submission (immutable)
 
-**Recommendation:** Option B - Add notes/tags for lead management without changing submission data
-**Your Answer:** _______________________
+**Implementation:**
+- No `update` action on Submission resource for regular users
+- Submission form data is read-only after creation
+- If user needs to correct data, they must submit a new submission
 
-**Q27c: Who can delete submissions?**
-- **Options:**
-  - A) lead_admin only
-  - B) lead_admin + form_admin
-  - C) No one (soft delete only, marked as deleted but retained)
-  - D) super_admin only
+**Rationale:**
+- Data integrity - maintain accurate audit trail
+- Compliance - some industries require immutable records
+- Analytics accuracy - prevents retroactive data changes affecting reports
 
-**Recommendation:** Option C - Soft delete for audit trail
-**Your Answer:** _______________________
+---
 
-**Impact if not answered:**
-- ⛔ Cannot implement submission detail page correctly
-- ⛔ Cannot write Ash policies for submissions
-- ⛔ Potential data integrity issues
+**Q27b: Can lead_admin edit submissions?** ✅ **OPTION B - Edit notes/tags only**
+
+**Answer:** lead_admin can add metadata (notes, tags, status) but NOT edit form field data
+
+**Implementation:**
+```elixir
+# Submission resource
+attributes do
+  # Immutable form data
+  attribute :data, :map, allow_nil?: false, writable?: [:create]
+
+  # Mutable metadata (lead management)
+  attribute :notes, :string
+  attribute :tags, {:array, :string}, default: []
+  attribute :lead_status, :atom  # new, contacted, qualified, converted, etc.
+end
+
+actions do
+  update :update_metadata do
+    accept [:notes, :tags, :lead_status]
+    # data field NOT in accept list
+  end
+end
+
+policies do
+  policy action(:update_metadata) do
+    authorize_if has_form_permission(:update_submission)  # lead_admin
+  end
+end
+```
+
+**Rationale:**
+- Preserves submission integrity while enabling lead management
+- lead_admin can track follow-up without altering original data
+- Clear separation: form data (immutable) vs lead metadata (mutable)
+
+---
+
+**Q27c: Who can delete submissions?** ✅ **OPTION C - Soft delete with audit trail**
+
+**Answer:** lead_admin and form_admin can soft-delete submissions
+
+**Implementation:**
+```elixir
+# Add to submissions table
+attribute :deleted_at, :utc_datetime_usec
+attribute :deleted_by_authz_user_id, :uuid
+
+actions do
+  update :delete do  # Soft delete
+    accept []
+    change set_attribute(:deleted_at, &DateTime.utc_now/0)
+    change set_attribute(:deleted_by_authz_user_id, actor(:id))
+  end
+
+  update :restore do  # Undelete
+    accept []
+    change set_attribute(:deleted_at, nil)
+    change set_attribute(:deleted_by_authz_user_id, nil)
+  end
+end
+
+# Default reads exclude deleted
+read :list do
+  primary? true
+  filter expr(is_nil(deleted_at))
+end
+
+# Admins can see deleted
+read :list_including_deleted do
+  filter expr(true)  # No filter, shows all
+end
+```
+
+**Rationale:**
+- Audit compliance - track who deleted what and when
+- Reversible - can restore accidentally deleted submissions
+- GDPR-friendly - can hard-delete later if user requests data removal
 
 ---
 
 ### Q28: Shared Layout Implementation Timing
 
-**Context:**
-- UI-LAYOUT-AND-ROLES.md specifies header + sidebar are required
-- PRIMARY-OVERVIEW.md Phase 1 mentions layout but doesn't prioritize it clearly
-- This affects all page implementations
+**Decision Date:** 2025-11-16
 
-**Question:** When must the shared layout be implemented?
+**✅ OPTION A - Phase 1, Week 1 - BEFORE ANY PAGES**
 
-**Options:**
-- **A) Phase 1, Week 1 - Before any pages** ✅ RECOMMENDED
-  - All pages built from start use consistent layout
-  - No rework needed
-  - RBAC built in from beginning
+**Answer:** Shared layout with company context MUST be implemented FIRST, before building any feature pages
 
-- **B) Phase 1, Week 2 - After first page works**
-  - Build dashboard without layout first
-  - Then refactor to add layout
-  - More rework but validates approach faster
+**Rationale (from specs/01-domains/authorization/):**
+- Multi-tenancy requires company context in ALL pages
+- `specs/.../REVIEW_QUESTIONS.md:Q2` mandates:
+  - `lib/clientt_crm_app_web/live_authz_auth.ex` module
+  - `on_mount` hook for company context enforcement
+  - Session plug for HTTP requests
+- Cannot build ANY LiveView pages without company_id filtering
+- Row-level security policies require `actor(:current_company_id)` from session
 
-- **C) Phase 2 - After core features work**
-  - Risk: Major refactoring mid-project
-  - Not recommended
+**Implementation Order (Phase 1, Week 1):**
 
-**Impact if not answered:**
-- ⚠️ Developers may start building pages without layout
-- ⚠️ Rework required if layout added later
-- ⚠️ Inconsistent user experience during development
+1. **Session Management** (Day 1-2)
+   ```elixir
+   # lib/clientt_crm_app_web/live_authz_auth.ex
+   defmodule ClienttCrmAppWeb.LiveAuthzAuth do
+     import Phoenix.LiveView
+     import Phoenix.Component
 
-**Your Answer:** _______________________
+     def on_mount(:require_company_context, _params, session, socket) do
+       socket =
+         socket
+         |> assign_current_company(session)
+         |> assign_current_authz_user(session)
+
+       if socket.assigns[:current_company_id] do
+         {:cont, socket}
+       else
+         {:halt, redirect(socket, to: "/select-company")}
+       end
+     end
+   end
+   ```
+
+2. **Shared Layout Components** (Day 2-3)
+   - Header with company switcher
+   - Sidebar with navigation (role-based visibility)
+   - Main content area wrapper
+
+3. **Router Configuration** (Day 3)
+   ```elixir
+   live_session :authenticated_with_company,
+     on_mount: [
+       {ClienttCrmAppWeb.LiveUserAuth, :ensure_authenticated},
+       {ClienttCrmAppWeb.LiveAuthzAuth, :require_company_context}
+     ] do
+     # All form pages go here
+   end
+   ```
+
+4. **Then Start Building Feature Pages** (Day 4+)
+   - Dashboard
+   - Forms list
+   - Form builder
+   - etc.
+
+**Impact:**
+- ✅ Zero rework - all pages built correctly from start
+- ✅ Consistent UX - company context always available
+- ✅ Security enforced - no pages bypass multi-tenancy
+- ✅ Clean architecture - separation of concerns
 
 ---
 

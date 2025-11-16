@@ -105,7 +105,88 @@ Use this skill when you have:
 
 ---
 
-### Step 3: Define Implementation Tracks
+### Step 3: Check Existing Specs for Architectural Patterns
+
+**Goal:** Review existing specifications to understand established patterns before planning implementation
+
+**Actions:**
+1. **Check for specs folder:**
+   ```bash
+   ls -la specs/
+   ```
+
+2. **If specs exist, review key areas:**
+   - **Multi-Tenancy/Authorization Patterns:**
+     - Check `specs/01-domains/authorization/` for company scoping requirements
+     - Review `specs/01-domains/authorization/policies/row_level_security.md`
+     - Note: ALL tenant-scoped resources MUST have `company_id` column
+     - Review session management requirements (`live_authz_auth.ex`, `on_mount` hooks)
+
+   - **Role-Based Access Control:**
+     - Check `specs/01-domains/authorization/resources/authz_user.md`
+     - Note existing roles: `admin`, `manager`, `user` (company-level)
+     - Check for `feature_roles` JSONB pattern for feature-specific permissions
+     - Understand permission mapping approach (code-based, not database tables)
+
+   - **Database Patterns:**
+     - Review `specs/.../DATABASE_SCHEMA.generated.md` if exists
+     - Note status field patterns (e.g., `active`, `archived` vs soft delete)
+     - Check index naming conventions
+     - Review foreign key cascade behaviors
+
+   - **UI/Design System:**
+     - Check `specs/05-ui-design/` for design tokens and component guidelines
+     - Note: DO NOT export Figma HTML/TSX directly
+     - Use DaisyUI Tailwind classes with Phoenix LiveView HEEx templates
+     - Figma is reference only, not source code
+
+3. **Document Spec Insights:**
+   Create file: `[track-00]/SPEC-INSIGHTS.md` with findings:
+   ```markdown
+   # Insights from Existing Specs
+
+   **Reviewed:** [Date]
+
+   ## Multi-Tenancy Requirements
+   - [What was found about company_id requirements]
+
+   ## Authorization Patterns
+   - [Existing role structure]
+   - [Permission mapping approach]
+
+   ## Database Conventions
+   - [Status patterns]
+   - [Deletion strategy]
+   - [Index patterns]
+
+   ## Design System
+   - [Component library to use]
+   - [Implementation approach]
+
+   ## Critical Decisions Influenced
+   - [How specs answer outstanding questions]
+   ```
+
+4. **Cross-Reference with Implementation Plans:**
+   - Flag any conflicts between Figma export and existing specs
+   - Update database schemas to include `company_id` where needed
+   - Align role definitions with existing authorization system
+   - Note required session management components
+
+**Questions to Answer from Specs:**
+- Is multi-tenancy implemented? (Check for `authz_companies` table)
+- What roles exist? (Check authorization domain)
+- Is there a permission system? (Check for RBAC patterns)
+- What's the deletion strategy? (Soft delete vs status fields)
+- What design system is being used? (DaisyUI, etc.)
+
+**⚠️ CRITICAL:** If specs indicate multi-tenancy exists, ALL new tables MUST include `company_id` column and proper row-level security policies.
+
+**Output:** SPEC-INSIGHTS.md with all findings that inform implementation decisions
+
+---
+
+### Step 4: Define Implementation Tracks
 
 **Goal:** Create logical tracks for development
 
