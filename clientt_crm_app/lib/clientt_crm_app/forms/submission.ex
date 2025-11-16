@@ -62,7 +62,7 @@ defmodule ClienttCrmApp.Forms.Submission do
 
         # Validate form is published
         if form.status != :published do
-          raise Ash.Error.Invalid.InvalidChanges,
+          raise Ash.Error.Changes.InvalidChanges,
             message: "Form not found or no longer accepting submissions"
         end
 
@@ -136,9 +136,10 @@ defmodule ClienttCrmApp.Forms.Submission do
     # Update status action (for lead workflow)
     update :update_status do
       accept [:status]
+      require_atomic? false
 
       # Validate status transitions
-      validate fn changeset, _context ->
+      change fn changeset, _context ->
         old_status = changeset.data.status
         new_status = Ash.Changeset.get_attribute(changeset, :status)
 
@@ -164,9 +165,14 @@ defmodule ClienttCrmApp.Forms.Submission do
           end
 
         if valid_transition do
-          :ok
+          changeset
         else
-          {:error, message: "Invalid status transition from #{old_status} to #{new_status}"}
+          Ash.Changeset.add_error(
+            changeset,
+            Ash.Error.Changes.InvalidChanges.exception(
+              message: "Invalid status transition from #{old_status} to #{new_status}"
+            )
+          )
         end
       end
     end
@@ -174,6 +180,7 @@ defmodule ClienttCrmApp.Forms.Submission do
     # Soft delete action
     update :soft_delete do
       accept []
+      require_atomic? false
 
       change fn changeset, _context ->
         Ash.Changeset.force_change_attribute(changeset, :deleted_at, DateTime.utc_now())
@@ -183,6 +190,7 @@ defmodule ClienttCrmApp.Forms.Submission do
     # Restore action
     update :restore do
       accept []
+      require_atomic? false
 
       change fn changeset, _context ->
         Ash.Changeset.force_change_attribute(changeset, :deleted_at, nil)
@@ -239,9 +247,7 @@ defmodule ClienttCrmApp.Forms.Submission do
       primary? false
 
       # Prevent hard deletion - use soft_delete instead
-      validate fn _changeset, _context ->
-        {:error, message: "Cannot hard delete submissions. Use soft_delete action instead."}
-      end
+      # Handled by policy: forbid_if always()
     end
   end
 
