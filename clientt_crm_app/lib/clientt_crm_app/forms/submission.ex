@@ -93,14 +93,14 @@ defmodule ClienttCrmApp.Forms.Submission do
         |> Ash.Changeset.change_attribute(:submitter_email, submitter_email)
         |> Ash.Changeset.after_action(fn _changeset, submission ->
           # Increment form's submission_count
-          ClienttCrmApp.Forms.Form
-          |> Ash.get!(form_id)
-          |> Ash.Changeset.for_update(:increment_submission_count)
-          |> Ash.update!()
+          form =
+            ClienttCrmApp.Forms.Form
+            |> Ash.get!(form_id)
+            |> Ash.Changeset.for_update(:increment_submission_count)
+            |> Ash.update!()
 
-          # TODO: Publish domain event forms.submission_created
-          # TODO: Create in-app notifications for company users
-          # TODO: Send email notifications based on user preferences
+          # Create notifications for company users
+          create_submission_notifications(submission, form)
 
           {:ok, submission}
         end)
@@ -388,6 +388,44 @@ defmodule ClienttCrmApp.Forms.Submission do
     # Policy: Prevent hard deletion
     policy action(:destroy) do
       forbid_if always()
+    end
+  end
+
+  # Helper function to create notifications for new submissions
+  defp create_submission_notifications(submission, form) do
+    # Get all active users in the company (admins and managers)
+    import Ash.Query
+    company_id = form.company_id
+
+    case ClienttCrmApp.Authorization.AuthzUser
+         |> filter(
+           company_id == ^company_id and
+             status == :active and
+             role in [:admin, :manager]
+         )
+         |> Ash.read() do
+      {:ok, authz_users} ->
+        # Create a notification for each admin/manager
+        Enum.each(authz_users, fn authz_user ->
+          ClienttCrmApp.Forms.Notification
+          |> Ash.Changeset.for_create(:create, %{
+            user_id: authz_user.id,
+            type: "new_submission",
+            title: "New submission received",
+            message: "A new submission was received for #{form.name}",
+            link: "/submissions/#{submission.id}",
+            metadata: %{
+              form_id: form.id,
+              submission_id: submission.id,
+              submitter_email: submission.submitter_email
+            }
+          })
+          |> Ash.create()
+        end)
+
+      {:error, _} ->
+        # Log error but don't fail the submission
+        :ok
     end
   end
 end

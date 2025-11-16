@@ -37,6 +37,16 @@ defmodule ClienttCrmAppWeb.Router do
       # on_mount {ClienttCrmAppWeb.LiveUserAuth, :live_no_user}
 
       live "/dashboard", DashboardLive, :index
+
+      # Forms management routes
+      live "/forms", FormLive.Index, :index
+      live "/forms/new", FormLive.Builder, :new
+      live "/forms/:id/edit", FormLive.Builder, :edit
+      live "/forms/:id", FormLive.Show, :show
+
+      # Submissions management routes
+      live "/forms/:form_id/submissions", SubmissionLive.Index, :index
+      live "/submissions/:id", SubmissionLive.Show, :show
     end
   end
 
@@ -46,6 +56,9 @@ defmodule ClienttCrmAppWeb.Router do
     get "/", PageController, :home
     auth_routes AuthController, ClienttCrmApp.Accounts.User, path: "/auth"
     sign_out_route AuthController
+
+    # Public form submission (no auth required)
+    live "/f/:id", PublicFormLive, :show
 
     # Remove these if you'd like to use your own authentication views
     sign_in_route register_path: "/register",
