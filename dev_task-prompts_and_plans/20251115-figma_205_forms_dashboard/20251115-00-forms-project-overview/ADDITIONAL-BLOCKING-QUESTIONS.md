@@ -438,7 +438,25 @@ end
 
 **Recommendation:** Option A if using Tailwind (minimal extra effort to add `dark:` classes)
 
-**Your Answer:** _______________________
+**Your Answer:** ✅ **OPTION A - Must-have for MVP (Phase 1-2)**
+
+**Decision Date:** 2025-11-16
+
+**Implementation:**
+- Use DaisyUI's built-in dark theme support
+- Apply `dark:` class variants as components are built
+- Add theme toggle in shared header (moon/sun icon)
+- Store user preference in browser localStorage or user preferences
+- Test both light and dark modes during development
+
+**Rationale:**
+- DaisyUI provides dark theme out of the box (minimal extra effort)
+- Adding dark mode later requires revisiting every component (more work)
+- Modern UX expectation - users appreciate dark mode option
+- Tailwind `dark:` classes are simple to add during initial development
+- Better to build it in from start than retrofit
+
+**Notes:** Move dark mode from Phase 3 to Phase 1 in PRIMARY-OVERVIEW.md
 
 ---
 
@@ -467,7 +485,53 @@ end
 
 **Recommendation:** Option A - Use SortableJS with LiveView hooks (proven pattern)
 
-**Your Answer:** _______________________
+**Your Answer:** ✅ **OPTION A - SortableJS + LiveView hooks**
+
+**Decision Date:** 2025-11-16
+
+**Implementation:**
+```javascript
+// assets/js/app.js - Add SortableJS hook
+import Sortable from 'sortablejs'
+
+let Hooks = {}
+Hooks.Sortable = {
+  mounted() {
+    let group = this.el.dataset.group
+    Sortable.create(this.el, {
+      animation: 150,
+      group: group,
+      handle: '.drag-handle',
+      onEnd: (evt) => {
+        this.pushEvent('reorder', {
+          from: evt.oldIndex,
+          to: evt.newIndex
+        })
+      }
+    })
+  }
+}
+```
+
+```elixir
+# Form builder LiveView
+def handle_event("reorder", %{"from" => from, "to" => to}, socket) do
+  fields = reorder_fields(socket.assigns.fields, from, to)
+  {:noreply, assign(socket, fields: fields)}
+end
+```
+
+**Rationale:**
+- Proven pattern in LiveView ecosystem
+- Great UX with smooth drag animations
+- LiveView maintains authoritative state
+- JavaScript only handles UI interactions
+- Well-documented with many community examples
+
+**Dependencies:**
+- Add `sortablejs` to package.json: `npm install sortablejs --save`
+
+**Notes:** This approach is used successfully in many production LiveView apps for drag-drop interfaces
 
 ---
 
@@ -495,7 +559,60 @@ end
 
 **Recommendation:** Option A - PubSub is already available, adds great UX
 
-**Your Answer:** _______________________
+**Your Answer:** ✅ **OPTION A - Yes, use Phoenix PubSub**
+
+**Decision Date:** 2025-11-16
+
+**Implementation:**
+```elixir
+# When new submission is created
+defmodule ClienttCrmApp.Forms.Submission do
+  # ... resource definition ...
+
+  changes do
+    change after_action(fn changeset, submission, _context ->
+      # Broadcast to company-scoped topic
+      Phoenix.PubSub.broadcast(
+        ClienttCrmApp.PubSub,
+        "company:#{submission.company_id}:submissions",
+        {:new_submission, submission}
+      )
+      {:ok, submission}
+    end)
+  end
+end
+
+# In dashboard LiveView
+def mount(_params, _session, socket) do
+  company_id = socket.assigns.current_company_id
+  Phoenix.PubSub.subscribe(ClienttCrmApp.PubSub, "company:#{company_id}:submissions")
+  {:ok, load_dashboard_data(socket)}
+end
+
+def handle_info({:new_submission, submission}, socket) do
+  # Update KPIs and submission list
+  {:noreply,
+    socket
+    |> update_kpis()
+    |> prepend_submission(submission)
+    |> put_flash(:info, "New submission received!")}
+end
+```
+
+**Rationale:**
+- PubSub already available (no new dependencies)
+- Modern, collaborative UX
+- Perfect for teams monitoring forms together
+- KPIs and submission lists update automatically
+- Scoped to company (multi-tenancy safe)
+
+**Features Enabled:**
+- Dashboard KPIs update live when new submission arrives
+- Submission list shows new entries immediately
+- Form detail page updates submission count in real-time
+- Optional toast notification for new submissions
+
+**Notes:** Use company-scoped topics to ensure proper multi-tenancy isolation
 
 ---
 
@@ -525,7 +642,72 @@ end
 
 **Recommendation:** Option C - Hybrid approach
 
-**Your Answer:** _______________________
+**Your Answer:** ✅ **OPTION C - Hybrid approach**
+
+**Decision Date:** 2025-11-16
+
+**Implementation:**
+
+**Forms - Soft Delete:**
+```elixir
+# Form resource
+attributes do
+  attribute :deleted_at, :utc_datetime_usec
+  attribute :deleted_by_authz_user_id, :uuid
+end
+
+actions do
+  destroy :delete do  # Soft delete
+    soft? true
+    change set_attribute(:deleted_at, &DateTime.utc_now/0)
+    change set_attribute(:deleted_by_authz_user_id, actor(:id))
+  end
+end
+
+# Default reads exclude deleted
+read :list do
+  primary? true
+  filter expr(is_nil(deleted_at))
+end
+```
+
+**Submissions - Soft Delete (already decided in Q27c):**
+- Same pattern as Forms
+- Preserves submission data for audit/compliance
+
+**FormFields - Hard Delete:**
+```elixir
+# FormField resource - NO deleted_at attribute
+actions do
+  destroy :destroy do
+    # Actual database DELETE
+    # Cascades when form is edited
+  end
+end
+```
+
+**Rationale:**
+- **Forms:** Valuable historical data, may want to restore
+- **Submissions:** Critical business data, audit compliance (Q27c)
+- **FormFields:** Structural elements that change frequently, hard delete simplifies form editing
+
+**Database Schema:**
+```sql
+-- Forms table: includes soft delete fields
+ALTER TABLE forms
+  ADD COLUMN deleted_at TIMESTAMP,
+  ADD COLUMN deleted_by_authz_user_id UUID REFERENCES authz_users(id);
+
+-- Submissions table: includes soft delete fields (from Q27c)
+ALTER TABLE submissions
+  ADD COLUMN deleted_at TIMESTAMP,
+  ADD COLUMN deleted_by_authz_user_id UUID REFERENCES authz_users(id);
+
+-- FormFields table: NO soft delete (hard delete on cascade)
+-- No changes needed
+```
+
+**Notes:** Consistent with Q27c decision. Forms and submissions preserve audit trail, FormFields allow clean structural changes.
 
 ---
 
@@ -558,7 +740,90 @@ end
 
 **Recommendation:** Option B or D - Snapshot if needed, otherwise post-MVP
 
-**Your Answer:** _______________________
+**Your Answer:** ✅ **OPTION B - Snapshot approach**
+
+**Decision Date:** 2025-11-16
+
+**Implementation:**
+```elixir
+# Submission resource
+attributes do
+  # Immutable submission data (from form fields)
+  attribute :data, :map, allow_nil?: false, writable?: [:create]
+
+  # NEW: Snapshot of form structure at submission time
+  attribute :form_snapshot, :map, allow_nil?: false, writable?: [:create]
+  # Contains: %{
+  #   form_name: "Contact Form",
+  #   fields: [
+  #     %{id: "uuid", label: "Name", field_type: "text", order: 1},
+  #     %{id: "uuid", label: "Email", field_type: "email", order: 2},
+  #     ...
+  #   ]
+  # }
+
+  # Lead metadata (mutable - from Q27b)
+  attribute :notes, :string
+  attribute :tags, {:array, :string}
+  attribute :lead_status, :atom
+end
+
+# On submission creation
+changes do
+  change fn changeset, _context ->
+    form_id = Ash.Changeset.get_attribute(changeset, :form_id)
+
+    # Load form with all fields
+    form = Form
+      |> Ash.Query.filter(id == ^form_id)
+      |> Ash.Query.load(:fields)
+      |> Ash.read_one!()
+
+    # Create snapshot
+    snapshot = %{
+      form_name: form.name,
+      form_settings: form.settings,
+      fields: Enum.map(form.fields, fn field ->
+        %{
+          id: field.id,
+          label: field.label,
+          field_type: field.field_type,
+          placeholder: field.placeholder,
+          required: field.required,
+          options: field.options,
+          order: field.order_index
+        }
+      end)
+    }
+
+    Ash.Changeset.force_change_attribute(changeset, :form_snapshot, snapshot)
+  end
+end
+```
+
+**Database Schema:**
+```sql
+-- Add to submissions table
+ALTER TABLE submissions
+  ADD COLUMN form_snapshot JSONB NOT NULL DEFAULT '{}';
+
+CREATE INDEX idx_submissions_form_snapshot
+  ON submissions USING GIN (form_snapshot);
+```
+
+**Rationale:**
+- **Simple:** No additional tables, just one JSONB column
+- **Complete:** Preserves exact form structure at submission time
+- **Flexible:** Can always interpret submission correctly even if form changes
+- **Queryable:** GIN index allows searching within snapshot if needed
+
+**Use Cases:**
+- Display submission with original field labels (even if form was edited)
+- Export submissions with correct historical field names
+- Audit trail of form structure changes
+- Analytics on field changes over time
+
+**Notes:** Snapshot is created automatically on submission and is immutable (same as submission data from Q27a)
 
 ---
 
@@ -572,7 +837,43 @@ end
 
 **Question:** Confirm domain name for Ash
 
-**Your Answer (if different from "Forms"):** _______________________
+**Your Answer:** ✅ **Use "Forms" - No conflicts found**
+
+**Decision Date:** 2025-11-16
+
+**Verification:**
+Existing domains in `lib/clientt_crm_app/`:
+- `accounts.ex` - User authentication (AshAuthentication)
+- `authorization.ex` - Multi-tenancy (Companies, Teams, AuthzUsers)
+- ✅ **No "forms.ex" exists - safe to use**
+
+**Implementation:**
+```elixir
+# lib/clientt_crm_app/forms.ex
+defmodule ClienttCrmApp.Forms do
+  use Ash.Domain
+
+  resources do
+    resource ClienttCrmApp.Forms.Form
+    resource ClienttCrmApp.Forms.FormField
+    resource ClienttCrmApp.Forms.Submission
+  end
+end
+```
+
+**Directory Structure:**
+```
+lib/clientt_crm_app/
+├── accounts.ex (existing)
+├── authorization.ex (existing)
+├── forms.ex (NEW)
+└── forms/
+    ├── form.ex (NEW)
+    ├── form_field.ex (NEW)
+    └── submission.ex (NEW)
+```
+
+**Notes:** "Forms" domain name confirmed - no conflicts with existing domains (accounts, authorization)
 
 ---
 
@@ -597,7 +898,70 @@ end
 
 **Recommendation:** Option A - Public submissions (standard form behavior)
 
-**Your Answer:** _______________________
+**Your Answer:** ✅ **OPTION A - Yes, public forms (unauthenticated submissions)**
+
+**Decision Date:** 2025-11-16
+
+**Implementation:**
+
+**Public Form URL:**
+- Route: `/f/{slug}` (e.g., `/f/contact-us`)
+- No authentication required
+- Form renders with public layout (no sidebar/header)
+
+**Router Configuration:**
+```elixir
+# lib/clientt_crm_app_web/router.ex
+
+# Public form submission (no auth required)
+scope "/f", ClienttCrmAppWeb do
+  pipe_through :browser  # No :require_authenticated_user
+
+  live "/:slug", PublicFormLive.Show, :show
+end
+
+# Authenticated form management
+scope "/forms", ClienttCrmAppWeb do
+  pipe_through [:browser, :require_authenticated_user]
+
+  live "/", FormLive.Index, :index
+  live "/new", FormLive.New, :new
+  live "/:id", FormLive.Show, :show
+  # ... etc
+end
+```
+
+**Security Measures:**
+- Rate limiting on submission endpoint (prevent spam)
+- Optional CAPTCHA support (can add in Phase 3 if needed)
+- CSRF protection via Phoenix (already built-in)
+- Sanitize submitted data (prevent XSS)
+
+**Submission Creation:**
+```elixir
+# Public submission - no actor required
+Submission
+|> Ash.Changeset.for_create(:public_create, %{
+  form_id: form.id,
+  company_id: form.company_id,  # Inherited from form
+  data: submitted_data,
+  metadata: %{
+    ip_address: get_ip(socket),
+    user_agent: get_user_agent(socket),
+    referrer: get_referrer(socket)
+  }
+})
+|> Ash.create()
+```
+
+**Use Cases:**
+- Website contact forms
+- Lead capture forms
+- Event registration
+- Newsletter signup
+- Customer feedback forms
+
+**Notes:** Standard form behavior. Forms are created/managed by authenticated users, but submissions are public. Company context inherited from the form itself.
 
 ---
 
@@ -621,7 +985,73 @@ end
 
 **Recommendation:** Option A - Auto-generated with conflict resolution
 
-**Your Answer:** _______________________
+**Your Answer:** ✅ **OPTION C - Random UUIDs**
+
+**Decision Date:** 2025-11-16
+
+**Implementation:**
+```elixir
+# Form resource
+defmodule ClienttCrmApp.Forms.Form do
+  use Ash.Resource, ...
+
+  attributes do
+    uuid_primary_key :id
+
+    # Slug is auto-generated UUID-based short string
+    attribute :slug, :string do
+      allow_nil? false
+      writable? [:create]  # Immutable after creation
+      default &generate_slug/0
+    end
+
+    # ... other attributes
+  end
+
+  # Generate short random slug
+  defp generate_slug do
+    # Use first 8 chars of UUID for shorter URLs
+    # e.g., "a3f8b2c1" instead of full UUID
+    :crypto.strong_rand_bytes(8)
+    |> Base.url_encode64(padding: false)
+    |> binary_part(0, 8)
+    |> String.downcase()
+  end
+
+  # Alternative: Use full UUID if preferred
+  # defp generate_slug, do: Ash.UUID.generate()
+end
+```
+
+**Database Schema:**
+```sql
+-- Slug unique constraint per company (from Q24)
+ALTER TABLE forms
+  ADD CONSTRAINT unique_slug_per_company
+  UNIQUE (company_id, slug);
+
+-- Index for fast slug lookups
+CREATE INDEX idx_forms_slug ON forms(slug);
+```
+
+**Public URL Examples:**
+- `/f/a3f8b2c1` (8-char random string)
+- `/f/x7k9m2p4`
+- `/f/b5n8q1r3`
+
+**Rationale:**
+- **Guaranteed uniqueness:** No conflicts, no collision handling needed
+- **Security:** Obscures form IDs, harder to enumerate forms
+- **Simple:** No validation logic, no conflict resolution
+- **Immutable:** Slug never changes once created
+- **Shorter option:** 8-char strings more user-friendly than full UUIDs
+
+**Trade-offs Accepted:**
+- ❌ Not SEO-friendly (no keywords in URL)
+- ❌ Not memorable for sharing
+- ✅ But prioritizes security and simplicity
+
+**Notes:** Using 8-character base64-encoded random strings instead of full UUIDs for slightly better UX while maintaining uniqueness guarantees
 
 ---
 
