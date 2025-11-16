@@ -24,6 +24,125 @@ Ash is an opinionated, composable framework for building applications in Elixir.
 - Put business logic inside actions rather than in external modules
 - Use resources to model your domain entities
 
+## Multi-Tenancy & Company Scoping
+
+**⚠️ CRITICAL PROJECT REQUIREMENT**
+
+This project implements multi-tenancy with company-based data isolation. ALL tenant-scoped resources MUST follow these patterns:
+
+### Required for ALL New Tables
+
+1. **Add `company_id` column** to every tenant-scoped table:
+   ```elixir
+   postgres do
+     table "table_name"
+     repo MyApp.Repo
+   end
+
+   attributes do
+     uuid_primary_key :id
+     attribute :company_id, :uuid, allow_nil?: false
+     # ... other attributes
+   end
+
+   relationships do
+     belongs_to :company, MyApp.Authorization.Company
+   end
+   ```
+
+2. **Add database foreign key and index:**
+   ```elixir
+   # In migration
+   references :company_id, "authz_companies",
+     on_delete: :delete,
+     on_update: :update,
+     name: "table_name_company_id_fkey"
+
+   create index("table_name", [:company_id])
+   ```
+
+### Automatic Company Filtering
+
+3. **Add row-level security policies** (ALL resources):
+   ```elixir
+   policies do
+     # Automatic company filtering on reads
+     policy action_type(:read) do
+       authorize_if expr(company_id == ^actor(:current_company_id))
+     end
+
+     # Automatic company_id on creates
+     policy action_type(:create) do
+       authorize_if expr(company_id == ^actor(:current_company_id))
+     end
+   end
+   ```
+
+4. **Automatically set company_id on create:**
+   ```elixir
+   actions do
+     create :create do
+       accept [:field1, :field2]  # Do NOT include :company_id
+       change set_attribute(:company_id, actor(:current_company_id))
+     end
+   end
+   ```
+
+5. **company_id is IMMUTABLE** (cannot be changed after creation):
+   ```elixir
+   actions do
+     update :update do
+       accept [:field1, :field2]  # Do NOT include :company_id in updates
+     end
+   end
+   ```
+
+### Session Context Requirements
+
+6. **All LiveView pages MUST have company context:**
+   ```elixir
+   # In router.ex
+   live_session :authenticated_with_company,
+     on_mount: [
+       {MyAppWeb.LiveUserAuth, :ensure_authenticated},
+       {MyAppWeb.LiveAuthzAuth, :require_company_context}
+     ] do
+     live "/forms", FormsLive.Index
+   end
+   ```
+
+7. **Actor struct must include company context:**
+   ```elixir
+   # Socket assigns in LiveView
+   %{
+     current_authn_user: %User{...},
+     current_company_id: "uuid",
+     current_authz_user: %AuthzUser{company_id: "uuid", role: :admin}
+   }
+   ```
+
+### Which Resources Need company_id?
+
+**YES - Add company_id:**
+- Business data resources (Forms, Submissions, Contacts, Deals, etc.)
+- User-generated content within a company
+- Company-specific settings/configuration
+- Any data that should be isolated per company
+
+**NO - Skip company_id:**
+- `authz_companies` table itself (the tenant root)
+- `authn_users` table (authentication identity, not scoped)
+- System-wide lookup tables (countries, timezones, etc.)
+
+### Reference Implementation
+
+See existing multi-tenancy specs:
+- `specs/01-domains/authorization/policies/row_level_security.md` - Complete row-level security patterns
+- `specs/01-domains/authorization/features/multi_tenancy.feature.md` - BDD scenarios
+- `lib/clientt_crm_app/authorization/*` - Working examples (Company, AuthzUser, Team)
+
+**If you forget to add company_id:** Data will leak across companies, violating security and compliance requirements!
+
 ## Code Interfaces
 
 Use code interfaces on domains to define the contract for calling into Ash resources. See the [Code interface guide for more](https://hexdocs.pm/ash/code-interfaces.html).

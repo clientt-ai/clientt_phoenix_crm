@@ -225,26 +225,36 @@ These features are fully documented but NOT implemented in MVP. UI shows "Coming
 ### MVP Schema (Implement Now)
 
 #### Forms Domain
+
+**🔴 UPDATED 2025-11-16: Multi-Tenancy & Role Architecture Changes**
+- Added `company_id` to all tables (Q24 decision - forms belong to companies)
+- Removed `user_roles` table (Q25 decision - roles stored in authz_users.feature_roles JSONB)
+- Added submission metadata fields (Q27 decisions - notes, tags, soft delete)
+- See: `ADDITIONAL-BLOCKING-QUESTIONS.md` for detailed rationale
+
 ```sql
 -- Main forms table
 CREATE TABLE forms (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  company_id UUID NOT NULL REFERENCES authz_companies(id) ON DELETE CASCADE,
+  created_by_authz_user_id UUID NOT NULL REFERENCES authz_users(id),
   name VARCHAR(255) NOT NULL,
   description TEXT,
   settings JSONB DEFAULT '{}'::jsonb,  -- field definitions, styling, branding
   status VARCHAR(50) DEFAULT 'draft',  -- draft, published, archived
-  slug VARCHAR(255) UNIQUE,
+  slug VARCHAR(255) NOT NULL,  -- URL-friendly identifier
   view_count INTEGER DEFAULT 0,
   submission_count INTEGER DEFAULT 0,
   inserted_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+  updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  UNIQUE(company_id, slug)  -- Slug unique within company (not globally)
 );
 
 -- Form fields (each form has multiple fields)
 CREATE TABLE form_fields (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   form_id UUID NOT NULL REFERENCES forms(id) ON DELETE CASCADE,
+  company_id UUID NOT NULL REFERENCES authz_companies(id) ON DELETE CASCADE,  -- Denormalized for query performance
   field_type VARCHAR(50) NOT NULL,  -- text, email, select, textarea, number, date, checkbox, radio
   label VARCHAR(255) NOT NULL,
   placeholder VARCHAR(255),
@@ -260,42 +270,68 @@ CREATE TABLE form_fields (
 CREATE TABLE submissions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   form_id UUID NOT NULL REFERENCES forms(id) ON DELETE CASCADE,
-  submitted_data JSONB NOT NULL,  -- key-value pairs of field responses
+  company_id UUID NOT NULL REFERENCES authz_companies(id) ON DELETE CASCADE,  -- Denormalized for query performance
+  -- Immutable submission data (Q27a: submissions are immutable)
+  submitted_data JSONB NOT NULL,  -- Key-value pairs of field responses
   lead_email VARCHAR(255),
   lead_name VARCHAR(255),
   metadata JSONB DEFAULT '{}'::jsonb,  -- IP, user agent, referrer, UTM params
   submitted_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  inserted_at TIMESTAMP NOT NULL DEFAULT NOW()
+  -- Mutable lead management fields (Q27b: lead_admin can update these)
+  notes TEXT,
+  tags TEXT[] DEFAULT ARRAY[]::TEXT[],
+  lead_status VARCHAR(50) DEFAULT 'new',  -- new, contacted, qualified, converted, closed_won, closed_lost
+  -- Soft delete (Q27c: reversible deletion with audit trail)
+  deleted_at TIMESTAMP,
+  deleted_by_authz_user_id UUID REFERENCES authz_users(id),
+  -- Timestamps
+  inserted_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
--- Indexes for performance
-CREATE INDEX idx_forms_user_id ON forms(user_id);
-CREATE INDEX idx_forms_status ON forms(status);
+-- Indexes for performance (multi-tenancy aware)
+CREATE INDEX idx_forms_company_id ON forms(company_id);
+CREATE INDEX idx_forms_company_status ON forms(company_id, status);  -- Composite for common query
+CREATE INDEX idx_forms_created_by ON forms(created_by_authz_user_id);
 CREATE INDEX idx_form_fields_form_id ON form_fields(form_id);
+CREATE INDEX idx_form_fields_company_id ON form_fields(company_id);
 CREATE INDEX idx_submissions_form_id ON submissions(form_id);
+CREATE INDEX idx_submissions_company_id ON submissions(company_id);
+CREATE INDEX idx_submissions_deleted_at ON submissions(deleted_at) WHERE deleted_at IS NOT NULL;  -- Partial index
+CREATE INDEX idx_submissions_lead_status ON submissions(company_id, lead_status);  -- For lead management views
 CREATE INDEX idx_submissions_submitted_at ON submissions(submitted_at);
 ```
 
-#### User Roles (RBAC)
-```sql
--- User roles for Forms domain access control
-CREATE TABLE user_roles (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  role VARCHAR(50) NOT NULL CHECK (role IN (
-    'form_admin',
-    'form_viewer',
-    'lead_admin',
-    'lead_viewer',
-    'super_admin'
-  )),
-  granted_by UUID REFERENCES users(id),
-  granted_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  UNIQUE(user_id, role)
-);
+#### Authorization Integration (Form Roles)
 
-CREATE INDEX idx_user_roles_user_id ON user_roles(user_id);
-CREATE INDEX idx_user_roles_role ON user_roles(role);
+**🔴 NEW 2025-11-16: Feature-Based Roles (Q25 decision)**
+
+Form permissions are stored in `authz_users.feature_roles` JSONB field:
+
+```sql
+-- Migration to add feature_roles to existing authz_users table
+ALTER TABLE authz_users
+  ADD COLUMN feature_roles JSONB DEFAULT '{}'::JSONB;
+
+-- Index for querying form roles efficiently
+CREATE INDEX idx_authz_users_feature_roles_forms
+  ON authz_users ((feature_roles->>'forms'));
+
+-- Example data:
+-- authz_user.feature_roles = {"forms": "form_admin", "calendar": "calendar_viewer"}
+```
+
+**Permission Mapping (in Elixir code, NOT database):**
+- See: `lib/clientt_crm_app/authorization/permissions.ex`
+- `form_admin`: create_form, update_form, delete_form, publish_form, view_all_submissions, export_submissions
+- `form_viewer`: view_form, view_published_forms_only
+- `lead_admin`: view_all_submissions, update_submission_metadata, delete_submission, export_submissions
+- `lead_viewer`: view_submissions, export_submissions
+
+**Role Assignment:**
+- Company `admin` role can assign any form role via Settings > Team Members
+- Form roles are company-scoped (via authz_user's company_id)
+- New users have no form role by default (explicit grants required)
 ```
 
 **Roles:**
