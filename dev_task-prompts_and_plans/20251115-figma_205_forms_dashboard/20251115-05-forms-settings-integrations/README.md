@@ -1,62 +1,78 @@
-# Track 7: Settings & Integrations Management
+# Track 5: Settings & Configuration (MVP)
 
 ## Overview
 
-Build the settings UI for managing calendar integrations, chatbot configuration, and team availability.
+Build the MVP settings UI for user preferences, notification settings, and future integration placeholders.
 
 **Source:**
-- `figma_src/205 Forms Dashboard/src/components/pages/SettingsPage.tsx`
-- `figma_src/205 Forms Dashboard/src/components/pages/TeamCalendarPage.tsx`
+- `figma_src/205 Forms Dashboard/src/components/pages/SettingsPage.tsx` (adapted for MVP scope)
 
-**Dependencies:** Track 2 (LiveView UI), Track 3 (Domain Models), Track 4 (Calendar integration logic)
-**Estimated Time:** 1 week
+**Dependencies:** Track 2 (LiveView UI), Track 3 (Domain Models)
+**Estimated Time:** 3-4 days (reduced scope for MVP)
 
-## Pages to Build
+**MVP Scope:**
+- User profile settings (link to existing AshAuthentication)
+- Notification preferences (email + in-app)
+- Integration placeholders (calendar/chatbot "Coming Soon" cards)
+- NO calendar/chatbot implementation in MVP
 
-### 1. Settings Overview
-Main settings page with tabs
+## Pages to Build (MVP Scope)
 
-**Tabs:**
-- General (user profile, company settings)
-- Integrations (calendar, chatbot)
-- Team Calendar (availability management)
-- Billing (future)
-- Notifications (email preferences)
+### Settings Page with Tabs
 
-### 2. Integrations Tab
-Configure external integrations
+**MVP Tabs:**
 
-**Sections:**
-- Calendar Integration
-- Chatbot Settings
-- Developer Handoff (API docs reference)
+1. **Profile Tab**
+   - Link to existing AshAuthentication account settings
+   - Forms-specific preferences:
+     - Timezone selection (for date/time display)
+     - Default form settings (optional per Q17)
 
-### 3. Team Calendar Tab
-Manage booking availability
+2. **Notifications Tab** (Per Q15, Q16 Decisions)
+   - Email notification preferences:
+     - Immediate (default)
+     - Daily Digest
+     - Off
+   - In-app notification settings:
+     - Notification bell in header
+     - Unread count badge
+     - Mark as read functionality
+   - Store in `user_preferences` or `authz_user` table
 
-**Sections:**
-- Availability Overview (stats)
-- General Settings (duration, buffer, timezone)
-- Weekly Availability
-- Team Members
-- Date Overrides
+3. **Integrations Tab** (Per Q18 Decision)
+   - **Coming Soon placeholders only:**
+     - Calendar Integration card (disabled, shows "Planned for Phase 3")
+     - Chatbot Integration card (disabled, shows "Planned for Phase 3")
+   - No actual OAuth implementation in MVP
+   - Sets user expectations, shows product vision
+
+**NOT in MVP:**
+- Team Calendar tab (future feature)
+- Billing tab (future)
+- Full calendar/chatbot integration setup
 
 ## Technical Implementation
 
-### Settings LiveView
+### Settings LiveView (MVP)
 
 **File:** `lib/clientt_crm_app_web/live/settings_live/index.ex`
 
 ```elixir
 defmodule ClienttCrmAppWeb.SettingsLive.Index do
   use ClienttCrmAppWeb, :live_view
+  alias ClienttCrmApp.Accounts
 
   @impl true
   def mount(_params, _session, socket) do
+    user = socket.assigns.current_user
+    preferences = load_user_preferences(user.id)
+
     socket =
       socket
       |> assign(:page_title, "Settings")
-      |> assign(:active_tab, "general")
+      |> assign(:active_tab, "profile")
+      |> assign(:preferences, preferences)
+      |> assign(:notification_settings, preferences.notification_settings || %{})
 
     {:ok, socket}
   end
@@ -74,12 +90,156 @@ defmodule ClienttCrmAppWeb.SettingsLive.Index do
   def handle_event("change_tab", %{"tab" => tab}, socket) do
     {:noreply, push_patch(socket, to: ~p"/settings?tab=#{tab}")}
   end
+
+  @impl true
+  def handle_event("update_preferences", params, socket) do
+    user_id = socket.assigns.current_user.id
+
+    attrs = %{
+      timezone: params["timezone"],
+      notification_preference: params["notification_preference"]
+    }
+
+    case update_user_preferences(user_id, attrs) do
+      {:ok, preferences} ->
+        socket =
+          socket
+          |> put_flash(:info, "Settings saved successfully")
+          |> assign(:preferences, preferences)
+
+        {:noreply, socket}
+
+      {:error, _} ->
+        {:noreply, put_flash(socket, :error, "Failed to save settings")}
+    end
+  end
+
+  defp load_user_preferences(user_id) do
+    # Load from database or return defaults
+    %{
+      timezone: "UTC",
+      notification_preference: "immediate", # immediate, daily, off
+      notification_settings: %{
+        email_enabled: true,
+        in_app_enabled: true
+      }
+    }
+  end
+
+  defp update_user_preferences(user_id, attrs) do
+    # Save to database
+    {:ok, Map.merge(load_user_preferences(user_id), attrs)}
+  end
 end
 ```
 
-### Integrations Tab LiveView
+## Notifications System (MVP Per Q15, Q16)
 
-**File:** `lib/clientt_crm_app_web/live/settings_live/integrations.ex`
+### Notification Resource
+
+**File:** `lib/clientt_crm_app/accounts/notification.ex`
+
+```elixir
+defmodule ClienttCrmApp.Accounts.Notification do
+  use Ash.Resource,
+    otp_app: :clientt_crm_app,
+    domain: ClienttCrmApp.Accounts,
+    data_layer: AshPostgres.DataLayer
+
+  postgres do
+    table "notifications"
+    repo ClienttCrmApp.Repo
+  end
+
+  attributes do
+    uuid_primary_key :id
+
+    attribute :user_id, :uuid, allow_nil?: false
+    attribute :type, :string, allow_nil?: false # "new_submission", "form_published", etc.
+    attribute :title, :string, allow_nil?: false
+    attribute :message, :string
+    attribute :link, :string # URL to related resource
+    attribute :read_at, :utc_datetime
+    attribute :metadata, :map, default: %{}
+
+    create_timestamp :inserted_at
+  end
+
+  relationships do
+    belongs_to :user, ClienttCrmApp.Accounts.User
+  end
+
+  actions do
+    defaults [:read, :destroy]
+
+    create :create do
+      accept [:user_id, :type, :title, :message, :link, :metadata]
+    end
+
+    update :mark_as_read do
+      accept []
+      change set_attribute(:read_at, &DateTime.utc_now/0)
+    end
+
+    read :unread_for_user do
+      argument :user_id, :uuid, allow_nil?: false
+      filter expr(user_id == ^arg(:user_id) and is_nil(read_at))
+      prepare build(sort: [inserted_at: :desc])
+    end
+  end
+
+  aggregates do
+    count :unread_count, :user_id do
+      filter expr(is_nil(read_at))
+    end
+  end
+end
+```
+
+### Email Notification Sender
+
+**File:** `lib/clientt_crm_app/notifications/email_sender.ex`
+
+```elixir
+defmodule ClienttCrmApp.Notifications.EmailSender do
+  import Swoosh.Email
+  alias ClienttCrmApp.Mailer
+
+  def send_new_submission_notification(user, submission, form) do
+    case user.notification_preference do
+      "immediate" ->
+        send_immediate_email(user, submission, form)
+
+      "daily" ->
+        # Queue for daily digest (implement with Oban if needed later)
+        :ok
+
+      "off" ->
+        :ok
+    end
+  end
+
+  defp send_immediate_email(user, submission, form) do
+    email =
+      new()
+      |> to(user.email)
+      |> from({"Clientt CRM", "notifications@clienttcrm.com"})
+      |> subject("New form submission: #{form.name}")
+      |> html_body("""
+      <h2>New Submission Received</h2>
+      <p>Form: #{form.name}</p>
+      <p>Lead: #{submission.lead_email}</p>
+      <p><a href="https://app.clienttcrm.com/forms/#{form.id}">View submission</a></p>
+      """)
+
+    Mailer.deliver(email)
+  end
+end
+```
+
+### Coming Soon Integrations Template (MVP Placeholder)
+
+**File:** `lib/clientt_crm_app_web/live/settings_live/integrations.html.heex` (simplified for MVP)
 
 ```elixir
 defmodule ClienttCrmAppWeb.SettingsLive.Integrations do
@@ -217,585 +377,232 @@ defmodule ClienttCrmAppWeb.SettingsLive.Integrations do
 end
 ```
 
-### Integrations Template
-
-**File:** `lib/clientt_crm_app_web/live/settings_live/integrations.html.heex`
-
 ```heex
 <div class="max-w-[1200px] mx-auto p-8">
   <h1 class="text-[38px] font-bold mb-2">Integrations</h1>
   <p class="text-muted-foreground mb-8">
-    Connect your calendar and configure chatbot settings
+    Future integrations will be available here
   </p>
 
-  <!-- Calendar Integration Section -->
-  <div class="bg-card rounded-2xl border p-6 mb-6">
-    <h2 class="text-2xl font-semibold mb-4">Calendar Integration</h2>
-    <p class="text-sm text-muted-foreground mb-6">
-      Connect your calendar to enable demo booking from forms and chatbot
+  <!-- Calendar Integration - Coming Soon -->
+  <div class="bg-card rounded-2xl border p-6 mb-6 opacity-60 cursor-not-allowed">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+          <.icon name="hero-calendar" class="w-6 h-6 text-primary" />
+        </div>
+        <div>
+          <h3 class="text-xl font-semibold">Calendar Integration</h3>
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-800">
+            Coming in Phase 3
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <p class="text-sm text-muted-foreground mb-4">
+      Connect Google Calendar or Outlook to enable automated booking from forms.
+      Schedule demos and meetings directly from lead submissions.
     </p>
 
-    <!-- Google Calendar -->
-    <div class="mb-6 pb-6 border-b">
-      <div class="flex items-center justify-between mb-4">
-        <div class="flex items-center gap-3">
-          <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-            <.icon name="hero-calendar" class="w-6 h-6 text-primary" />
-          </div>
-          <div>
-            <h3 class="font-semibold">Google Calendar</h3>
-            <%= if @google_integration do %>
-              <span class="inline-flex items-center gap-1 text-xs text-green-600">
-                <.icon name="hero-check-circle" class="w-4 h-4" />
-                Connected
-              </span>
-            <% else %>
-              <span class="text-xs text-muted-foreground">Not connected</span>
-            <% end %>
-          </div>
-        </div>
-
-        <%= if @google_integration do %>
-          <button
-            phx-click="disconnect_calendar"
-            phx-value-provider="google"
-            data-confirm="Are you sure you want to disconnect Google Calendar?"
-            class="btn btn-outline btn-sm"
-          >
-            Disconnect
-          </button>
-        <% else %>
-          <button
-            phx-click="connect_google"
-            class="btn btn-primary"
-          >
-            Connect Account
-          </button>
-        <% end %>
-      </div>
-
-      <%= if @google_integration do %>
-        <!-- Google Calendar Settings Form -->
-        <form phx-submit="update_calendar_settings" class="space-y-4 bg-muted/50 p-4 rounded-lg">
-          <input type="hidden" name="provider" value="google" />
-
-          <div>
-            <label class="block text-sm font-medium mb-1">
-              Select Calendar
-            </label>
-            <select
-              name="calendar_id"
-              class="w-full px-4 py-2 border rounded-lg"
-            >
-              <option value="primary">Primary Calendar</option>
-              <option value="team">Team Calendar</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium mb-1">
-              Event Title Template
-            </label>
-            <input
-              type="text"
-              name="event_title"
-              value={@google_integration.settings["event_title_template"] || "Demo with {{attendee_name}}"}
-              placeholder="Demo with {{attendee_name}}"
-              class="w-full px-4 py-2 border rounded-lg"
-            />
-            <p class="text-xs text-muted-foreground mt-1">
-              Use {{attendee_name}}, {{attendee_email}}, {{company}} as placeholders
-            </p>
-          </div>
-
-          <div class="flex items-center gap-2">
-            <input
-              type="checkbox"
-              name="send_notifications"
-              id="google_notifications"
-              value="true"
-              checked={@google_integration.settings["send_notifications"] == true}
-              class="rounded"
-            />
-            <label for="google_notifications" class="text-sm">
-              Send confirmation emails
-            </label>
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium mb-1">
-              Notification Email
-            </label>
-            <input
-              type="email"
-              name="notification_email"
-              value={@google_integration.settings["notification_email"]}
-              class="w-full px-4 py-2 border rounded-lg"
-            />
-          </div>
-
-          <div class="flex gap-2">
-            <button type="submit" class="btn btn-primary">
-              Save Settings
-            </button>
-            <button type="button" class="btn btn-outline">
-              Cancel
-            </button>
-          </div>
-        </form>
-      <% end %>
-    </div>
-
-    <!-- Outlook Calendar (similar structure) -->
-    <div class="mb-6">
-      <!-- Similar to Google Calendar section -->
-    </div>
-  </div>
-
-  <!-- Chatbot Settings Section -->
-  <div class="bg-card rounded-2xl border p-6 mb-6">
-    <div class="flex items-center justify-between mb-4">
-      <div>
-        <h2 class="text-2xl font-semibold">Chatbot Settings</h2>
-        <p class="text-sm text-muted-foreground">
-          Configure your AI sales assistant
-        </p>
-      </div>
-
+    <div class="space-y-2 text-sm mb-4">
       <div class="flex items-center gap-2">
-        <span class="text-sm text-muted-foreground">
-          <%= if @chatbot_settings.is_enabled, do: "Active", else: "Inactive" %>
-        </span>
-        <input
-          type="checkbox"
-          phx-click="toggle_chatbot"
-          checked={@chatbot_settings.is_enabled}
-          class="toggle"
-        />
+        <.icon name="hero-check" class="w-4 h-4 text-muted-foreground" />
+        <span class="text-muted-foreground">Two-way calendar sync</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <.icon name="hero-check" class="w-4 h-4 text-muted-foreground" />
+        <span class="text-muted-foreground">Automated booking from forms</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <.icon name="hero-check" class="w-4 h-4 text-muted-foreground" />
+        <span class="text-muted-foreground">Team availability management</span>
       </div>
     </div>
 
-    <%= if @chatbot_settings.is_enabled do %>
-      <form phx-submit="update_chatbot_settings" class="space-y-6">
-        <input type="hidden" name="is_enabled" value="true" />
-
-        <div>
-          <label class="block text-sm font-medium mb-1">
-            Chatbot Name
-          </label>
-          <input
-            type="text"
-            name="chatbot_name"
-            value={@chatbot_settings.chatbot_name}
-            class="w-full px-4 py-2 border rounded-lg"
-          />
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium mb-1">
-            Greeting Message
-          </label>
-          <textarea
-            name="greeting_message"
-            rows="3"
-            class="w-full px-4 py-2 border rounded-lg"
-          >{@chatbot_settings.greeting_message}</textarea>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium mb-1">
-            Trigger Pages
-          </label>
-          <select
-            name="trigger_pages"
-            class="w-full px-4 py-2 border rounded-lg"
-          >
-            <option value="all">All Pages</option>
-            <option value="forms">Form Pages Only</option>
-            <option value="landing">Landing Pages Only</option>
-            <option value="contact">Contact Form</option>
-            <option value="pricing">Pricing Page</option>
-          </select>
-        </div>
-
-        <!-- Demo Booking Settings -->
-        <div class="bg-muted/50 p-4 rounded-lg space-y-4">
-          <div class="flex items-center gap-2">
-            <input
-              type="checkbox"
-              name="enable_demo_booking"
-              id="enable_demo_booking"
-              value="true"
-              checked={@chatbot_settings.enable_demo_booking}
-              class="rounded"
-            />
-            <label for="enable_demo_booking" class="text-sm font-medium">
-              Enable "Book a Demo" button
-            </label>
-          </div>
-
-          <%= if !@calendar_connected do %>
-            <div class="bg-orange-50 border border-orange-200 rounded-lg p-3">
-              <p class="text-sm text-orange-800">
-                <.icon name="hero-exclamation-triangle" class="w-4 h-4 inline" />
-                Calendar integration required for demo booking
-              </p>
-            </div>
-          <% end %>
-
-          <div>
-            <label class="block text-sm font-medium mb-1">
-              Demo Confirmation Routing
-            </label>
-            <select
-              name="demo_notification_routing"
-              class="w-full px-4 py-2 border rounded-lg"
-            >
-              <option value="email">Email Notification</option>
-              <option value="dashboard">Internal Dashboard Only</option>
-              <option value="email_and_dashboard">Email + Dashboard</option>
-              <option value="slack" disabled>Slack Channel (Coming Soon)</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium mb-1">
-              Notification Email
-            </label>
-            <input
-              type="email"
-              name="notification_email"
-              value={@chatbot_settings.notification_email}
-              class="w-full px-4 py-2 border rounded-lg"
-            />
-          </div>
-        </div>
-
-        <div class="flex gap-2">
-          <button type="submit" class="btn btn-primary">
-            Save Chatbot Settings
-          </button>
-          <button type="button" class="btn btn-outline">
-            Cancel
-          </button>
-        </div>
-      </form>
-    <% end %>
+    <button class="btn btn-outline" disabled>
+      Connect Calendar (Coming Soon)
+    </button>
   </div>
 
-  <!-- CTA to Team Calendar -->
-  <div class="bg-gradient-to-r from-primary/10 to-accent/10 rounded-2xl border p-6">
-    <div class="flex items-center gap-4">
-      <div class="w-16 h-16 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center">
-        <.icon name="hero-calendar" class="w-8 h-8 text-white" />
+  <!-- Chatbot Integration - Coming Soon -->
+  <div class="bg-card rounded-2xl border p-6 mb-6 opacity-60 cursor-not-allowed">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+          <.icon name="hero-chat-bubble-left-right" class="w-6 h-6 text-primary" />
+        </div>
+        <div>
+          <h3 class="text-xl font-semibold">AI Chatbot Widget</h3>
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-800">
+            Coming in Phase 3
+          </span>
+        </div>
       </div>
-      <div class="flex-1">
-        <h3 class="text-xl font-semibold mb-1">Manage Your Team's Availability</h3>
-        <p class="text-sm text-muted-foreground">
-          Set working hours, manage team members, and configure booking preferences
+    </div>
+
+    <p class="text-sm text-muted-foreground mb-4">
+      AI-powered sales assistant to engage visitors, answer questions, and book demos
+      automatically. Integrates with your forms and calendar.
+    </p>
+
+    <div class="space-y-2 text-sm mb-4">
+      <div class="flex items-center gap-2">
+        <.icon name="hero-check" class="w-4 h-4 text-muted-foreground" />
+        <span class="text-muted-foreground">24/7 automated lead qualification</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <.icon name="hero-check" class="w-4 h-4 text-muted-foreground" />
+        <span class="text-muted-foreground">Instant demo booking</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <.icon name="hero-check" class="w-4 h-4 text-muted-foreground" />
+        <span class="text-muted-foreground">Custom conversation flows</span>
+      </div>
+    </div>
+
+    <button class="btn btn-outline" disabled>
+      Configure Chatbot (Coming Soon)
+    </button>
+  </div>
+
+  <!-- Info Card -->
+  <div class="bg-blue-50 border border-blue-200 rounded-2xl p-6">
+    <div class="flex items-start gap-3">
+      <.icon name="hero-information-circle" class="w-6 h-6 text-blue-600 flex-shrink-0" />
+      <div>
+        <h4 class="font-semibold text-blue-900 mb-1">More integrations coming soon</h4>
+        <p class="text-sm text-blue-800">
+          We're working on Calendar and Chatbot integrations for Phase 3.
+          These features will enhance your forms with automated booking and AI-powered lead qualification.
+          Stay tuned for updates!
         </p>
       </div>
-      <button
-        phx-click="navigate_to_team_calendar"
-        class="btn btn-primary"
-      >
-        Go to Team Calendar →
-      </button>
     </div>
   </div>
 </div>
 ```
 
-### Team Calendar Settings
+## Future Features (NOT in MVP)
 
-Most of the implementation is already covered in Track 4. The LiveView and template show:
+**The following sections are for Phase 3+ reference only:**
 
-1. **Availability Overview** - Stats cards showing active days, default duration, etc.
-2. **General Settings** - Meeting duration, buffer time, advance booking period
-3. **Weekly Availability** - Day-by-day time range editor
-4. **Team Members** - Add/manage team members with active toggles
-5. **Date Overrides** - Block dates or set custom hours
+### Calendar & Chatbot Integration (Phase 3+)
 
-Refer to Track 4 README for the detailed implementation.
+Full OAuth implementation for Google Calendar and Outlook will be added in Phase 3, including:
+- OAuth callback handlers
+- Token encryption with Cloak
+- CalendarProvider and ChatbotSettings resources
+- Two-way calendar sync
+- Automated booking from forms
 
-## Integration Context Functions
+Refer to future feature specifications for implementation details.
 
-**File:** `lib/clientt_crm_app/integrations.ex`
+## Testing (MVP Scope)
 
-```elixir
-defmodule ClienttCrmApp.Integrations do
-  alias ClienttCrmApp.Integrations.{CalendarProvider, ChatbotSettings}
-
-  # Calendar Integration
-
-  def get_calendar_integration(user_id, provider) do
-    CalendarProvider.for_user_and_provider(user_id, provider)
-  end
-
-  def has_calendar_connected?(user_id) do
-    CalendarProvider.for_user(user_id) != []
-  end
-
-  def disconnect_calendar(user_id, provider) do
-    case get_calendar_integration(user_id, provider) do
-      nil ->
-        {:error, :not_found}
-
-      integration ->
-        CalendarProvider.disconnect(integration)
-    end
-  end
-
-  def update_calendar_settings(user_id, provider, settings) do
-    case get_calendar_integration(user_id, provider) do
-      nil ->
-        {:error, :not_found}
-
-      integration ->
-        CalendarProvider.update(integration, %{settings: settings})
-    end
-  end
-
-  # Chatbot Settings
-
-  def get_chatbot_settings(user_id) do
-    case ChatbotSettings.for_user(user_id) do
-      nil ->
-        # Create default settings
-        {:ok, settings} = ChatbotSettings.create(%{user_id: user_id})
-        settings
-
-      settings ->
-        settings
-    end
-  end
-
-  def update_chatbot_settings(user_id, attrs) do
-    settings = get_chatbot_settings(user_id)
-    ChatbotSettings.update(settings, attrs)
-  end
-end
-```
-
-## OAuth Callback Handlers
-
-**File:** `lib/clientt_crm_app_web/controllers/auth_controller.ex`
+### Settings Page Tests
 
 ```elixir
-defmodule ClienttCrmAppWeb.AuthController do
-  use ClienttCrmAppWeb, :controller
-  alias ClienttCrmApp.Integrations
-
-  def google_callback(conn, %{"code" => code}) do
-    user_id = conn.assigns.current_user.id
-    redirect_uri = url(~p"/auth/google/callback")
-
-    case Integrations.GoogleCalendar.exchange_code_for_tokens(code, redirect_uri) do
-      {:ok, %{"access_token" => access_token, "refresh_token" => refresh_token}} ->
-        # Save integration
-        {:ok, _integration} = Integrations.create_calendar_integration(%{
-          user_id: user_id,
-          provider: :google,
-          access_token: access_token,
-          refresh_token: refresh_token,
-          token_expires_at: DateTime.add(DateTime.utc_now(), 3600, :second)
-        })
-
-        conn
-        |> put_flash(:info, "Google Calendar connected successfully!")
-        |> redirect(to: ~p"/settings?tab=integrations")
-
-      {:error, _reason} ->
-        conn
-        |> put_flash(:error, "Failed to connect Google Calendar")
-        |> redirect(to: ~p"/settings?tab=integrations")
-    end
-  end
-
-  def outlook_callback(conn, %{"code" => code}) do
-    # Similar to Google callback
-  end
-end
-```
-
-Add routes:
-
-```elixir
-scope "/auth", ClienttCrmAppWeb do
-  pipe_through [:browser, :require_authenticated_user]
-
-  get "/google/callback", AuthController, :google_callback
-  get "/outlook/callback", AuthController, :outlook_callback
-end
-```
-
-## Security Considerations
-
-### Token Encryption
-
-Use Cloak to encrypt OAuth tokens:
-
-**File:** `lib/clientt_crm_app/vault.ex`
-
-```elixir
-defmodule ClienttCrmApp.Vault do
-  use Cloak.Vault, otp_app: :clientt_crm_app
-end
-
-# In config/config.exs
-config :clientt_crm_app, ClienttCrmApp.Vault,
-  ciphers: [
-    default: {Cloak.Ciphers.AES.GCM, tag: "AES.GCM.V1", key: Base.decode64!("your-key-here")}
-  ]
-```
-
-Update `CalendarProvider` resource:
-
-```elixir
-attribute :access_token, ClienttCrmApp.Encrypted.Binary do
-  allow_nil? false
-end
-
-attribute :refresh_token, ClienttCrmApp.Encrypted.Binary
-```
-
-### CSRF Protection
-
-Ensure all forms have CSRF tokens (Phoenix provides this by default).
-
-### OAuth State Parameter
-
-Add state parameter to OAuth URLs to prevent CSRF:
-
-```elixir
-def authorize_url(redirect_uri) do
-  state = :crypto.strong_rand_bytes(32) |> Base.url_encode64(padding: false)
-
-  # Store state in session or database
-  # Verify in callback
-
-  params = %{
-    # ... other params
-    state: state
-  }
-
-  @oauth_authorize_url <> "?" <> URI.encode_query(params)
-end
-```
-
-## Testing
-
-### LiveView Tests
-
-```elixir
-defmodule ClienttCrmAppWeb.SettingsLive.IntegrationsTest do
+defmodule ClienttCrmAppWeb.SettingsLive.IndexTest do
   use ClienttCrmAppWeb.ConnCase
   import Phoenix.LiveViewTest
 
-  describe "Integrations page" do
-    test "shows connect buttons when not connected", %{conn: conn} do
-      {:ok, _view, html} = live(conn, ~p"/settings?tab=integrations")
+  describe "Settings page" do
+    test "shows profile tab", %{conn: conn} do
+      {:ok, _view, html} = live(conn, ~p"/settings?tab=profile")
 
-      assert html =~ "Connect Account"
-      assert html =~ "Google Calendar"
-      assert html =~ "Outlook"
+      assert html =~ "Timezone"
+      assert html =~ "Notification Preferences"
     end
 
-    test "shows disconnect button when connected", %{conn: conn} do
-      user = user_fixture()
-      integration_fixture(user_id: user.id, provider: :google)
+    test "shows notifications tab", %{conn: conn} do
+      {:ok, _view, html} = live(conn, ~p"/settings?tab=notifications")
 
-      {:ok, _view, html} = live(conn, ~p"/settings?tab=integrations")
-
-      assert html =~ "Connected"
-      assert html =~ "Disconnect"
+      assert html =~ "Email Notifications"
+      assert html =~ "In-App Notifications"
+      assert html =~ "immediate"
+      assert html =~ "daily"
     end
 
-    test "updates chatbot settings", %{conn: conn} do
-      {:ok, view, _html} = live(conn, ~p"/settings?tab=integrations")
+    test "shows integrations tab with coming soon placeholders", %{conn: conn} do
+      {:ok, _view, html} = live(conn, ~p"/settings?tab=integrations")
+
+      assert html =~ "Calendar Integration"
+      assert html =~ "AI Chatbot Widget"
+      assert html =~ "Coming in Phase 3"
+      assert html =~ "disabled"
+    end
+
+    test "updates notification preferences", %{conn: conn} do
+      {:ok, view, _html} = live(conn, ~p"/settings?tab=profile")
 
       view
       |> form("form", %{
-        chatbot_name: "My Assistant",
-        greeting_message: "Hello there!",
-        is_enabled: "true"
+        timezone: "America/New_York",
+        notification_preference: "daily"
       })
       |> render_submit()
 
-      assert render(view) =~ "Chatbot settings saved"
+      assert render(view) =~ "Settings saved successfully"
     end
   end
 end
 ```
 
-### Integration Tests
+### Notification Tests
 
 ```elixir
-defmodule ClienttCrmApp.IntegrationsTest do
+defmodule ClienttCrmApp.NotificationsTest do
   use ClienttCrmApp.DataCase
-  alias ClienttCrmApp.Integrations
+  alias ClienttCrmApp.Accounts.Notification
 
-  describe "calendar integrations" do
-    test "connects calendar successfully" do
+  describe "notifications" do
+    test "creates notification for user" do
       user = user_fixture()
 
-      {:ok, integration} = Integrations.create_calendar_integration(%{
+      {:ok, notification} = Notification.create(%{
         user_id: user.id,
-        provider: :google,
-        access_token: "token",
-        refresh_token: "refresh"
+        type: "new_submission",
+        title: "New form submission",
+        message: "Contact Form received a new submission"
       })
 
-      assert integration.provider == :google
-      assert Integrations.has_calendar_connected?(user.id) == true
+      assert notification.type == "new_submission"
     end
 
-    test "disconnects calendar" do
-      user = user_fixture()
-      integration = integration_fixture(user_id: user.id)
+    test "marks notification as read" do
+      notification = notification_fixture()
 
-      {:ok, _} = Integrations.disconnect_calendar(user.id, :google)
+      {:ok, updated} = Notification.mark_as_read(notification)
 
-      assert Integrations.has_calendar_connected?(user.id) == false
-    end
-  end
-
-  describe "chatbot settings" do
-    test "creates default settings for new user" do
-      user = user_fixture()
-
-      settings = Integrations.get_chatbot_settings(user.id)
-
-      assert settings.is_enabled == true
-      assert settings.chatbot_name == "Clientt Assistant"
+      assert updated.read_at != nil
     end
 
-    test "updates chatbot settings" do
+    test "gets unread notifications for user" do
       user = user_fixture()
+      notification_fixture(user_id: user.id)
+      notification_fixture(user_id: user.id)
 
-      {:ok, settings} = Integrations.update_chatbot_settings(user.id, %{
-        chatbot_name: "Custom Bot"
-      })
+      unread = Notification.unread_for_user(user.id)
 
-      assert settings.chatbot_name == "Custom Bot"
+      assert length(unread) == 2
     end
   end
 end
 ```
 
-## Next Steps
+## Next Steps (MVP)
 
-1. Build Settings page with tabs
-2. Implement Integrations tab UI
-3. Add OAuth callback handlers
-4. Implement token encryption
-5. Build chatbot settings form
-6. Add Team Calendar settings (see Track 4)
-7. Test OAuth flows thoroughly
-8. Add error handling for API failures
+1. Build Settings page with 3 tabs (Profile, Notifications, Integrations)
+2. Implement user preferences storage
+3. Build notification system (Notification resource + email sender)
+4. Create in-app notification UI (bell icon, dropdown, mark as read)
+5. Add "Coming Soon" placeholders for calendar/chatbot integrations
+6. Test notification delivery (email + in-app)
+7. Test user preference updates
 
 ---
 
-**Status:** Detailed spec complete
-**Dependencies:** Tracks 2, 3, 4
-**Estimated Time:** 1 week
+**Status:** MVP spec complete
+**Dependencies:** Track 2 (LiveView UI), Track 3 (Domain Models)
+**Estimated Time:** 3-4 days (reduced from 1 week due to limited MVP scope)
