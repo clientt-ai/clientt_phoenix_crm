@@ -54,7 +54,6 @@ defmodule ClienttCrmApp.Forms.FormField do
     create :create do
       primary? true
       accept [:field_type, :label, :placeholder, :help_text, :required, :order_position, :options, :validation_rules]
-      require_atomic? false
 
       argument :form_id, :uuid do
         allow_nil? false
