@@ -84,28 +84,31 @@ defmodule ClienttCrmApp.Forms.Form do
     update :update do
       primary? true
       accept [:name, :description, :branding, :settings]
+      require_atomic? false
 
       # Only allow updating draft forms
-      validate fn changeset, _context ->
+      change fn changeset, _context ->
         status = changeset.data.status
 
         if status == :draft do
-          :ok
+          changeset
         else
-          {:error, message: "Cannot modify published or archived forms"}
+          Ash.Changeset.add_error(
+            changeset,
+            Ash.Error.Changes.InvalidChanges.exception(
+              message: "Cannot modify published or archived forms"
+            )
+          )
         end
       end
     end
 
     update :publish do
       accept []
+      require_atomic? false
 
-      # Validate form has at least 1 field before publishing
-      validate fn changeset, _context ->
-        # TODO: Once FormField resource exists, validate field count > 0
-        # For now, allow publish without validation
-        :ok
-      end
+      # TODO: Once FormField resource exists, validate field count > 0
+      # For now, allow publish without validation
 
       change fn changeset, _context ->
         now = DateTime.utc_now()
@@ -118,6 +121,7 @@ defmodule ClienttCrmApp.Forms.Form do
 
     update :archive do
       accept []
+      require_atomic? false
 
       # Only admins can archive
       # This will be enforced by policies once AuthzUser integration is complete
@@ -208,9 +212,7 @@ defmodule ClienttCrmApp.Forms.Form do
       primary? false
 
       # Prevent deletion - use archive instead
-      validate fn _changeset, _context ->
-        {:error, message: "Cannot delete forms. Use archive action instead."}
-      end
+      # Handled by policy: forbid_if always()
     end
   end
 
@@ -392,6 +394,11 @@ defmodule ClienttCrmApp.Forms.Form do
     # Policy: Prevent deletion
     policy action(:destroy) do
       forbid_if always()
+    end
+
+    # Policy: Allow increment actions (internal operations)
+    policy action([:increment_view_count, :increment_submission_count]) do
+      authorize_if always()
     end
   end
 end

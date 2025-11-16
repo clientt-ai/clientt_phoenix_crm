@@ -54,6 +54,7 @@ defmodule ClienttCrmApp.Forms.FormField do
     create :create do
       primary? true
       accept [:field_type, :label, :placeholder, :help_text, :required, :order_position, :options, :validation_rules]
+      require_atomic? false
 
       argument :form_id, :uuid do
         allow_nil? false
@@ -70,14 +71,19 @@ defmodule ClienttCrmApp.Forms.FormField do
       end
 
       # Validate select/radio types have options
-      validate fn changeset, _context ->
+      change fn changeset, _context ->
         field_type = Ash.Changeset.get_attribute(changeset, :field_type)
         options = Ash.Changeset.get_attribute(changeset, :options)
 
         if field_type in [:select, :radio] and (is_nil(options) or options == []) do
-          {:error, message: "#{field_type} field type requires at least one option"}
+          Ash.Changeset.add_error(
+            changeset,
+            Ash.Error.Changes.InvalidChanges.exception(
+              message: "#{field_type} field type requires at least one option"
+            )
+          )
         else
-          :ok
+          changeset
         end
       end
     end
@@ -85,23 +91,29 @@ defmodule ClienttCrmApp.Forms.FormField do
     update :update do
       primary? true
       accept [:field_type, :label, :placeholder, :help_text, :required, :order_position, :options, :validation_rules]
+      require_atomic? false
 
       # Only allow updating fields on draft forms
-      validate fn changeset, _context ->
+      change fn changeset, _context ->
         # TODO: Load parent form and check status == :draft
         # For now, allow updates
-        :ok
+        changeset
       end
 
       # Validate select/radio types have options
-      validate fn changeset, _context ->
+      change fn changeset, _context ->
         field_type = Ash.Changeset.get_attribute(changeset, :field_type)
         options = Ash.Changeset.get_attribute(changeset, :options)
 
         if field_type in [:select, :radio] and (is_nil(options) or options == []) do
-          {:error, message: "#{field_type} field type requires at least one option"}
+          Ash.Changeset.add_error(
+            changeset,
+            Ash.Error.Changes.InvalidChanges.exception(
+              message: "#{field_type} field type requires at least one option"
+            )
+          )
         else
-          :ok
+          changeset
         end
       end
     end
@@ -121,12 +133,13 @@ defmodule ClienttCrmApp.Forms.FormField do
 
     destroy :destroy do
       primary? true
+      require_atomic? false
 
       # Only allow deleting fields on draft forms
-      validate fn changeset, _context ->
+      change fn changeset, _context ->
         # TODO: Load parent form and check status == :draft
         # For now, allow deletion
-        :ok
+        changeset
       end
     end
   end
