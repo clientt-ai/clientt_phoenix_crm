@@ -15,6 +15,7 @@ This folder contains the specifications for ClienttCRM.
 ## Domains
 
 - **Authorization**: Multi-tenant authorization system with companies, users, teams, invitations, settings, and audit logging
+- **Forms**: Custom form builder and lead management system with submission tracking, analytics, and notifications
 
 ## Getting Started
 
@@ -40,7 +41,23 @@ This folder contains the specifications for ClienttCRM.
 - **Features**: Multi-company membership, role-based access, team organization, invitation workflow
 - **Implementation Plan**: 8-week phased approach (320 hours estimated)
 
+### Forms Domain
+- **Status**: Specification complete, ready for implementation
+- **Location**: `01-domains/forms/`
+- **Resources**: Form, FormField, Submission, Notification
+- **Features**: Form builder (10 field types), public submissions, lead management workflow, analytics & KPIs, email & in-app notifications, CSV export
+- **MVP Scope**: Single-page forms, basic validation, real-time analytics, no file upload
+- **Implementation Plan**: 6-week MVP (Phase 2)
+
 ### Related Documentation
-- **Original task prompt**: `../dev_task_prompts/20251111-01-multitenancy/`
+
+**Authorization Domain:**
+- Original task prompt: `../dev_task-prompts_and_plans/20251111-01-multitenancy/`
+
+**Forms Domain:**
+- Original planning: `../dev_task-prompts_and_plans/20251115-figma_205_forms_dashboard/`
+- MVP scope document: `../dev_task-prompts_and_plans/20251115-figma_205_forms_dashboard/20251115-00-forms-project-overview/MVP-SCOPE-FINALIZED.md`
+
+**Project-Wide:**
 - **Project README**: `../README.md`
 - **CLAUDE.md**: `../CLAUDE.md` (project-wide guidelines)
