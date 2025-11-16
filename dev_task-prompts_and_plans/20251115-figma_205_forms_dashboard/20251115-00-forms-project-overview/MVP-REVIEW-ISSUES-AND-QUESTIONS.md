@@ -117,40 +117,43 @@ Answer these questions to finalize the MVP scope before creating specs.
   - A) Basic 6 types only: text, email, textarea, select, checkbox, radio
   - B) Include advanced types: number, date, phone, URL, file upload
 - **Recommendation:** Option A - Basic 6 types only. Add advanced types in Phase 3 if time permits.
-- **Your Answer:** _______________________
-- **Notes:** _______________________
+- **Your Answer:** ✅ **CUSTOM: Option B excluding file upload**
+- **Notes:** MVP will support 10 field types:
+  - Basic: text, email, textarea, select, checkbox, radio
+  - Advanced: number, date, phone, URL
+  - Deferred: file upload (Phase 3+ due to storage/security requirements)
 
 **Q2: Conditional logic?** (show field X if field Y = specific value)
 - **Options:**
   - A) Include in MVP
   - B) Future phase only
 - **Recommendation:** Option B - Future phase. Adds significant complexity to form builder UI and submission logic.
-- **Your Answer:** _______________________
-- **Notes:** _______________________
+- **Your Answer:** ✅ **OPTION B - Future phase only**
+- **Notes:** Defer to Phase 3 or post-MVP. Focus MVP on solid core form functionality first.
 
 **Q3: Multi-page forms?**
 - **Options:**
   - A) Include in MVP (forms can have multiple pages/steps)
   - B) Future phase only (single-page forms only for MVP)
 - **Recommendation:** Option B - Single-page forms only for MVP. Multi-page adds complexity to builder and progress tracking.
-- **Your Answer:** _______________________
-- **Notes:** _______________________
+- **Your Answer:** ✅ **OPTION B - Single-page forms only for MVP**
+- **Notes:** Defer multi-page/step forms to Phase 3 or post-MVP. Single-page forms sufficient for most use cases.
 
 **Q4: File upload support?**
 - **Options:**
   - A) Include in MVP
   - B) Future phase only
 - **Recommendation:** Option B - Future phase. Requires file storage setup (S3/R2), upload handling, security considerations.
-- **Your Answer:** _______________________
-- **Notes:** _______________________
+- **Your Answer:** ✅ **OPTION B - Future phase only**
+- **Notes:** Consistent with Q1 decision. Defer to Phase 3+ due to storage infrastructure, security, and cost requirements.
 
 **Q5: Form duplication feature?**
 - **Options:**
   - A) Include in MVP (basic "Duplicate Form" button that copies form + fields)
   - B) Future phase only
 - **Recommendation:** Option A - Simple duplication is easy to implement and valuable for users.
-- **Your Answer:** _______________________
-- **Notes:** _______________________
+- **Your Answer:** ✅ **OPTION A - Include in MVP**
+- **Notes:** Simple Ash action to copy form + all fields. Enables form templates and reuse. High user value, minimal development time.
 
 **Q6: Form validation?**
 - **Options:**
@@ -158,16 +161,22 @@ Answer these questions to finalize the MVP scope before creating specs.
   - B) Server-side only (Ash validations)
   - C) Both client and server-side
 - **Recommendation:** Option C - Both. Client-side for UX, server-side for security.
-- **Your Answer:** _______________________
-- **Notes:** _______________________
+- **Your Answer:** ✅ **OPTION C - Both, with pragmatic approach**
+- **Notes:**
+  - **Server-side (ALWAYS):** All validation via Ash validations (security, source of truth)
+  - **Client-side (SELECTIVE):** Only for simple, general validations:
+    - Email format, phone format, number validation
+    - Required fields, min/max length
+    - Basic field type validation
+  - **Custom/complex logic:** Server-side ONLY (avoid duplicating business logic)
 
 **Q7: Validation rules?**
 - **Options:**
   - A) Basic only (required, email format, min/max length)
   - B) Advanced (regex patterns, custom error messages, cross-field validation)
 - **Recommendation:** Option A - Basic validation for MVP. Advanced rules can be added later.
-- **Your Answer:** _______________________
-- **Notes:** _______________________
+- **Your Answer:** ✅ **OPTION A - Basic validation only**
+- **Notes:** MVP supports: required, email/phone format, min/max length, min/max value. Defer custom regex, custom messages, and cross-field validation to Phase 3.
 
 ---
 
@@ -179,8 +188,13 @@ Answer these questions to finalize the MVP scope before creating specs.
   - B) Background jobs (Oban) that pre-calculate and cache results
   - C) Start with A, add B only if performance issues (>500ms load time)
 - **Recommendation:** Option C - Start simple, optimize if needed.
-- **Your Answer:** _______________________
-- **Notes:** _______________________
+- **Your Answer:** ✅ **OPTION C - Real-time with Ash aggregates, optimize if needed**
+- **Notes:**
+  - Use Ash aggregates (COUNT, etc.) for real-time calculation
+  - Ensure optimized SQL queries with proper indexes (company_id, status, submitted_at)
+  - Measure dashboard load time in testing
+  - Add Oban background jobs + caching only if load time exceeds 500ms
+  - Avoid premature optimization
 
 **Q9: Caching layer (Cachex)?**
 - **Options:**
@@ -188,8 +202,8 @@ Answer these questions to finalize the MVP scope before creating specs.
   - B) Add only if dashboard load time exceeds 500ms
   - C) Don't add for MVP
 - **Recommendation:** Option B - Add only if needed. Avoid premature optimization.
-- **Your Answer:** _______________________
-- **Notes:** _______________________
+- **Your Answer:** ✅ **OPTION C - Don't add for MVP**
+- **Notes:** Skip Cachex for MVP. Focus on optimized SQL queries first (Q8). Add caching post-MVP only if performance testing shows it's needed.
 
 **Q10: Data retention period?**
 - **Options:**
@@ -197,8 +211,8 @@ Answer these questions to finalize the MVP scope before creating specs.
   - B) Keep for 1 year, then archive/delete
   - C) Configurable per user/form
 - **Recommendation:** Option A for MVP - Keep forever. Add retention policies in future phase.
-- **Your Answer:** _______________________
-- **Notes:** _______________________
+- **Your Answer:** ✅ **OPTION A - Keep submissions forever**
+- **Notes:** No automatic deletion or archival for MVP. Preserves all historical data for analytics. Can add configurable retention policies post-MVP if storage becomes a concern.
 
 **Q11: Export formats?**
 - **Options:**
@@ -206,8 +220,8 @@ Answer these questions to finalize the MVP scope before creating specs.
   - B) CSV + Excel (XLSX)
   - C) CSV + Excel + PDF
 - **Recommendation:** Option A - CSV only for MVP. Easy to implement, universally compatible.
-- **Your Answer:** _______________________
-- **Notes:** _______________________
+- **Your Answer:** ✅ **OPTION A - CSV only**
+- **Notes:** CSV format for MVP. Opens in Excel, Google Sheets, Numbers, etc. Simple implementation. Can add XLSX and PDF export in Phase 3 if requested.
 
 **Q12: Export scope?**
 - **Options:**
@@ -215,8 +229,12 @@ Answer these questions to finalize the MVP scope before creating specs.
   - B) Export with filters (date range, status, etc.)
   - C) Export with pagination (select which submissions)
 - **Recommendation:** Option A - Simple "Export All" for MVP.
-- **Your Answer:** _______________________
-- **Notes:** _______________________
+- **Your Answer:** ✅ **OPTION B - Export with filters**
+- **Notes:** Support filtering by:
+  - Date range (submitted_at)
+  - Lead status (new, contacted, qualified, etc.)
+  - Deleted status (include/exclude deleted)
+  - Export filtered results to CSV. More useful for forms with many submissions.
 
 **Q13: Dashboard KPIs - must-have vs nice-to-have?**
 - **Must-have (Phase 2):**
@@ -229,8 +247,15 @@ Answer these questions to finalize the MVP scope before creating specs.
   - Lead source tracking (UTM params)
   - Field completion analytics
 - **Question:** Confirm must-have list, and priority for nice-to-haves?
-- **Your Answer:** _______________________
-- **Notes:** _______________________
+- **Your Answer:** ✅ **Include ALL KPIs in MVP**
+- **Notes:** MVP Dashboard will show:
+  - **Must-have:** Total Forms, Total Submissions, Conversion Rate
+  - **Nice-to-have (all included):**
+    - Active Users (unique submitters in last 30 days)
+    - Average Completion Time (calculated from form view to submission)
+    - Lead Source Tracking (UTM parameters from metadata)
+    - Field Completion Analytics (skip rate per field)
+  - Comprehensive analytics from day 1
 
 ---
 
@@ -242,8 +267,14 @@ Answer these questions to finalize the MVP scope before creating specs.
   - B) Use existing AshAuthentication system, add basic preferences only (timezone, notification settings)
   - C) Skip entirely for MVP (use account settings if they exist)
 - **Recommendation:** Option B - Leverage existing auth system. Add lightweight preferences.
-- **Your Answer:** _______________________
-- **Notes:** _______________________
+- **Your Answer:** ✅ **OPTION B - Use existing auth + add preferences**
+- **Notes:**
+  - Link to existing AshAuthentication account settings for password/email/profile
+  - Add Forms-specific preferences in Settings page:
+    - Timezone (for date/time display)
+    - Notification preferences (Q15)
+    - Default form settings (if applicable from Q17)
+  - Don't duplicate existing auth functionality
 
 **Q15: Email notifications for new submissions?**
 - **Options:**
@@ -252,8 +283,13 @@ Answer these questions to finalize the MVP scope before creating specs.
   - C) User can choose: immediate, daily, or off
   - D) Skip for MVP
 - **Recommendation:** Option A or C - Immediate notifications are most valuable. Option C if time permits.
-- **Your Answer:** _______________________
-- **Notes:** _______________________
+- **Your Answer:** ✅ **OPTION C - User can choose notification preference**
+- **Notes:**
+  - Add notification preferences to Settings page (Q14)
+  - Options: Immediate, Daily Digest, Off
+  - Per-user preference (stored in authz_user or user preferences table)
+  - Default: Immediate (can be changed in settings)
+  - Email sent via Swoosh when enabled
 
 **Q16: Notification channels?**
 - **Options:**
@@ -261,24 +297,42 @@ Answer these questions to finalize the MVP scope before creating specs.
   - B) Email + in-app notifications
   - C) Email + in-app + Slack/webhook integrations
 - **Recommendation:** Option A - Email only for MVP. Simplest to implement with existing Swoosh.
-- **Your Answer:** _______________________
-- **Notes:** _______________________
+- **Your Answer:** ✅ **OPTION B - Email + in-app notifications**
+- **Notes:**
+  - **Email:** Via Swoosh (based on Q15 preferences)
+  - **In-app:** Notification system with:
+    - Notification bell icon in header
+    - Unread count badge
+    - Notification dropdown/panel
+    - Mark as read functionality
+  - Store notifications in database (notifications table)
+  - Defer Slack/webhook integrations to Phase 3
 
 **Q17: Form default settings?**
 - **Options:**
   - A) Global defaults (apply to all new forms): branding colors, fonts, post-submission message
   - B) Per-form settings only (no global defaults)
 - **Recommendation:** Option B - Per-form settings only. Global defaults add complexity.
-- **Your Answer:** _______________________
-- **Notes:** _______________________
+- **Your Answer:** ✅ **OPTION B - Per-form settings only**
+- **Notes:**
+  - Each form configured individually (branding, colors, post-submission message, etc.)
+  - Users can use form duplication (Q5) to create templates
+  - Simpler implementation, more flexible
+  - Can add global defaults in Phase 3 if users request it
 
 **Q18: Integration placeholders in settings?**
 - **Options:**
   - A) Show "Coming Soon" cards for Calendar and Chatbot integrations (with links to docs/roadmap)
   - B) Don't show anything about future integrations
 - **Recommendation:** Option A - Helps users understand the roadmap.
-- **Your Answer:** _______________________
-- **Notes:** _______________________
+- **Your Answer:** ✅ **OPTION A - Show "Coming Soon" cards**
+- **Notes:**
+  - Settings page includes "Integrations" section with:
+    - Calendar Integration (Coming Soon badge)
+    - Chatbot Integration (Coming Soon badge)
+  - Cards show feature description and "Planned for Q2 2025" or similar
+  - Optional: Link to roadmap or docs
+  - Sets user expectations, shows product vision
 
 ---
 
@@ -290,8 +344,21 @@ Answer these questions to finalize the MVP scope before creating specs.
   - B) 80% (comprehensive)
   - C) 60% (minimal acceptable)
 - **Recommendation:** Option A - 70% balances quality and speed.
-- **Your Answer:** _______________________
-- **Notes:** _______________________
+- **Your Answer:** ✅ **OPTION A - 70% coverage (pragmatic for MVP)**
+- **Notes:**
+  - Target 70% test coverage across the codebase
+  - Focus testing on critical paths:
+    - Multi-tenancy data isolation (company_id filtering)
+    - Form CRUD operations
+    - Submission handling and immutability
+    - Authorization policies (form roles, permissions)
+    - Data validation (server-side)
+  - Less critical for testing:
+    - UI edge cases
+    - Complex user workflows
+    - Non-critical UX features
+  - Realistic for 6-week MVP timeline
+  - Balances quality assurance with development velocity
 
 **Q20: Page load performance targets?**
 - **Options:**
@@ -299,8 +366,15 @@ Answer these questions to finalize the MVP scope before creating specs.
   - B) <500ms for dashboard, <1s for form builder (more complex)
   - C) <1s for all pages
 - **Recommendation:** Option B - Dashboard should be fast, form builder can be slightly slower.
-- **Your Answer:** _______________________
-- **Notes:** _______________________
+- **Your Answer:** ✅ **OPTION C - <1s for all pages**
+- **Notes:**
+  - Target: All pages load in under 1 second
+  - Simpler benchmark to track and measure
+  - Allows flexibility for complex UIs (form builder, analytics)
+  - Still provides good user experience
+  - Focus on optimized SQL queries (indexes on company_id, status, submitted_at)
+  - Monitor with Phoenix LiveDashboard in development
+  - If any page consistently exceeds 1s, optimize that specific page
 
 **Q21: Browser support?**
 - **Options:**
@@ -308,8 +382,16 @@ Answer these questions to finalize the MVP scope before creating specs.
   - B) Include IE11 support
   - C) Modern browsers + mobile Safari/Chrome (iOS/Android)
 - **Recommendation:** Option C - Modern browsers + mobile. Skip IE11 (EOL'd).
-- **Your Answer:** _______________________
-- **Notes:** _______________________
+- **Your Answer:** ✅ **OPTION C - Modern browsers + mobile**
+- **Notes:**
+  - **Desktop:** Last 2 versions of Chrome, Firefox, Safari, Edge
+  - **Mobile:** Safari (iOS), Chrome (Android)
+  - **No IE11 support** (EOL'd June 2022)
+  - Phoenix LiveView works well on modern mobile browsers
+  - Important for public form submissions (users may fill forms on mobile)
+  - No polyfills needed, smaller bundle size
+  - Test responsive design on mobile devices
+  - Use modern CSS features (Grid, Flexbox, CSS variables)
 
 **Q22: Track numbering convention?**
 - **Options:**
@@ -317,8 +399,16 @@ Answer these questions to finalize the MVP scope before creating specs.
   - B) Use MVP sequence (Track 1, 2, 3, 4) - sequential MVP numbering
   - C) Use descriptive names only (no track numbers in titles)
 - **Recommendation:** Option A - Consistency with folder structure.
-- **Your Answer:** _______________________
-- **Notes:** _______________________
+- **Your Answer:** ✅ **OPTION A - Use folder numbers (Track 2, 3, 4, 5)**
+- **Notes:**
+  - Track 01: Project Overview (not an implementation track)
+  - Track 02: Forms Dashboard - Primary (LiveView UI)
+  - Track 03: Forms Domain Models
+  - Track 04: Analytics & KPIs
+  - Track 05: Settings & Configuration
+  - Documentation uses "Track X" where X matches folder number
+  - Easy to navigate: "Track 3" → `20251115-03-forms-domain-models/`
+  - Update all track README titles to use this convention
 
 **Q23: Dependencies to add immediately?**
 - **Required:**
@@ -328,8 +418,17 @@ Answer these questions to finalize the MVP scope before creating specs.
   - Oban (background jobs)
 - **Question:** Add optional dependencies immediately, or wait until performance issues appear?
 - **Recommendation:** Wait until needed. Add Cachex/Oban only if dashboard >500ms.
-- **Your Answer:** _______________________
-- **Notes:** _______________________
+- **Your Answer:** ✅ **OPTION C - Wait until performance issues appear**
+- **Notes:**
+  - **Do NOT add for MVP:** Cachex, Oban
+  - Avoid premature optimization
+  - Keep dependency footprint minimal
+  - Add only when proven necessary:
+    - **Cachex:** Only if dashboard load time exceeds 1s (Q20 target)
+    - **Oban:** Only if background job processing becomes necessary
+  - Immediate email sending via Swoosh is sufficient for MVP (Q15)
+  - Consistent with Q8, Q9 decisions (optimize only if needed)
+  - Can easily add dependencies post-MVP if performance testing shows need
 
 ---
 
