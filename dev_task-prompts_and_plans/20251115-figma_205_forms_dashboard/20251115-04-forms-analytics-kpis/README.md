@@ -1,17 +1,20 @@
-# Track 6: Analytics & KPIs
+# Track 4: Analytics & KPIs (MVP)
 
 ## Overview
 
-Implement analytics calculations, metrics tracking, and data visualization for form performance and lead insights.
+Implement comprehensive analytics calculations, metrics tracking, and data visualization for form performance and lead insights.
 
 **Source:** `figma_src/205 Forms Dashboard/src/components/pages/FormsAnalytics.tsx`
 **Dependencies:** Track 2 (LiveView UI), Track 3 (Domain Models)
 **Estimated Time:** 1 week
 
+**MVP Scope:** All KPIs and analytics features included in MVP (per Q13 decision)
+
 ## Metrics to Track
 
-### Dashboard KPIs
-Global metrics shown on main dashboard
+### Dashboard KPIs (All Included in MVP)
+
+**Must-Have Metrics:**
 
 1. **Total Forms**
    - Count of all forms (draft + published)
@@ -21,13 +24,27 @@ Global metrics shown on main dashboard
    - Count of all form submissions
    - Change from previous period (%)
 
-3. **Active Users**
-   - Count of users who submitted forms in last 30 days
-   - Change from previous period (%)
-
-4. **Conversion Rate**
+3. **Conversion Rate**
    - (Submissions / Views) * 100
    - Change from previous period (%)
+
+**Nice-to-Have Metrics (All Included in MVP per Q13):**
+
+4. **Active Users**
+   - Unique submitters in last 30 days
+   - Change from previous period (%)
+
+5. **Average Completion Time**
+   - Calculated from form view to submission
+   - Helps identify forms that are too complex
+
+6. **Lead Source Tracking**
+   - UTM parameters from metadata
+   - Shows which campaigns drive submissions
+
+7. **Field Completion Analytics**
+   - Skip rate per field
+   - Identify problematic fields
 
 ### Per-Form Analytics
 Detailed metrics for individual forms
@@ -625,7 +642,35 @@ Reuse the `KpiCard` component from Track 2:
 
 ## Performance Optimization
 
-### Caching
+### MVP Approach (Per Q8, Q9, Q23 Decisions)
+
+**Start Simple - No Premature Optimization:**
+
+1. **Use Ash Aggregates for Real-Time Calculation**
+   - COUNT, SUM, AVG calculations via Ash
+   - Optimized SQL queries with proper indexes
+   - Target: <1s page load time (per Q20)
+
+2. **Required Indexes:**
+```sql
+-- Critical for query performance
+CREATE INDEX forms_company_id_index ON forms(company_id);
+CREATE INDEX submissions_company_id_index ON submissions(company_id);
+CREATE INDEX submissions_form_id_index ON submissions(form_id);
+CREATE INDEX submissions_status_index ON submissions(status);
+CREATE INDEX submissions_submitted_at_index ON submissions(submitted_at DESC);
+```
+
+3. **No Caching or Background Jobs in MVP**
+   - Skip Cachex (per Q9 decision)
+   - Skip Oban background jobs (per Q23 decision)
+   - Add only if performance testing shows page load >1s
+
+### Post-MVP Optimization (If Needed)
+
+If dashboard consistently exceeds 1s load time, add in this order:
+
+**Option 1: Add Cachex**
 ```elixir
 # Cache dashboard KPIs for 5 minutes
 def get_dashboard_kpis(user_id) do
@@ -635,26 +680,19 @@ def get_dashboard_kpis(user_id) do
 end
 ```
 
-### Background Jobs
-For expensive calculations, use Oban:
-
+**Option 2: Add Oban Background Jobs**
 ```elixir
 defmodule ClienttCrmApp.Workers.AnalyticsWorker do
   use Oban.Worker, queue: :analytics
 
   @impl Oban.Worker
   def perform(%Job{args: %{"user_id" => user_id}}) do
-    # Calculate and cache analytics
+    # Pre-calculate and cache analytics
     kpis = ClienttCrmApp.Analytics.calculate_kpis(user_id)
-
     Cachex.put(:analytics_cache, "kpis:#{user_id}", kpis)
-
     :ok
   end
 end
-
-# Schedule hourly
-Oban.insert!(AnalyticsWorker.new(%{user_id: user.id}, schedule_in: 3600))
 ```
 
 ## Testing
@@ -702,13 +740,22 @@ end
 
 ## Dependencies
 
-Add to `mix.exs`:
+**MVP Dependencies (Add if not present):**
 
 ```elixir
-{:cachex, "~> 3.6"},
-{:timex, "~> 3.7"}, # For date calculations
-{:oban, "~> 2.15"} # For background jobs (if not already present)
+{:timex, "~> 3.7"} # For date calculations
 ```
+
+**NOT Required for MVP (per Q23 decision):**
+```elixir
+# {:cachex, "~> 3.6"}  # Only add if performance testing shows need
+# {:oban, "~> 2.15"}   # Only add if background jobs become necessary
+```
+
+**Export Format (Per Q11, Q12 Decisions):**
+- CSV only for MVP
+- Export with filters: date range, status, deleted status
+- No Excel/PDF export in MVP (can add in Phase 3)
 
 ## Next Steps
 

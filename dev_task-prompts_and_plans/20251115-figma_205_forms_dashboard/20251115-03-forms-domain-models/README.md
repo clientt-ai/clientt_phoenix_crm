@@ -42,18 +42,42 @@ All Forms domain resources must implement role-based policies:
 
 ---
 
-## Ash Domains to Create
+## ⚠️ MVP Scope: Forms Domain ONLY
 
-### 1. Forms Domain
+**CRITICAL:** For MVP (Phase 2), implement **ONLY the Forms Domain** below. Calendar, Chatbot, and Integrations domains are future features (Phase 3+).
+
+---
+
+## MVP Resources to Implement
+
+### Forms Domain
 **File:** `lib/clientt_crm_app/forms.ex`
 
-Resources:
+**Implement these resources:**
 - `Form` - Form definitions and configuration
-- `FormField` - Individual form fields
+- `FormField` - Individual form fields (10 types: text, email, textarea, select, checkbox, radio, number, date, phone, URL)
 - `Submission` - Form submissions / lead data
-- `FormTemplate` - Reusable form templates (future)
 
-### 2. Calendars Domain (Track 4 detail)
+**Notes:**
+- Field types: Basic 6 + Advanced 4 (NO file upload in MVP)
+- Single-page forms only (no multi-page/steps)
+- No conditional logic in MVP
+- Basic validation only (required, format, min/max length/value)
+- Form duplication feature included
+- Multi-tenancy via `company_id` filtering
+
+### Analytics (Not a separate domain)
+Uses calculations and aggregates on Forms domain resources (see Track 4).
+
+---
+
+## Future Resources (Phase 3+ - Reference Only)
+
+**⚠️ DO NOT IMPLEMENT THESE IN MVP ⚠️**
+
+These are shown for reference and future planning only:
+
+### Calendars Domain (Future)
 **File:** `lib/clientt_crm_app/calendars.ex`
 
 Resources:
@@ -61,26 +85,27 @@ Resources:
 - `Availability` - Team member availability
 - `AvailabilityOverride` - Date-specific overrides
 
-### 3. Integrations Domain
+### Integrations Domain (Future)
 **File:** `lib/clientt_crm_app/integrations.ex`
 
 Resources:
 - `CalendarProvider` - Google/Outlook connections
 - `ChatbotSettings` - Chatbot configuration
 
-### 4. Chatbot Domain (Track 5 detail)
+### Chatbot Domain (Future)
 **File:** `lib/clientt_crm_app/chatbot.ex`
 
 Resources:
 - `Conversation` - Chat conversations
 - `Message` - Individual chat messages
 
-### 5. Analytics Domain (Track 6 detail)
-**File:** `lib/clientt_crm_app/analytics.ex`
-
-No separate resources - uses calculations and aggregates on existing resources.
-
 ## Database Schema
+
+---
+
+## MVP Schema (Implement Now)
+
+**These are the ONLY tables to create for MVP:**
 
 ### Forms Domain Tables
 
@@ -190,7 +215,20 @@ CREATE INDEX submissions_status_index ON submissions(status);
 CREATE INDEX submissions_submitted_at_index ON submissions(submitted_at DESC);
 ```
 
-### Calendars Domain Tables
+**Important Notes for MVP:**
+- Add `company_id UUID NOT NULL` to all tables for multi-tenancy
+- Add `company_id` indexes for query performance
+- Field types in MVP: text, email, tel, number, date, textarea, select, radio, checkbox, url (NO file upload)
+- No conditional_logic implemented in MVP (column exists but not used)
+- Submission status values: new, contacted, qualified, converted, spam
+
+---
+
+## Future Schema (Reference Only - DO NOT IMPLEMENT)
+
+**⚠️ These tables are for Phase 3+ planning only. Do not create these in MVP. ⚠️**
+
+### Calendars Domain Tables (Future)
 
 #### `calendar_bookings` table
 ```sql

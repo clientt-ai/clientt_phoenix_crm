@@ -41,7 +41,7 @@ Before implementing pages, review these required specifications:
 
 ---
 
-## Components to Convert
+## Components to Convert (MVP Scope)
 
 ### Priority 1: Core Pages (Week 1)
 1. **Dashboard Page** (284 lines) → `dashboard_live/index.ex`
@@ -51,18 +51,100 @@ Before implementing pages, review these required specifications:
 
 ### Priority 2: Forms Module Pages (Week 1-2)
 5. **Forms Analytics** (633 lines) → `forms_live/analytics.ex`
-6. **Calendar Integration Page** (231 lines) → `calendar_live/index.ex`
-7. **Chatbot Page** (781 lines) → `chatbot_live/index.ex`
+6. **Form Details/Submissions** → `forms_live/show.ex`
 
 ### Priority 3: Settings & Configuration (Week 2)
-8. **Settings Page** (1020 lines) → `settings_live/index.ex`
-9. **Team Calendar Page** (404 lines) → `settings_live/team_calendar.ex`
-10. **Notifications Page** (288 lines) → `notifications_live/index.ex`
+7. **Settings Page** (with MVP tabs) → `settings_live/index.ex`
+   - User Profile tab (links to existing auth)
+   - Notification Preferences tab
+   - Integrations tab (with "Coming Soon" placeholders)
+8. **Notifications** (in-app notification system) → `notifications_live/index.ex`
 
-### Priority 4: Supporting Pages (Week 2)
-11. **Calendar Builder** (321 lines) → `calendar_live/builder.ex`
-12. **Contacts Page** (836 lines) → `contacts_live/index.ex`
-13. **Contacts Analytics** (616 lines) → `contacts_live/analytics.ex`
+## Coming Soon Features (Post-MVP)
+
+These features are **not implemented** in MVP but show as disabled/placeholder UI:
+
+- **Calendar Integration** - Shows "Coming Soon" card in Settings → Integrations
+- **Chatbot Widget** - Shows "Coming Soon" card in Settings → Integrations
+- **Team Calendar** - Not included in MVP navigation
+- **Contacts Module** - Future CRM feature
+
+## Coming Soon Placeholder Patterns
+
+### How to Show Future Features
+
+For calendar and chatbot features that are not in MVP, implement placeholder UI to set user expectations:
+
+#### 1. Settings Integration Cards
+
+```heex
+<!-- In Settings → Integrations tab -->
+<div class="bg-card rounded-2xl border p-6 opacity-60 cursor-not-allowed">
+  <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center gap-3">
+      <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+        <.icon name="hero-calendar" class="w-6 h-6 text-primary" />
+      </div>
+      <div>
+        <h3 class="font-semibold">Calendar Integration</h3>
+        <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-800">
+          Coming Soon
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <p class="text-sm text-muted-foreground mb-4">
+    Connect Google Calendar or Outlook to enable automated booking from forms.
+    Planned for Phase 3.
+  </p>
+
+  <button class="btn btn-outline" disabled>
+    Connect Calendar (Coming Soon)
+  </button>
+</div>
+```
+
+#### 2. Disabled Sidebar Navigation Items
+
+```heex
+<!-- In sidebar component -->
+<div class="opacity-50 cursor-not-allowed" title="Coming in Phase 3">
+  <.icon name="hero-calendar" class="w-5 h-5" />
+  <span>Calendar</span>
+  <span class="ml-auto text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+    Soon
+  </span>
+</div>
+```
+
+#### 3. Form Settings Placeholders
+
+```heex
+<!-- In Form Builder → Post-Submission Actions -->
+<div class="space-y-2">
+  <label>
+    <input type="radio" name="post_submission_action" value="redirect" />
+    Redirect to URL
+  </label>
+
+  <label class="opacity-50 cursor-not-allowed">
+    <input type="radio" name="post_submission_action" value="book_demo" disabled />
+    Book a Demo (Calendar integration required - Coming Soon)
+  </label>
+
+  <label class="opacity-50 cursor-not-allowed">
+    <input type="radio" name="post_submission_action" value="open_chatbot" disabled />
+    Open Chatbot (Coming Soon)
+  </label>
+</div>
+```
+
+### Important Notes:
+- Never show navigation items for features that don't exist in current phase
+- Always indicate "Coming Soon" or "Planned for Phase 3" clearly
+- Disable interactive elements (buttons, links) for future features
+- Use tooltips to explain when feature will be available
 
 ## Sub-Tasks
 
@@ -72,7 +154,7 @@ See individual files in this folder:
 - `03-form-builder-page.md` - Form builder interface
 - `04-sidebar-navigation.md` - Modular sidebar system
 - `05-analytics-pages.md` - Analytics visualizations
-- `06-settings-pages.md` - Settings and configuration
+- `06-settings-pages.md` - Settings and configuration (MVP scope)
 - `07-shared-components.md` - Reusable UI components
 - `08-styling-guide.md` - Tailwind CSS conversion guide
 - `09-testing-plan.md` - LiveView testing strategy
@@ -115,43 +197,35 @@ See individual files in this folder:
 | Client validation | Server-side validation primary |
 | onChange handlers | `handle_event("validate", ...)` |
 
-## File Structure to Create
+## File Structure to Create (MVP Scope)
 
 ```
 lib/clientt_crm_app_web/
 ├── live/
 │   ├── dashboard_live/
-│   │   └── index.ex                    # Dashboard overview
+│   │   └── index.ex                    # Dashboard overview with KPIs
 │   ├── forms_live/
 │   │   ├── index.ex                    # Forms listing
-│   │   ├── show.ex                     # Form details
+│   │   ├── show.ex                     # Form details + submissions
 │   │   ├── form_builder.ex             # Form builder
 │   │   ├── analytics.ex                # Forms analytics
 │   │   └── components/
 │   │       ├── form_card.ex            # Form preview card
 │   │       └── field_editor.ex         # Field editor component
-│   ├── calendar_live/
-│   │   ├── index.ex                    # Calendar integration overview
-│   │   ├── builder.ex                  # Calendar builder
-│   │   └── booking.ex                  # Booking widget (Track 4)
-│   ├── chatbot_live/
-│   │   ├── index.ex                    # Conversations list
-│   │   ├── show.ex                     # Conversation details
-│   │   └── widget.ex                   # Chatbot widget (Track 5)
 │   ├── settings_live/
-│   │   ├── index.ex                    # Settings overview
-│   │   ├── integrations.ex             # Integrations settings
-│   │   └── team_calendar.ex            # Team calendar settings
+│   │   └── index.ex                    # Settings (profile, notifications, integrations placeholders)
 │   ├── notifications_live/
-│   │   └── index.ex                    # Notifications
-│   └── contacts_live/                  # (Future CRM module)
-│       ├── index.ex
-│       └── analytics.ex
+│   │   └── index.ex                    # In-app notifications
+│   └── (Future modules - not implemented in MVP)
+│       ├── calendar_live/              # Phase 3+
+│       ├── chatbot_live/               # Phase 3+
+│       └── contacts_live/              # Future CRM
 └── components/
-    ├── sidebar.ex                      # Main navigation sidebar
+    ├── sidebar.ex                      # Main navigation sidebar (role-based)
     ├── kpi_card.ex                     # KPI stat card
     ├── breadcrumb.ex                   # Breadcrumb navigation
     ├── stats_chart.ex                  # Charts for analytics
+    ├── notification_bell.ex            # Notification bell icon with badge
     └── ui/
         ├── card.ex                     # Card container
         ├── button.ex                   # Button variants
