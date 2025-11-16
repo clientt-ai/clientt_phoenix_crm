@@ -114,6 +114,21 @@ defmodule ClienttCrmApp.Factory do
     field_type = attrs[:field_type] || :text
     label = attrs[:label] || "Field #{System.unique_integer([:positive])}"
 
+    # For select/radio types, ensure options are provided or use defaults
+    options =
+      if attrs[:options] do
+        attrs[:options]
+      else
+        if field_type in [:select, :radio] do
+          [
+            %{label: "Option 1", value: "opt1"},
+            %{label: "Option 2", value: "opt2"}
+          ]
+        else
+          []
+        end
+      end
+
     field_attrs = %{
       form_id: form.id,
       field_type: field_type,
@@ -122,7 +137,7 @@ defmodule ClienttCrmApp.Factory do
       help_text: attrs[:help_text],
       required: attrs[:required] || false,
       order_position: attrs[:order_position] || 0,
-      options: attrs[:options] || [],
+      options: options,
       validation_rules: attrs[:validation_rules] || %{}
     }
 
