@@ -31,16 +31,16 @@
           "global": null,
           "strategy": null
         },
-        "name": "authz_teams_company_id_fkey",
+        "name": "notifications_user_id_fkey",
         "on_delete": null,
         "on_update": null,
         "primary_key?": true,
         "schema": "public",
-        "table": "authz_companies"
+        "table": "authz_users"
       },
       "scale": null,
       "size": null,
-      "source": "company_id",
+      "source": "user_id",
       "type": "uuid"
     },
     {
@@ -52,7 +52,19 @@
       "references": null,
       "scale": null,
       "size": null,
-      "source": "name",
+      "source": "type",
+      "type": "text"
+    },
+    {
+      "allow_nil?": false,
+      "default": "nil",
+      "generated?": false,
+      "precision": null,
+      "primary_key?": false,
+      "references": null,
+      "scale": null,
+      "size": null,
+      "source": "title",
       "type": "text"
     },
     {
@@ -64,20 +76,44 @@
       "references": null,
       "scale": null,
       "size": null,
-      "source": "description",
+      "source": "message",
       "type": "text"
     },
     {
-      "allow_nil?": false,
-      "default": "\"active\"",
+      "allow_nil?": true,
+      "default": "nil",
       "generated?": false,
       "precision": null,
       "primary_key?": false,
       "references": null,
       "scale": null,
       "size": null,
-      "source": "status",
+      "source": "link",
       "type": "text"
+    },
+    {
+      "allow_nil?": true,
+      "default": "%{}",
+      "generated?": false,
+      "precision": null,
+      "primary_key?": false,
+      "references": null,
+      "scale": null,
+      "size": null,
+      "source": "metadata",
+      "type": "map"
+    },
+    {
+      "allow_nil?": true,
+      "default": "nil",
+      "generated?": false,
+      "precision": null,
+      "primary_key?": false,
+      "references": null,
+      "scale": null,
+      "size": null,
+      "source": "read_at",
+      "type": "utc_datetime_usec"
     },
     {
       "allow_nil?": false,
@@ -109,27 +145,8 @@
   "custom_indexes": [],
   "custom_statements": [],
   "has_create_action": true,
-  "hash": "942B6A9B78CD3857609EDEB4A2926A4E189340CDD15A12071F0BF4BF6ED1664A",
-  "identities": [
-    {
-      "all_tenants?": false,
-      "base_filter": null,
-      "index_name": "authz_teams_unique_name_per_company_index",
-      "keys": [
-        {
-          "type": "atom",
-          "value": "company_id"
-        },
-        {
-          "type": "atom",
-          "value": "name"
-        }
-      ],
-      "name": "unique_name_per_company",
-      "nils_distinct?": true,
-      "where": null
-    }
-  ],
+  "hash": "0A82A8A3DC0B0316D8C2EAF7C692DA1E65233C5C1D67EBB70436AB9B3131BD7B",
+  "identities": [],
   "multitenancy": {
     "attribute": null,
     "global": null,
@@ -137,5 +154,5 @@
   },
   "repo": "Elixir.ClienttCrmApp.Repo",
   "schema": null,
-  "table": "authz_teams"
+  "table": "notifications"
 }

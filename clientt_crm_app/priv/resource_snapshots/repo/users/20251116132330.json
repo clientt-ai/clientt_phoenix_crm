@@ -21,11 +21,11 @@
       "references": null,
       "scale": null,
       "size": null,
-      "source": "name",
-      "type": "text"
+      "source": "email",
+      "type": "citext"
     },
     {
-      "allow_nil?": false,
+      "allow_nil?": true,
       "default": "nil",
       "generated?": false,
       "precision": null,
@@ -33,19 +33,7 @@
       "references": null,
       "scale": null,
       "size": null,
-      "source": "slug",
-      "type": "text"
-    },
-    {
-      "allow_nil?": false,
-      "default": "\"active\"",
-      "generated?": false,
-      "precision": null,
-      "primary_key?": false,
-      "references": null,
-      "scale": null,
-      "size": null,
-      "source": "status",
+      "source": "hashed_password",
       "type": "text"
     },
     {
@@ -57,31 +45,7 @@
       "references": null,
       "scale": null,
       "size": null,
-      "source": "settings_id",
-      "type": "uuid"
-    },
-    {
-      "allow_nil?": false,
-      "default": "fragment(\"(now() AT TIME ZONE 'utc')\")",
-      "generated?": false,
-      "precision": null,
-      "primary_key?": false,
-      "references": null,
-      "scale": null,
-      "size": null,
-      "source": "created_at",
-      "type": "utc_datetime_usec"
-    },
-    {
-      "allow_nil?": false,
-      "default": "fragment(\"(now() AT TIME ZONE 'utc')\")",
-      "generated?": false,
-      "precision": null,
-      "primary_key?": false,
-      "references": null,
-      "scale": null,
-      "size": null,
-      "source": "updated_at",
+      "source": "confirmed_at",
       "type": "utc_datetime_usec"
     }
   ],
@@ -90,19 +54,19 @@
   "custom_indexes": [],
   "custom_statements": [],
   "has_create_action": true,
-  "hash": "4A5487115491578F69E9830AE7B5A02B5CD58857E1C5E8583666DAAD1EAD623F",
+  "hash": "F176459636D99C7BD1B0A2FB2806B58222DE2C313EFC11DC50DA96337796050B",
   "identities": [
     {
       "all_tenants?": false,
       "base_filter": null,
-      "index_name": "authz_companies_unique_slug_index",
+      "index_name": "users_unique_email_index",
       "keys": [
         {
           "type": "atom",
-          "value": "slug"
+          "value": "email"
         }
       ],
-      "name": "unique_slug",
+      "name": "unique_email",
       "nils_distinct?": true,
       "where": null
     }
@@ -114,5 +78,5 @@
   },
   "repo": "Elixir.ClienttCrmApp.Repo",
   "schema": null,
-  "table": "authz_companies"
+  "table": "users"
 }
