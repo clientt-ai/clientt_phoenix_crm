@@ -13,7 +13,7 @@ test.describe('FM-SC-008: Form Field Type Validation', () => {
 
   test.beforeEach(async ({ page }) => {
     // Login to the application
-    await page.goto('/login');
+    await page.goto('/sign-in');
     await page.fill('[data-testid="email-input"]', 'admin@example.com');
     await page.fill('[data-testid="password-input"]', 'password123');
     await page.click('[data-testid="login-button"]');
