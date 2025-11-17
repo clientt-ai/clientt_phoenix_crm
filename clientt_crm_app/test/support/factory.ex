@@ -13,7 +13,7 @@ defmodule ClienttCrmApp.Factory do
     password = attrs[:password] || "Password123!@#"
 
     {:ok, user} =
-      Accounts.User
+      Accounts.AuthnUser
       |> Ash.Changeset.for_create(:register_with_password, %{
         email: email,
         password: password,

@@ -342,29 +342,32 @@ notifications.user_id → authz_users.id (ON DELETE CASCADE)
 
 ## 5. Naming and Convention Issues
 
-### ⚠️ ISSUE #8: Inconsistent Use of "authn_user" vs "User"
+### ✅ RESOLVED #8: Inconsistent Use of "authn_user" vs "User"
 
 **Severity**: Low
 **Location**: Cross-domain references
+**Status**: RESOLVED (2025-11-17)
 
 **Description**:
-Authorization domain consistently uses "authn_user" terminology, but Forms domain references are inconsistent:
+Authorization domain consistently uses "authn_user" terminology, but Forms domain references were inconsistent.
 
-**Authorization Domain** (consistent):
+**Resolution**:
+- Renamed `ClienttCrmApp.Accounts.User` module to `ClienttCrmApp.Accounts.AuthnUser`
+- Renamed `users` table to `authn_users`
+- Updated all references throughout codebase
+- Migration: `20251117074533_rename_users_to_authn_users.exs`
+
+**Implementation**:
 ```elixir
-# Always uses authn_user
-authn_user_id: "uuid"  # FK to users table
-```
+# Module name
+ClienttCrmApp.Accounts.AuthnUser
 
-**Forms Domain** (inconsistent):
-```
-- Sometimes: "authn_user" (in domain.md)
-- Sometimes: "User" (in policies)
-- Sometimes: "authentication user"
-```
+# Table name
+table "authn_users"
 
-**Recommendation**:
-Standardize on "authn_user" across all specs to match implemented Authorization domain.
+# Relationship
+belongs_to :authn_user, ClienttCrmApp.Accounts.AuthnUser
+```
 
 ---
 

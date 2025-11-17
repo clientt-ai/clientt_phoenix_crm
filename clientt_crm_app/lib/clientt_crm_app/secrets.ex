@@ -3,7 +3,7 @@ defmodule ClienttCrmApp.Secrets do
 
   def secret_for(
         [:authentication, :tokens, :signing_secret],
-        ClienttCrmApp.Accounts.User,
+        ClienttCrmApp.Accounts.AuthnUser,
         _opts,
         _context
       ) do

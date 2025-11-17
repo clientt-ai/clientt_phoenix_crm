@@ -6,12 +6,12 @@
 
 ## Purpose
 
-The Authorization domain references User (authn_user) from the Accounts domain to link authentication identity with company-scoped authorization identities. This integration enables users to have a single login (authn_user) while maintaining separate authorization contexts (authz_users) for each company they belong to.
+The Authorization domain references AuthnUser from the Accounts domain to link authentication identity with company-scoped authorization identities. This integration enables users to have a single login (authn_user) while maintaining separate authorization contexts (authz_users) for each company they belong to.
 
 ## Integration Pattern
 
 **Pattern**: Foreign Key Reference + Event Subscription
-- Authorization domain consumes Accounts.User as a read-only reference
+- Authorization domain consumes Accounts.AuthnUser as a read-only reference
 - Authorization domain subscribes to user lifecycle events
 - No circular dependencies (one-way relationship)
 
@@ -24,7 +24,7 @@ The Authorization domain references User (authn_user) from the Accounts domain t
 - Publish user lifecycle events
 
 **Provides**:
-- User identity (authn_user)
+- AuthnUser identity
 - Email address
 - Account status (confirmed, locked)
 
@@ -43,14 +43,14 @@ The Authorization domain references User (authn_user) from the Accounts domain t
 
 ## Data Contract
 
-### Reference: AuthzUser → User (authn_user)
+### Reference: AuthzUser → AuthnUser
 
 **Foreign Key**:
 ```sql
 ALTER TABLE authz_users
   ADD CONSTRAINT fk_authz_users_authn_user
   FOREIGN KEY (authn_user_id)
-  REFERENCES users(id)
+  REFERENCES authn_users(id)
   ON DELETE CASCADE;
 ```
 
@@ -58,7 +58,7 @@ ALTER TABLE authz_users
 ```elixir
 # In AuthzUser resource
 relationships do
-  belongs_to :authn_user, ClienttCrmApp.Accounts.User do
+  belongs_to :authn_user, ClienttCrmApp.Accounts.AuthnUser do
     source_attribute :authn_user_id
     destination_attribute :id
     allow_nil? false
@@ -75,18 +75,18 @@ end
 
 The Authorization domain translates Accounts concepts into its own domain language:
 
-| Accounts Field     | Authorization Field | Transform              | Notes                          |
-|--------------------|---------------------|------------------------|--------------------------------|
-| users.id           | authz_users.authn_user_id | direct reference   | Immutable after creation       |
-| users.email        | (calculated)        | loaded via relationship| Read-only, displayed to users  |
-| users.confirmed_at | (not used)          | -                      | May use for eligibility checks |
-| users.locked_at    | (not used)          | -                      | Future: prevent company access |
+| Accounts Field           | Authorization Field | Transform              | Notes                          |
+|--------------------------|---------------------|------------------------|--------------------------------|
+| authn_users.id           | authz_users.authn_user_id | direct reference   | Immutable after creation       |
+| authn_users.email        | (calculated)        | loaded via relationship| Read-only, displayed to users  |
+| authn_users.confirmed_at | (not used)          | -                      | May use for eligibility checks |
+| authn_users.locked_at    | (not used)          | -                      | Future: prevent company access |
 
 ### Terminology Translation
 
 | Accounts Term      | Authorization Term  | Mapping                                    |
 |--------------------|---------------------|---------------------------------------------|
-| User               | authn_user          | Authentication identity (who you are)       |
+| AuthnUser          | authn_user          | Authentication identity (who you are)       |
 | -                  | authz_user          | Authorization identity (what you can do)    |
 | Email              | Email               | Same concept (loaded from authn_user)       |
 | Login              | -                   | Handled by Accounts only                    |
@@ -264,7 +264,7 @@ AuthzUser
     authn_user_id: "user-uuid",
     company_id: "company-uuid",
     role: :admin,
-    authn_user: %User{
+    authn_user: %AuthnUser{
       id: "user-uuid",
       email: "user@example.com"
     }
@@ -279,7 +279,7 @@ calculate :email, :string do
   calculation fn records, _context ->
     # Batch load authn_users
     authn_user_ids = Enum.map(records, & &1.authn_user_id)
-    authn_users = Accounts.User.get_by_ids(authn_user_ids)
+    authn_users = Accounts.AuthnUser.get_by_ids(authn_user_ids)
     authn_user_map = Map.new(authn_users, &{&1.id, &1})
 
     Enum.map(records, fn authz_user ->
@@ -296,7 +296,7 @@ end
 **Query**:
 ```elixir
 # Find all companies for user "alice@example.com"
-authn_user = Accounts.User.get_by_email!("alice@example.com")
+authn_user = Accounts.AuthnUser.get_by_email!("alice@example.com")
 
 authz_users =
   AuthzUser
@@ -368,7 +368,7 @@ ALTER TABLE authz_users
 
 **Migration Script** (pseudo-code):
 ```elixir
-for user <- Accounts.User.list_all!() do
+for user <- Accounts.AuthnUser.list_all!() do
   # Create default company
   company = Authorization.Company.create!(%{
     name: "#{user.email}'s Organization",

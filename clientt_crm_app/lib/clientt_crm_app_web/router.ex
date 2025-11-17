@@ -54,7 +54,7 @@ defmodule ClienttCrmAppWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
-    auth_routes AuthController, ClienttCrmApp.Accounts.User, path: "/auth"
+    auth_routes AuthController, ClienttCrmApp.Accounts.AuthnUser, path: "/auth"
     sign_out_route AuthController
 
     # Public form submission (no auth required)
@@ -78,7 +78,7 @@ defmodule ClienttCrmAppWeb.Router do
                 ]
 
     # Remove this if you do not use the confirmation strategy
-    confirm_route ClienttCrmApp.Accounts.User, :confirm_new_user,
+    confirm_route ClienttCrmApp.Accounts.AuthnUser, :confirm_new_user,
       auth_routes_prefix: "/auth",
       overrides: [
         ClienttCrmAppWeb.AuthOverrides,
@@ -86,7 +86,7 @@ defmodule ClienttCrmAppWeb.Router do
       ]
 
     # Remove this if you do not use the magic link strategy.
-    magic_sign_in_route(ClienttCrmApp.Accounts.User, :magic_link,
+    magic_sign_in_route(ClienttCrmApp.Accounts.AuthnUser, :magic_link,
       auth_routes_prefix: "/auth",
       overrides: [
         ClienttCrmAppWeb.AuthOverrides,

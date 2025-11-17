@@ -195,7 +195,7 @@ defmodule ClienttCrmApp.Authorization.AuthzUser do
   end
 
   relationships do
-    belongs_to :authn_user, ClienttCrmApp.Accounts.User do
+    belongs_to :authn_user, ClienttCrmApp.Accounts.AuthnUser do
       source_attribute :authn_user_id
       destination_attribute :id
       allow_nil? false

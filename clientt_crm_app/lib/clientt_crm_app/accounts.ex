@@ -4,6 +4,6 @@ defmodule ClienttCrmApp.Accounts do
 
   resources do
     resource ClienttCrmApp.Accounts.Token
-    resource ClienttCrmApp.Accounts.User
+    resource ClienttCrmApp.Accounts.AuthnUser
   end
 end
