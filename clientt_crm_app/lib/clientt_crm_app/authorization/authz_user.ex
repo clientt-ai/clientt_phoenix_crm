@@ -153,7 +153,7 @@ defmodule ClienttCrmApp.Authorization.AuthzUser do
     attribute :role, :atom do
       allow_nil? false
       public? true
-      constraints one_of: [:admin, :manager, :user]
+      constraints one_of: [:admin, :manager, :user, :form_admin]
     end
 
     attribute :team_id, :uuid do
