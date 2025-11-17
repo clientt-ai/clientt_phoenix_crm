@@ -12,15 +12,19 @@ test.describe('FM-SC-001: Create New Form Successfully', () => {
   test.beforeEach(async ({ page }) => {
     // Login to the application
     await page.goto('/sign-in');
-    await page.fill('input[type="email"]', 'sample_admin@clientt.com');
-    await page.fill('input[type="password"]', 'SampleAdmin123!');
-    await page.click('button:has-text("Sign in")');
+    await page.fill('input[name="authn-user[email]"]', 'sample_admin@clientt.com');
+    await page.fill('input[name="authn-user[password]"]', 'SampleAdmin123!');
+    await page.click('form:has(input[name="authn-user[email]"]) button[type="submit"]');
 
-    // Wait for redirect after login (expect to go to / or stay on /sign-in with success message)
-    await page.waitForTimeout(2000);
+    // Wait for authentication to complete
+    await page.waitForSelector('text=You are now signed in', { timeout: 5000 });
+    await page.waitForLoadState('networkidle');
 
-    // Navigate directly to forms page after login
+
+
+    // Navigate to forms page
     await page.goto("/forms");
+    await page.waitForLoadState('networkidle');
   });
 
   test('should create a new form with valid data', async ({ page }) => {
