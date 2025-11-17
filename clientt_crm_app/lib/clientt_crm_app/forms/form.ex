@@ -30,7 +30,7 @@ defmodule ClienttCrmApp.Forms.Form do
     authorizers: [Ash.Policy.Authorizer]
 
   postgres do
-    table "forms"
+    table "forms_forms"
     repo ClienttCrmApp.Repo
   end
 

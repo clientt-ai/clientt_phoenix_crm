@@ -14,6 +14,7 @@ Represents an individual input field within a form. Defines the field type, labe
 | Attribute | Type | Required | Validation | Description |
 |-----------|------|----------|------------|-------------|
 | id | uuid | Yes | - | Unique identifier |
+| company_id | uuid | Yes | valid Company id | Company reference (duplicative for debugging) |
 | form_id | uuid | Yes | valid Form id | Parent form reference |
 | field_type | enum | Yes | one of 10 types (see below) | Type of input field |
 | label | string | Yes | min: 1, max: 100 | Field display label |
@@ -448,9 +449,10 @@ Fields inherit company context from parent Form - no separate company_id needed.
 ## Database Schema
 
 ```sql
-CREATE TABLE form_fields (
+CREATE TABLE forms_fields (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  form_id UUID NOT NULL REFERENCES forms(id) ON DELETE CASCADE,
+  company_id UUID NOT NULL REFERENCES authz_companies(id) ON DELETE CASCADE,
+  form_id UUID NOT NULL REFERENCES forms_forms(id) ON DELETE CASCADE,
   field_type VARCHAR(20) NOT NULL,
   label VARCHAR(100) NOT NULL,
   placeholder VARCHAR(200),
@@ -462,17 +464,18 @@ CREATE TABLE form_fields (
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
 
-  CONSTRAINT form_fields_type_check CHECK (
+  CONSTRAINT forms_fields_type_check CHECK (
     field_type IN ('text', 'email', 'textarea', 'select', 'checkbox', 'radio',
                    'number', 'date', 'phone', 'url')
   ),
-  CONSTRAINT form_fields_position_check CHECK (position > 0),
-  CONSTRAINT form_fields_position_unique UNIQUE (form_id, position)
+  CONSTRAINT forms_fields_position_check CHECK (position > 0),
+  CONSTRAINT forms_fields_position_unique UNIQUE (form_id, position)
 );
 
 -- Indexes for performance
-CREATE INDEX form_fields_form_id_index ON form_fields(form_id);
-CREATE INDEX form_fields_position_index ON form_fields(form_id, position);
+CREATE INDEX forms_fields_company_id_index ON forms_fields(company_id);
+CREATE INDEX forms_fields_form_id_index ON forms_fields(form_id);
+CREATE INDEX forms_fields_position_index ON forms_fields(form_id, position);
 ```
 
 ## Example Usage

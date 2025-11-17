@@ -451,10 +451,10 @@ Submission
 ## Database Schema
 
 ```sql
-CREATE TABLE submissions (
+CREATE TABLE forms_submissions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   company_id UUID NOT NULL REFERENCES authz_companies(id) ON DELETE CASCADE,
-  form_id UUID NOT NULL REFERENCES forms(id) ON DELETE RESTRICT,
+  form_id UUID NOT NULL REFERENCES forms_forms(id) ON DELETE RESTRICT,
   form_data JSONB NOT NULL,
   metadata JSONB DEFAULT '{}',
   status VARCHAR(20) NOT NULL DEFAULT 'new',
@@ -463,24 +463,24 @@ CREATE TABLE submissions (
   deleted_at TIMESTAMP WITH TIME ZONE,
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
 
-  CONSTRAINT submissions_status_check CHECK (
+  CONSTRAINT forms_submissions_status_check CHECK (
     status IN ('new', 'contacted', 'qualified', 'converted', 'spam')
   ),
-  CONSTRAINT submissions_data_size_check CHECK (
+  CONSTRAINT forms_submissions_data_size_check CHECK (
     octet_length(form_data::text) < 102400  -- 100KB limit
   )
 );
 
 -- Critical indexes for multi-tenancy and performance
-CREATE INDEX submissions_company_id_index ON submissions(company_id);
-CREATE INDEX submissions_form_id_index ON submissions(form_id);
-CREATE INDEX submissions_status_index ON submissions(status);
-CREATE INDEX submissions_submitted_at_index ON submissions(submitted_at DESC);
-CREATE INDEX submissions_deleted_at_index ON submissions(deleted_at) WHERE deleted_at IS NOT NULL;
-CREATE INDEX submissions_submitter_email_index ON submissions(submitter_email);
+CREATE INDEX forms_submissions_company_id_index ON forms_submissions(company_id);
+CREATE INDEX forms_submissions_form_id_index ON forms_submissions(form_id);
+CREATE INDEX forms_submissions_status_index ON forms_submissions(status);
+CREATE INDEX forms_submissions_submitted_at_index ON forms_submissions(submitted_at DESC);
+CREATE INDEX forms_submissions_deleted_at_index ON forms_submissions(deleted_at) WHERE deleted_at IS NOT NULL;
+CREATE INDEX forms_submissions_submitter_email_index ON forms_submissions(submitter_email);
 
 -- JSONB GIN indexes for metadata queries
-CREATE INDEX submissions_metadata_gin ON submissions USING gin(metadata);
+CREATE INDEX forms_submissions_metadata_gin ON forms_submissions USING gin(metadata);
 ```
 
 ## Example Usage

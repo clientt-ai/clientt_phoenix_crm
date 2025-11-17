@@ -252,7 +252,7 @@ defmodule ClienttCrmApp.Forms.FormTest do
       {:ok, form_id_binary} = Ecto.UUID.dump(form.id)
 
       ClienttCrmApp.Repo.update_all(
-        from(f in "forms", where: f.id == ^form_id_binary),
+        from(f in "forms_forms", where: f.id == ^form_id_binary),
         set: [view_count: 100, submission_count: 25]
       )
 
