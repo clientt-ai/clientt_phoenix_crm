@@ -39,7 +39,7 @@ defmodule ClienttCrmApp.Forms.FormField do
     authorizers: [Ash.Policy.Authorizer]
 
   postgres do
-    table "form_fields"
+    table "forms_fields"
     repo ClienttCrmApp.Repo
   end
 
@@ -62,11 +62,16 @@ defmodule ClienttCrmApp.Forms.FormField do
       change fn changeset, _context ->
         form_id = Ash.Changeset.get_argument(changeset, :form_id)
 
+        # Load form to get company_id and validate status
+        form = ClienttCrmApp.Forms.Form |> Ash.get!(form_id)
+
         # Validate form is in draft status
         # TODO: Once Form resource is fully integrated, validate status
         # For now, allow creating fields
 
-        Ash.Changeset.force_change_attribute(changeset, :form_id, form_id)
+        changeset
+        |> Ash.Changeset.force_change_attribute(:form_id, form_id)
+        |> Ash.Changeset.force_change_attribute(:company_id, form.company_id)
       end
 
       # Validate select/radio types have options
@@ -146,6 +151,11 @@ defmodule ClienttCrmApp.Forms.FormField do
   attributes do
     uuid_primary_key :id
 
+    attribute :company_id, :uuid do
+      allow_nil? false
+      public? true
+    end
+
     attribute :form_id, :uuid do
       allow_nil? false
       public? true
@@ -221,6 +231,12 @@ defmodule ClienttCrmApp.Forms.FormField do
   end
 
   relationships do
+    belongs_to :company, ClienttCrmApp.Authorization.Company do
+      source_attribute :company_id
+      destination_attribute :id
+      allow_nil? false
+    end
+
     belongs_to :form, ClienttCrmApp.Forms.Form do
       source_attribute :form_id
       destination_attribute :id

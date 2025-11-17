@@ -346,7 +346,7 @@ end
 ## Database Schema
 
 ```sql
-CREATE TABLE forms (
+CREATE TABLE forms_forms (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   company_id UUID NOT NULL REFERENCES authz_companies(id) ON DELETE CASCADE,
   name VARCHAR(100) NOT NULL,
@@ -360,17 +360,17 @@ CREATE TABLE forms (
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
 
-  CONSTRAINT forms_status_check CHECK (status IN ('draft', 'published', 'archived')),
-  CONSTRAINT forms_name_company_unique UNIQUE (company_id, name),
-  CONSTRAINT forms_slug_company_unique UNIQUE (company_id, slug)
+  CONSTRAINT forms_forms_status_check CHECK (status IN ('draft', 'published', 'archived')),
+  CONSTRAINT forms_forms_name_company_unique UNIQUE (company_id, name),
+  CONSTRAINT forms_forms_slug_company_unique UNIQUE (company_id, slug)
 );
 
 -- Indexes for performance
-CREATE INDEX forms_company_id_index ON forms(company_id);
-CREATE INDEX forms_status_index ON forms(status);
-CREATE INDEX forms_slug_index ON forms(slug);
-CREATE INDEX forms_created_by_index ON forms(created_by);
-CREATE INDEX forms_published_at_index ON forms(published_at DESC) WHERE published_at IS NOT NULL;
+CREATE INDEX forms_forms_company_id_index ON forms_forms(company_id);
+CREATE INDEX forms_forms_status_index ON forms_forms(status);
+CREATE INDEX forms_forms_slug_index ON forms_forms(slug);
+CREATE INDEX forms_forms_created_by_index ON forms_forms(created_by);
+CREATE INDEX forms_forms_published_at_index ON forms_forms(published_at DESC) WHERE published_at IS NOT NULL;
 ```
 
 ## Example Usage
