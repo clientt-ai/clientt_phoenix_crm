@@ -25,11 +25,29 @@ import {LiveSocket} from "phoenix_live_view"
 import {hooks as colocatedHooks} from "phoenix-colocated/clientt_crm_app"
 import topbar from "../vendor/topbar"
 
+// Custom hooks
+const Hooks = {}
+
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
-  hooks: {...colocatedHooks},
+  hooks: {...colocatedHooks, ...Hooks},
+})
+
+// Handle CSV download
+window.addEventListener("phx:download_csv", (e) => {
+  const {content, filename} = e.detail
+  const blob = new Blob([content], {type: 'text/csv;charset=utf-8;'})
+  const link = document.createElement("a")
+  const url = URL.createObjectURL(blob)
+  link.setAttribute("href", url)
+  link.setAttribute("download", filename)
+  link.style.visibility = 'hidden'
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
 })
 
 // Show progress bar on live navigation and form submits

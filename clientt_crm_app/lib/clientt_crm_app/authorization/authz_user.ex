@@ -153,7 +153,7 @@ defmodule ClienttCrmApp.Authorization.AuthzUser do
     attribute :role, :atom do
       allow_nil? false
       public? true
-      constraints one_of: [:admin, :manager, :user]
+      constraints one_of: [:admin, :manager, :user, :form_admin]
     end
 
     attribute :team_id, :uuid do
@@ -195,7 +195,7 @@ defmodule ClienttCrmApp.Authorization.AuthzUser do
   end
 
   relationships do
-    belongs_to :authn_user, ClienttCrmApp.Accounts.User do
+    belongs_to :authn_user, ClienttCrmApp.Accounts.AuthnUser do
       source_attribute :authn_user_id
       destination_attribute :id
       allow_nil? false

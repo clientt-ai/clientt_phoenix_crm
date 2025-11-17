@@ -37,6 +37,16 @@ defmodule ClienttCrmAppWeb.Router do
       # on_mount {ClienttCrmAppWeb.LiveUserAuth, :live_no_user}
 
       live "/dashboard", DashboardLive, :index
+
+      # Forms management routes
+      live "/forms", FormLive.Index, :index
+      live "/forms/new", FormLive.Builder, :new
+      live "/forms/:id/edit", FormLive.Builder, :edit
+      live "/forms/:id", FormLive.Show, :show
+
+      # Submissions management routes
+      live "/forms/:form_id/submissions", SubmissionLive.Index, :index
+      live "/submissions/:id", SubmissionLive.Show, :show
     end
   end
 
@@ -44,8 +54,11 @@ defmodule ClienttCrmAppWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
-    auth_routes AuthController, ClienttCrmApp.Accounts.User, path: "/auth"
+    auth_routes AuthController, ClienttCrmApp.Accounts.AuthnUser, path: "/auth"
     sign_out_route AuthController
+
+    # Public form submission (no auth required)
+    live "/f/:id", PublicFormLive, :show
 
     # Remove these if you'd like to use your own authentication views
     sign_in_route register_path: "/register",
@@ -65,7 +78,7 @@ defmodule ClienttCrmAppWeb.Router do
                 ]
 
     # Remove this if you do not use the confirmation strategy
-    confirm_route ClienttCrmApp.Accounts.User, :confirm_new_user,
+    confirm_route ClienttCrmApp.Accounts.AuthnUser, :confirm_new_user,
       auth_routes_prefix: "/auth",
       overrides: [
         ClienttCrmAppWeb.AuthOverrides,
@@ -73,7 +86,7 @@ defmodule ClienttCrmAppWeb.Router do
       ]
 
     # Remove this if you do not use the magic link strategy.
-    magic_sign_in_route(ClienttCrmApp.Accounts.User, :magic_link,
+    magic_sign_in_route(ClienttCrmApp.Accounts.AuthnUser, :magic_link,
       auth_routes_prefix: "/auth",
       overrides: [
         ClienttCrmAppWeb.AuthOverrides,
