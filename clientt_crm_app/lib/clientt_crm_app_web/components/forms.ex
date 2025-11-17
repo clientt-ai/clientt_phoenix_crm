@@ -182,6 +182,7 @@ defmodule ClienttCrmAppWeb.Components.Forms do
   def draggable_field_tile(assigns) do
     ~H"""
     <div
+      id={"draggable-field-#{@type}"}
       class="flex items-center gap-2 p-2 rounded-lg hover:bg-base-200 cursor-move transition-colors"
       draggable="true"
       data-field-type={@type}

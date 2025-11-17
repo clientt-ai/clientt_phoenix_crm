@@ -10,7 +10,7 @@ defmodule ClienttCrmApp.Repo.Migrations.AddFormsAndAuthorizationDomains do
 
   def up do
     # Update users table ID default
-    alter table(:authn_users) do
+    alter table(:users) do
       modify :id, :uuid, default: fragment("gen_random_uuid()")
     end
 
@@ -121,7 +121,7 @@ defmodule ClienttCrmApp.Repo.Migrations.AddFormsAndAuthorizationDomains do
     # Add authz_users columns
     alter table(:authz_users) do
       add :authn_user_id,
-          references(:authn_users,
+          references(:users,
             column: :id,
             name: "authz_users_authn_user_id_fkey",
             type: :uuid,
@@ -446,7 +446,7 @@ defmodule ClienttCrmApp.Repo.Migrations.AddFormsAndAuthorizationDomains do
 
     drop table(:forms_submissions)
 
-    alter table(:authn_users) do
+    alter table(:users) do
       modify :id, :uuid, default: fragment("uuid_generate_v7()")
     end
   end
