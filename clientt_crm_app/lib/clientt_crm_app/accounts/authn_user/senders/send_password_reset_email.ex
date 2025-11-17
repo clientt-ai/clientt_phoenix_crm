@@ -1,4 +1,4 @@
-defmodule ClienttCrmApp.Accounts.User.Senders.SendPasswordResetEmail do
+defmodule ClienttCrmApp.Accounts.AuthnUser.Senders.SendPasswordResetEmail do
   @moduledoc """
   Sends a password reset email
   """

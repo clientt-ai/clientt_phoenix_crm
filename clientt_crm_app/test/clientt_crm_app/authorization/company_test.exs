@@ -11,13 +11,13 @@ defmodule ClienttCrmApp.Authorization.CompanyTest do
 
   alias ClienttCrmApp.Authorization.Company
   alias ClienttCrmApp.Authorization.AuthzUser
-  alias ClienttCrmApp.Accounts.User
+  alias ClienttCrmApp.Accounts.AuthnUser
 
   describe "create company" do
     test "creates company with valid attributes and first admin" do
       # Create a user for the admin (bypass authorization in tests)
       user =
-        User
+        AuthnUser
         |> Ash.Changeset.for_create(:register_with_password, %{
           email: "admin@example.com",
           password: "ValidPassword123!",
@@ -52,7 +52,7 @@ defmodule ClienttCrmApp.Authorization.CompanyTest do
 
     test "slug must be unique" do
       user =
-        User
+        AuthnUser
         |> Ash.Changeset.for_create(:register_with_password, %{
           email: "admin@example.com",
           password: "ValidPassword123!",
@@ -83,7 +83,7 @@ defmodule ClienttCrmApp.Authorization.CompanyTest do
 
     test "name must be at least 2 characters" do
       user =
-        User
+        AuthnUser
         |> Ash.Changeset.for_create(:register_with_password, %{
           email: "admin@example.com",
           password: "ValidPassword123!",
@@ -104,7 +104,7 @@ defmodule ClienttCrmApp.Authorization.CompanyTest do
 
     test "slug must be lowercase and URL-safe" do
       user =
-        User
+        AuthnUser
         |> Ash.Changeset.for_create(:register_with_password, %{
           email: "admin@example.com",
           password: "ValidPassword123!",
@@ -148,7 +148,7 @@ defmodule ClienttCrmApp.Authorization.CompanyTest do
   describe "read company" do
     test "can read company by id" do
       user =
-        User
+        AuthnUser
         |> Ash.Changeset.for_create(:register_with_password, %{
           email: "admin@example.com",
           password: "ValidPassword123!",
@@ -172,7 +172,7 @@ defmodule ClienttCrmApp.Authorization.CompanyTest do
 
     test "can list companies" do
       user =
-        User
+        AuthnUser
         |> Ash.Changeset.for_create(:register_with_password, %{
           email: "admin@example.com",
           password: "ValidPassword123!",
@@ -204,7 +204,7 @@ defmodule ClienttCrmApp.Authorization.CompanyTest do
   describe "update company" do
     test "can update company name" do
       user =
-        User
+        AuthnUser
         |> Ash.Changeset.for_create(:register_with_password, %{
           email: "admin@example.com",
           password: "ValidPassword123!",
@@ -234,7 +234,7 @@ defmodule ClienttCrmApp.Authorization.CompanyTest do
   describe "archive company" do
     test "can archive a company" do
       user =
-        User
+        AuthnUser
         |> Ash.Changeset.for_create(:register_with_password, %{
           email: "admin@example.com",
           password: "ValidPassword123!",
@@ -263,7 +263,7 @@ defmodule ClienttCrmApp.Authorization.CompanyTest do
   describe "destroy company" do
     test "cannot destroy company - must archive instead" do
       user =
-        User
+        AuthnUser
         |> Ash.Changeset.for_create(:register_with_password, %{
           email: "admin@example.com",
           password: "ValidPassword123!",

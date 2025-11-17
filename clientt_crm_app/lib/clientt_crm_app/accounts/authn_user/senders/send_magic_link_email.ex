@@ -1,4 +1,4 @@
-defmodule ClienttCrmApp.Accounts.User.Senders.SendMagicLinkEmail do
+defmodule ClienttCrmApp.Accounts.AuthnUser.Senders.SendMagicLinkEmail do
   @moduledoc """
   Sends a magic link email
   """

@@ -1,4 +1,4 @@
-defmodule ClienttCrmApp.Accounts.User do
+defmodule ClienttCrmApp.Accounts.AuthnUser do
   use Ash.Resource,
     otp_app: :clientt_crm_app,
     domain: ClienttCrmApp.Accounts,
@@ -19,7 +19,7 @@ defmodule ClienttCrmApp.Accounts.User do
         require_interaction? true
         confirmed_at_field :confirmed_at
         auto_confirm_actions [:sign_in_with_magic_link, :reset_password_with_token]
-        sender ClienttCrmApp.Accounts.User.Senders.SendNewUserConfirmationEmail
+        sender ClienttCrmApp.Accounts.AuthnUser.Senders.SendNewUserConfirmationEmail
       end
     end
 
@@ -37,7 +37,7 @@ defmodule ClienttCrmApp.Accounts.User do
         hash_provider AshAuthentication.BcryptProvider
 
         resettable do
-          sender ClienttCrmApp.Accounts.User.Senders.SendPasswordResetEmail
+          sender ClienttCrmApp.Accounts.AuthnUser.Senders.SendPasswordResetEmail
           # these configurations will be the default in a future release
           password_reset_action_name :reset_password_with_token
           request_password_reset_action_name :request_password_reset_token
@@ -49,13 +49,13 @@ defmodule ClienttCrmApp.Accounts.User do
         registration_enabled? true
         require_interaction? true
 
-        sender ClienttCrmApp.Accounts.User.Senders.SendMagicLinkEmail
+        sender ClienttCrmApp.Accounts.AuthnUser.Senders.SendMagicLinkEmail
       end
     end
   end
 
   postgres do
-    table "users"
+    table "authn_users"
     repo ClienttCrmApp.Repo
   end
 

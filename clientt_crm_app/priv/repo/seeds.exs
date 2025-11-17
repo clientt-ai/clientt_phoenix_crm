@@ -12,7 +12,7 @@
 
 require Ash.Query
 
-alias ClienttCrmApp.Accounts.User
+alias ClienttCrmApp.Accounts.AuthnUser
 alias ClienttCrmApp.Authorization.{Company, AuthzUser}
 
 IO.puts("🌱 Starting database seeding...")
@@ -38,12 +38,12 @@ company =
       temp_admin_email = "temp_bootstrap_admin@clientt.com"
 
       temp_admin =
-        case User
+        case AuthnUser
              |> Ash.Query.filter(email == ^temp_admin_email)
              |> Ash.read_one(authorize?: false) do
           {:ok, nil} ->
             {:ok, user} =
-              User
+              AuthnUser
               |> Ash.Changeset.for_create(:register_with_password, %{
                 email: temp_admin_email,
                 password: "TempBootstrap123!",
@@ -91,14 +91,14 @@ for role <- roles do
 
   # Create or get the authentication user
   authn_user =
-    case User
+    case AuthnUser
          |> Ash.Query.filter(email == ^email)
          |> Ash.read_one(authorize?: false) do
       {:ok, nil} ->
         IO.puts("    ➕ Creating authentication user...")
 
         {:ok, user} =
-          User
+          AuthnUser
           |> Ash.Changeset.for_create(:register_with_password, %{
             email: email,
             password: password,

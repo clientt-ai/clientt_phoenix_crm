@@ -1,4 +1,4 @@
-defmodule ClienttCrmApp.Accounts.User.Senders.SendNewUserConfirmationEmail do
+defmodule ClienttCrmApp.Accounts.AuthnUser.Senders.SendNewUserConfirmationEmail do
   @moduledoc """
   Sends an email for a new user to confirm their email address.
   """
