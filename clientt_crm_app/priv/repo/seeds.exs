@@ -22,7 +22,7 @@ company_name = "Clientt Sample Inc."
 company_slug = "clientt-sample"
 
 # All roles in the system
-roles = [:admin, :manager, :user]
+roles = [:admin, :manager, :user, :form_admin]
 
 # Step 1: Create or get the sample company
 IO.puts("\n📦 Setting up sample company: #{company_name}")

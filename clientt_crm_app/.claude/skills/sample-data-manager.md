@@ -24,6 +24,7 @@ The skill maintains these test accounts:
 | sample_admin@clientt.com | admin | SampleAdmin123! |
 | sample_manager@clientt.com | manager | SampleManager123! |
 | sample_user@clientt.com | user | SampleUser123! |
+| sample_form_admin@clientt.com | form_admin | SampleForm_admin123! |
 
 ## When to Use This Skill
 
