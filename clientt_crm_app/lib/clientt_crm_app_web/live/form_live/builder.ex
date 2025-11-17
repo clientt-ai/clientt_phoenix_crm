@@ -237,6 +237,7 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
         <%= if @form && @form.status == :draft do %>
           <button
             phx-click="publish_form"
+            data-testid="publish-form-button"
             class="rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500"
           >
             Publish Form
@@ -262,6 +263,7 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
                     type="text"
                     name="name"
                     id="name"
+                    data-testid="form-name-input"
                     value={@form && @form.name}
                     class="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                     required
@@ -275,6 +277,7 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
                   <textarea
                     name="description"
                     id="description"
+                    data-testid="form-description-input"
                     rows="3"
                     class="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   ><%= @form && @form.description %></textarea>
@@ -282,6 +285,7 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
 
                 <button
                   type="submit"
+                  data-testid="save-form-button"
                   class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
                 >
                   <%= if @form, do: "Update Form", else: "Create Form" %>
@@ -317,18 +321,21 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
                 <% else %>
                   <ul class="divide-y divide-gray-200">
                     <%= for field <- @fields do %>
-                      <li class="py-4 flex justify-between items-center">
+                      <li data-testid="form-field" class="py-4 flex justify-between items-center">
                         <div>
                           <p class="text-sm font-medium text-gray-900"><%= field.label %></p>
                           <p class="text-sm text-gray-500">
                             <%= format_field_type(field.field_type) %>
-                            <%= if field.required, do: "• Required" %>
+                            <%= if field.required do %>
+                              <span data-testid="field-required-badge">• Required</span>
+                            <% end %>
                           </p>
                         </div>
                         <div class="flex gap-2">
                           <button
                             phx-click="edit_field"
                             phx-value-id={field.id}
+                            data-testid="edit-field-button"
                             class="text-indigo-600 hover:text-indigo-900 text-sm"
                           >
                             Edit
@@ -336,6 +343,7 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
                           <button
                             phx-click="delete_field"
                             phx-value-id={field.id}
+                            data-testid="delete-field-button"
                             data-confirm="Are you sure?"
                             class="text-red-600 hover:text-red-900 text-sm"
                           >
@@ -349,6 +357,7 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
 
                 <button
                   phx-click="add_field"
+                  data-testid="add-field-button"
                   class="mt-4 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
                 >
                   Add Field
@@ -430,12 +439,14 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
                       <select
                         name="field_type"
                         id="field_type"
+                        data-testid="field-type-select"
                         required
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                       >
                         <%= for {type, label} <- @field_types do %>
                           <option
                             value={type}
+                            data-testid={"field-type-#{type}"}
                             selected={@editing_field && @editing_field.field_type == type}
                           >
                             <%= label %>
@@ -452,6 +463,7 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
                         type="text"
                         name="label"
                         id="label"
+                        data-testid="field-label-input"
                         value={@editing_field && @editing_field.label}
                         required
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
@@ -466,6 +478,7 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
                         type="text"
                         name="placeholder"
                         id="placeholder"
+                        data-testid="field-placeholder-input"
                         value={@editing_field && @editing_field.placeholder}
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                       />
@@ -479,6 +492,7 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
                         type="text"
                         name="help_text"
                         id="help_text"
+                        data-testid="field-help-text-input"
                         value={@editing_field && @editing_field.help_text}
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                       />
@@ -522,6 +536,7 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
                         type="checkbox"
                         name="required"
                         id="required"
+                        data-testid="field-required-checkbox"
                         value="true"
                         checked={@editing_field && @editing_field.required}
                         class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
@@ -534,6 +549,7 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
                     <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse gap-2">
                       <button
                         type="submit"
+                        data-testid="save-field-button"
                         class="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 sm:w-auto"
                       >
                         Save Field
@@ -541,6 +557,7 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
                       <button
                         type="button"
                         phx-click="close_modal"
+                        data-testid="cancel-button"
                         class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
                       >
                         Cancel
