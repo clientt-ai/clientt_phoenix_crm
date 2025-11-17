@@ -14,15 +14,19 @@ test.describe('FM-SC-004: Form Validation with Invalid Data', () => {
   test.beforeEach(async ({ page }) => {
     // Setup: Create a form with validation rules
     await page.goto('/sign-in');
-    await page.fill('input[type="email"]', 'admin@example.com');
-    await page.fill('input[type="password"]', 'SampleAdmin123!');
-    await page.click('button:has-text("Sign in")');
+    await page.fill('input[name="authn-user[email]"]', 'admin@example.com');
+    await page.fill('input[name="authn-user[password]"]', 'SampleAdmin123!');
+    await page.click('form:has(input[name="authn-user[email]"]) button[type="submit"]');
 
-    // Wait for redirect after login (expect to go to / or stay on /sign-in with success message)
-    await page.waitForTimeout(2000);
+    // Wait for authentication to complete
+    await page.waitForSelector('text=You are now signed in', { timeout: 5000 });
+    await page.waitForLoadState('networkidle');
 
-    // Navigate directly to forms page after login
+
+
+    // Navigate to forms page
     await page.goto("/forms");
+    await page.waitForLoadState('networkidle');
 
     await page.goto('/forms/new');
     await page.fill('[data-testid="form-name-input"]', 'Validation Test Form');
