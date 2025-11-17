@@ -26,7 +26,8 @@ import {hooks as colocatedHooks} from "phoenix-colocated/clientt_crm_app"
 import topbar from "../vendor/topbar"
 
 // Custom hooks
-const Hooks = {}
+import CustomHooks from "./hooks/index.js"
+const Hooks = {...CustomHooks}
 
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 const liveSocket = new LiveSocket("/live", Socket, {
