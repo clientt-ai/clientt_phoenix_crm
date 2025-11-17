@@ -13,7 +13,7 @@ test.describe('FM-SC-003: Submit Form with Valid Data', () => {
 
   test.beforeEach(async ({ page }) => {
     // Login as admin to create a test form
-    await page.goto('/login');
+    await page.goto('/sign-in');
     await page.fill('[data-testid="email-input"]', 'admin@example.com');
     await page.fill('[data-testid="password-input"]', 'password123');
     await page.click('[data-testid="login-button"]');
@@ -120,7 +120,7 @@ test.describe('FM-SC-003: Submit Form with Valid Data', () => {
     );
 
     // Verify submission appears in the system (login as admin)
-    await page.goto('/login');
+    await page.goto('/sign-in');
     await page.fill('[data-testid="email-input"]', 'admin@example.com');
     await page.fill('[data-testid="password-input"]', 'password123');
     await page.click('[data-testid="login-button"]');

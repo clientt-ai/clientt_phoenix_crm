@@ -13,7 +13,7 @@ test.describe('FM-SC-007: Delete Form', () => {
 
   test.beforeEach(async ({ page }) => {
     // Login to the application
-    await page.goto('/login');
+    await page.goto('/sign-in');
     await page.fill('[data-testid="email-input"]', 'admin@example.com');
     await page.fill('[data-testid="password-input"]', 'password123');
     await page.click('[data-testid="login-button"]');
@@ -204,7 +204,7 @@ test.describe('FM-SC-007: Delete Form', () => {
     await page.click('[data-testid="logout-button"]');
 
     // Login as regular user (if your system has role-based permissions)
-    await page.goto('/login');
+    await page.goto('/sign-in');
     await page.fill('[data-testid="email-input"]', 'user@example.com');
     await page.fill('[data-testid="password-input"]', 'password123');
     await page.click('[data-testid="login-button"]');

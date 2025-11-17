@@ -13,7 +13,7 @@ test.describe('FM-SC-004: Form Validation with Invalid Data', () => {
 
   test.beforeEach(async ({ page }) => {
     // Setup: Create a form with validation rules
-    await page.goto('/login');
+    await page.goto('/sign-in');
     await page.fill('[data-testid="email-input"]', 'admin@example.com');
     await page.fill('[data-testid="password-input"]', 'password123');
     await page.click('[data-testid="login-button"]');

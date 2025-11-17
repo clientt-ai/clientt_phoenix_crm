@@ -11,7 +11,7 @@ test.describe('FM-SC-001: Create New Form Successfully', () => {
 
   test.beforeEach(async ({ page }) => {
     // Login to the application
-    await page.goto('/login');
+    await page.goto('/sign-in');
     await page.fill('[data-testid="email-input"]', 'test@example.com');
     await page.fill('[data-testid="password-input"]', 'password123');
     await page.click('[data-testid="login-button"]');
