@@ -94,11 +94,11 @@ This document defines all design tokens (colors, typography, spacing, etc.) extr
 | xs | 12px | `text-xs` | 16px | Captions, helper text |
 | sm | 14px | `text-sm` | 20px | Small text, labels |
 | base | 16px | `text-base` | 24px | Body text |
-| lg | 18px | `text-lg` | 28px | Large body text |
+| lg | 18px | `text-lg` | 28px | Card headings (h3) |
 | xl | 20px | `text-xl` | 28px | Section headings |
-| 2xl | 24px | `text-2xl` | 32px | Card headings |
+| 2xl | 24px | `text-2xl` | 32px | Large headings |
 | 3xl | 30px | `text-3xl` | 36px | Page headings |
-| 4xl | 36px | `text-4xl` | 40px | Hero headings |
+| 4xl | 38px | `text-[38px]` | 1.2 | Page titles (Forms Dashboard) |
 
 ### Font Weights
 
@@ -378,9 +378,9 @@ module.exports = {
     themes: [
       {
         clienttcrm: {
-          "primary": "#3B82F6",
+          "primary": "#2278c0",        // Forms Dashboard primary blue
           "secondary": "#10B981",
-          "accent": "#F59E0B",
+          "accent": "#ec4899",          // Forms Dashboard fuchsia (chatbot features)
           "neutral": "#1F2937",
           "base-100": "#FFFFFF",
           "base-200": "#F3F4F6",
