@@ -3,8 +3,8 @@ config :ash, policies: [show_policy_breakdowns?: true]
 
 # Configure your database
 config :clientt_crm_app, ClienttCrmApp.Repo,
-  username: "postgres",
-  password: "postgres",
+  username: System.get_env("DB_USERNAME") || System.get_env("USER") || "postgres",
+  password: System.get_env("DB_PASSWORD") || "postgres",
   hostname: "localhost",
   database: "clientt_crm_app_dev",
   stacktrace: true,

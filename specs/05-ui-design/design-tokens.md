@@ -1,28 +1,52 @@
 # Design Tokens - ClienttCRM
 
-**Status**: Pending Figma Designs
-**Last Updated**: 2025-11-12
+**Status**: ✅ Updated with Figma Forms Dashboard Design Tokens
+**Last Updated**: 2025-11-17
 **Design System**: DaisyUI + Nexus + Tailwind CSS v4
+**Figma Source**: `figma_src/205 Forms Dashboard/src/DEVELOPER_HANDOFF.md`
 
 ## Purpose
 
 This document defines all design tokens (colors, typography, spacing, etc.) extracted from Figma designs. These tokens ensure consistency across **all domains** of the ClienttCRM application.
 
-**Scope**: Cross-domain (used by Authorization, Contacts, Deals, and all other domains)
+**Scope**: Cross-domain (used by Authorization, Contacts, Deals, Forms, and all other domains)
 
-**Note**: These tokens will be populated once Figma designs are finalized.
+**Note**: Tokens extracted from Forms Dashboard Figma export. Will be expanded as additional domains are designed.
 
 ---
 
 ## Color Palette
 
-### Brand Colors
+### Brand Colors (Forms Dashboard)
+
+**Source**: `figma_src/205 Forms Dashboard/src/DEVELOPER_HANDOFF.md`
+
+| Token Name | Hex | CSS Variable | Gradient | Usage |
+|------------|-----|--------------|----------|-------|
+| Primary | `#2278c0` | `--primary` | `linear-gradient(135deg, #2278c0 0%, #1a5f99 100%)` | Primary actions, form elements, calendar features |
+| Primary Hover | `#1a5f99` | `--primary-hover` | - | Hover state for primary elements |
+| Accent (Fuchsia) | `#ec4899` | `--accent` | `linear-gradient(135deg, #ec4899 0%, #db2777 100%)` | Chatbot features, highlights, special CTAs |
+| Accent Hover | `#db2777` | `--accent-hover` | - | Hover state for accent elements |
+
+**Implementation Example:**
+```css
+/* Primary button with gradient */
+.btn-primary-gradient {
+  background: linear-gradient(135deg, #2278c0 0%, #1a5f99 100%);
+}
+
+/* Chatbot accent gradient */
+.chatbot-accent {
+  background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+}
+```
+
+### DaisyUI Generic Colors (Fallback)
 
 | Token Name | Hex | DaisyUI Class | Usage |
 |------------|-----|---------------|-------|
-| Primary | `#3B82F6` | `primary` | Primary actions, CTAs |
-| Secondary | `#10B981` | `secondary` | Secondary actions |
-| Accent | `#F59E0B` | `accent` | Highlights, badges |
+| Secondary | `#10B981` | `secondary` | Secondary actions (generic) |
+| Neutral | `#1F2937` | `neutral` | Neutral elements |
 
 ### Semantic Colors
 
