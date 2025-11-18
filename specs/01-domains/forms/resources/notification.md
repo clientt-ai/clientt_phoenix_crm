@@ -357,7 +357,7 @@ defmodule ClienttCrmApp.Forms.EventHandlers.SubmissionCreatedHandler do
 
   def notify(%{action: :create, resource: Submission, data: submission}) do
     # Get all company users
-    company_users = get_company_users(submission.company_id)
+    company_users = get_company_users(submission.tenant_id)
 
     Enum.each(company_users, fn authz_user ->
       # Check user's notification preference

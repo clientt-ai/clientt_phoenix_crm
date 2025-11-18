@@ -262,7 +262,7 @@ AuthzUser
   %AuthzUser{
     id: "authz-uuid",
     authn_user_id: "user-uuid",
-    company_id: "company-uuid",
+    tenant_id: "company-uuid",
     role: :admin,
     authn_user: %AuthnUser{
       id: "user-uuid",
@@ -321,7 +321,7 @@ companies = Enum.map(authz_users, & &1.company)
 ```elixir
 AuthzUser.create(%{
   authn_user_id: "non-existent-uuid",
-  company_id: "valid-company-uuid",
+  tenant_id: "valid-company-uuid",
   role: :user
 })
 
@@ -345,11 +345,11 @@ AuthzUser.create(%{
 ## Idempotency
 
 ### AuthzUser Creation
-**Constraint**: Unique (authn_user_id, company_id)
+**Constraint**: Unique (authn_user_id, tenant_id)
 ```sql
 ALTER TABLE authz_users
   ADD CONSTRAINT authz_users_unique_user_company
-  UNIQUE (authn_user_id, company_id);
+  UNIQUE (authn_user_id, tenant_id);
 ```
 
 **Behavior**: Attempting to create duplicate authz_user for same (user, company) fails

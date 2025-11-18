@@ -21,7 +21,7 @@ Manages custom form creation, submission handling, and lead generation for the C
 - **Conversion Rate**: Percentage of form views that result in submissions
 - **Notification**: In-app or email alert about new form submissions
 - **UTM Parameters**: URL tracking parameters for lead source attribution
-- **Multi-tenancy**: Company-scoped data isolation using company_id filtering
+- **Multi-tenancy**: Company-scoped data isolation using tenant_id filtering
 
 ## Domain Boundaries
 
@@ -74,14 +74,14 @@ Manages custom form creation, submission handling, and lead generation for the C
 
 ### Integration Points
 
-- **Authorization Domain**: Uses company_id for multi-tenant data isolation, authz_user for permissions
+- **Authorization Domain**: Uses tenant_id for multi-tenant data isolation, authz_user for permissions
 - **Accounts Domain**: Uses authn_user for notification preferences and profile settings
 - **Email Service**: Sends notification emails via Swoosh
 - **Public Web**: Forms are embeddable on external websites (public submission endpoint)
 
 ## Core Business Rules
 
-1. **Multi-Tenancy**: All forms, fields, and submissions MUST be filtered by company_id - no cross-company data access
+1. **Multi-Tenancy**: All forms, fields, and submissions MUST be filtered by tenant_id - no cross-company data access
 2. **Form-Field Relationship**: Forms can have 0 to many fields, fields belong to exactly one form
 3. **Submission Immutability**: Once created, submission data cannot be modified (only status and deleted_at can change)
 4. **Field Type Constraints**: MVP supports exactly 10 field types - file upload explicitly excluded
@@ -99,10 +99,10 @@ Manages custom form creation, submission handling, and lead generation for the C
 
 | Event Name | Trigger | Payload | Consumers |
 |------------|---------|---------|-----------|
-| forms.form_created | Form created | {form_id, company_id, name, created_by} | Analytics |
-| forms.form_published | Form status → published | {form_id, company_id, published_at} | Analytics, Cache Invalidation |
+| forms.form_created | Form created | {form_id, tenant_id, name, created_by} | Analytics |
+| forms.form_published | Form status → published | {form_id, tenant_id, published_at} | Analytics, Cache Invalidation |
 | forms.form_archived | Form status → archived | {form_id, archived_by} | Analytics |
-| forms.submission_created | New submission | {submission_id, form_id, company_id, submitted_at, metadata} | Notification Service, Analytics, Lead Scoring |
+| forms.submission_created | New submission | {submission_id, form_id, tenant_id, submitted_at, metadata} | Notification Service, Analytics, Lead Scoring |
 | forms.submission_status_changed | Lead status updated | {submission_id, old_status, new_status, changed_by} | Analytics, CRM Integration (future) |
 | forms.notification_sent | Notification delivered | {notification_id, user_id, type, channel} | Analytics |
 
@@ -166,12 +166,12 @@ Manages custom form creation, submission handling, and lead generation for the C
 
 ### Row-Level Filtering
 
-All resources include `company_id` and are automatically filtered by current company context through Ash policies.
+All resources include `tenant_id` and are automatically filtered by current company context through Ash policies.
 
 **Tenant-Scoped Resources**:
-- Form (filtered by company_id)
+- Form (filtered by tenant_id)
 - FormField (via Form relationship)
-- Submission (filtered by company_id)
+- Submission (filtered by tenant_id)
 - Notification (filtered by user's company via authz_user)
 
 **Public Access** (exceptions to tenant filtering):
@@ -184,7 +184,7 @@ All resources include `company_id` and are automatically filtered by current com
 # Required session assigns for authenticated users
 %{
   current_authn_user: %User{},        # Authentication identity
-  current_company_id: "uuid",          # Active company
+  current_tenant_id: "uuid",          # Active company
   current_authz_user: %AuthzUser{}     # Authorization identity for current company
 }
 
@@ -196,10 +196,10 @@ All resources include `company_id` and are automatically filtered by current com
 
 ```sql
 -- Critical for multi-tenancy performance
-CREATE INDEX forms_company_id_index ON forms(company_id);
+CREATE INDEX forms_tenant_id_index ON forms(tenant_id);
 CREATE INDEX forms_status_index ON forms(status);
 CREATE INDEX form_fields_form_id_index ON form_fields(form_id);
-CREATE INDEX submissions_company_id_index ON submissions(company_id);
+CREATE INDEX submissions_tenant_id_index ON submissions(tenant_id);
 CREATE INDEX submissions_form_id_index ON submissions(form_id);
 CREATE INDEX submissions_status_index ON submissions(status);
 CREATE INDEX submissions_submitted_at_index ON submissions(submitted_at DESC);
@@ -219,7 +219,7 @@ CREATE INDEX notifications_user_id_read_at_index ON notifications(user_id, read_
 
 ### Data Isolation
 
-- All Ash policies enforce company_id filtering on queries
+- All Ash policies enforce tenant_id filtering on queries
 - Public submission endpoint validates form belongs to company before accepting data
 - Cannot bypass tenancy through direct IDs
 - Cross-company data access prevented at framework level
@@ -244,7 +244,7 @@ CREATE INDEX notifications_user_id_read_at_index ON notifications(user_id, read_
 
 - **Page Load Time**: <1 second for all pages (dashboard, forms, analytics)
 - **Real-time Analytics**: Use Ash aggregates with optimized SQL queries (no Cachex/Oban unless needed)
-- **Database Optimization**: All company_id, form_id, status columns indexed
+- **Database Optimization**: All tenant_id, form_id, status columns indexed
 - **Export Performance**: CSV generation <5 seconds for up to 10,000 submissions
 - **Test Coverage**: 70% minimum (focus on critical paths)
 

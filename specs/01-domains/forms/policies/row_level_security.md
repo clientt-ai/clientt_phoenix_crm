@@ -12,9 +12,9 @@ Enforces company-scoped data isolation for all Forms domain resources. Ensures u
 ## Scope
 
 **Resources Protected**:
-- Form (via company_id)
-- FormField (via form.company_id)
-- Submission (via company_id)
+- Form (via tenant_id)
+- FormField (via form.tenant_id)
+- Submission (via tenant_id)
 - Notification (via user_id)
 
 **Exclusions**:
@@ -30,7 +30,7 @@ policy action_type(:read) do
   description "Users can read forms in their current company"
 
   # Company members can read all forms in their company
-  authorize_if actor_attribute_equals(:company_id, :company_id)
+  authorize_if actor_attribute_equals(:tenant_id, :tenant_id)
 
   # Public access for published forms (embed endpoint)
   authorize_if expr(status == :published and is_nil(^actor))
@@ -45,8 +45,8 @@ policy action_type(:create) do
   # Must be admin or manager
   authorize_if actor_attribute_in(:role, [:admin, :manager])
 
-  # Ensure company_id matches actor's company
-  change set_attribute(:company_id, ^actor(:company_id))
+  # Ensure tenant_id matches actor's company
+  change set_attribute(:tenant_id, ^actor(:tenant_id))
 end
 ```
 
@@ -59,7 +59,7 @@ policy action_type(:update) do
   authorize_if actor_attribute_in(:role, [:admin, :manager])
 
   # Must belong to actor's company
-  authorize_if actor_attribute_equals(:company_id, :company_id)
+  authorize_if actor_attribute_equals(:tenant_id, :tenant_id)
 
   # Can only update draft forms
   authorize_if expr(status == :draft)
@@ -72,7 +72,7 @@ policy action(:publish) do
   description "Admin and Manager can publish forms"
 
   authorize_if actor_attribute_in(:role, [:admin, :manager])
-  authorize_if actor_attribute_equals(:company_id, :company_id)
+  authorize_if actor_attribute_equals(:tenant_id, :tenant_id)
 end
 ```
 
@@ -82,7 +82,7 @@ policy action(:archive) do
   description "Only Admin can archive forms"
 
   authorize_if actor_attribute_equals(:role, :admin)
-  authorize_if actor_attribute_equals(:company_id, :company_id)
+  authorize_if actor_attribute_equals(:tenant_id, :tenant_id)
 end
 ```
 
@@ -103,7 +103,7 @@ policy action_type(:read) do
   description "Inherit access from parent form"
 
   # Company members can read fields if they can read the parent form
-  authorize_if relates_to_actor_via(:form, :company_id, :company_id)
+  authorize_if relates_to_actor_via(:form, :tenant_id, :tenant_id)
 
   # Public access for published forms
   authorize_if expr(form.status == :published and is_nil(^actor))
@@ -119,7 +119,7 @@ policy action_type([:create, :update, :destroy]) do
   authorize_if actor_attribute_in(:role, [:admin, :manager])
 
   # Form must be in their company
-  authorize_if relates_to_actor_via(:form, :company_id, :company_id)
+  authorize_if relates_to_actor_via(:form, :tenant_id, :tenant_id)
 
   # Form must be draft
   authorize_if expr(form.status == :draft)
@@ -133,7 +133,7 @@ end
 policy action_type(:read) do
   description "Company members can read submissions in their company"
 
-  authorize_if actor_attribute_equals(:company_id, :company_id)
+  authorize_if actor_attribute_equals(:tenant_id, :tenant_id)
 end
 ```
 
@@ -148,9 +148,9 @@ policy action(:create_public_submission) do
   # Validation: Form must be published
   validate attribute(:form, matches(status: :published))
 
-  # Auto-set company_id from form
+  # Auto-set tenant_id from form
   change load(:form)
-  change set_attribute(:company_id, arg(:form).company_id)
+  change set_attribute(:tenant_id, arg(:form).tenant_id)
 end
 ```
 
@@ -160,7 +160,7 @@ policy action(:update_status) do
   description "Admin and Manager can update submission status"
 
   authorize_if actor_attribute_in(:role, [:admin, :manager])
-  authorize_if actor_attribute_equals(:company_id, :company_id)
+  authorize_if actor_attribute_equals(:tenant_id, :tenant_id)
 end
 ```
 
@@ -170,7 +170,7 @@ policy action(:delete) do
   description "Admin and Manager can soft-delete submissions"
 
   authorize_if actor_attribute_in(:role, [:admin, :manager])
-  authorize_if actor_attribute_equals(:company_id, :company_id)
+  authorize_if actor_attribute_equals(:tenant_id, :tenant_id)
 
   # Soft delete only (set deleted_at)
   change set_attribute(:deleted_at, &DateTime.utc_now/0)
@@ -224,11 +224,11 @@ All authenticated requests must include:
 ```elixir
 %{
   current_authn_user: %User{id: "uuid"},           # Authentication identity
-  current_company_id: "uuid",                      # Active company
+  current_tenant_id: "uuid",                      # Active company
   current_authz_user: %AuthzUser{                  # Authorization identity
     id: "uuid",
     authn_user_id: "uuid",
-    company_id: "uuid",                            # Same as current_company_id
+    tenant_id: "uuid",                            # Same as current_tenant_id
     role: :admin | :manager | :user
   }
 }
@@ -312,7 +312,7 @@ test "public can submit to published form without authentication" do
     }
   })
 
-  assert submission.company_id == company.id
+  assert submission.tenant_id == company.id
   assert submission.status == :new
 end
 ```
@@ -345,7 +345,7 @@ ALTER TABLE forms ENABLE ROW LEVEL SECURITY;
 CREATE POLICY forms_company_isolation ON forms
   FOR ALL
   TO authenticated_users
-  USING (company_id = current_setting('app.current_company_id')::uuid);
+  USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
 
 -- Similar policies for submissions table
 ALTER TABLE submissions ENABLE ROW LEVEL SECURITY;
@@ -353,7 +353,7 @@ ALTER TABLE submissions ENABLE ROW LEVEL SECURITY;
 CREATE POLICY submissions_company_isolation ON submissions
   FOR ALL
   TO authenticated_users
-  USING (company_id = current_setting('app.current_company_id')::uuid);
+  USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
 ```
 
 **Note**: PostgreSQL RLS is optional for MVP - Ash policies provide sufficient protection. Consider adding RLS in production for additional security layer.
@@ -367,7 +367,7 @@ defmodule ClienttCrmApp.Forms.AuditLogger do
   def log_policy_violation(actor, resource, action, reason) do
     Logger.warning("""
     Multi-tenancy policy violation:
-    - Actor: #{actor.id} (company: #{actor.company_id})
+    - Actor: #{actor.id} (company: #{actor.tenant_id})
     - Resource: #{inspect(resource.__struct__)} #{resource.id}
     - Action: #{action}
     - Reason: #{reason}
@@ -388,25 +388,25 @@ end
 
 ## Performance Considerations
 
-- **Indexes**: Ensure all `company_id` columns are indexed
+- **Indexes**: Ensure all `tenant_id` columns are indexed
 - **Query Filtering**: Policies add WHERE clauses - verify query plans
 - **Eager Loading**: When loading related resources, ensure policies apply to all
 
 ### Required Indexes
 
 ```sql
-CREATE INDEX forms_company_id_index ON forms(company_id);
-CREATE INDEX submissions_company_id_index ON submissions(company_id);
+CREATE INDEX forms_tenant_id_index ON forms(tenant_id);
+CREATE INDEX submissions_tenant_id_index ON submissions(tenant_id);
 ```
 
 ### Query Plan Verification
 
 ```sql
--- Verify that company_id filter is using index
+-- Verify that tenant_id filter is using index
 EXPLAIN ANALYZE
-SELECT * FROM forms WHERE company_id = 'uuid';
+SELECT * FROM forms WHERE tenant_id = 'uuid';
 
--- Should show "Index Scan using forms_company_id_index"
+-- Should show "Index Scan using forms_tenant_id_index"
 ```
 
 ## Common Pitfalls
@@ -449,7 +449,7 @@ Forms.list_forms!(actor: current_authn_user)
 ### ✅ Use AuthzUser as Actor
 
 ```elixir
-# DO THIS - authz_user has company_id and role
+# DO THIS - authz_user has tenant_id and role
 Forms.list_forms!(actor: current_authz_user)
 ```
 

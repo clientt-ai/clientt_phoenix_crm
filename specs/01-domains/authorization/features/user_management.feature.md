@@ -40,7 +40,7 @@ When I invite "newuser@example.com" with:
 Then an Invitation record is created with:
   | field                     | value                  |
   | email                     | newuser@example.com    |
-  | company_id                | [Acme Corp id]         |
+  | tenant_id                | [Acme Corp id]         |
   | role                      | user                   |
   | status                    | pending                |
   | invited_by_authz_user_id  | [my authz_user id]     |
@@ -104,7 +104,7 @@ Then an authn_user is created for "newuser@example.com"
 And an authz_user is created with:
   | field          | value              |
   | authn_user_id  | [new authn_user]   |
-  | company_id     | [Acme Corp]        |
+  | tenant_id     | [Acme Corp]        |
   | role           | user               |
   | status         | active             |
   | joined_at      | [now]              |

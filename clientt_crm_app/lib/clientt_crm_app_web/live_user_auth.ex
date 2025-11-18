@@ -37,15 +37,15 @@ defmodule ClienttCrmAppWeb.LiveUserAuth do
 
   defp load_user_company(socket) do
     case get_user_authz_info(socket.assigns.current_user) do
-      {:ok, authz_user_id, company_id} ->
+      {:ok, authz_user_id, tenant_id} ->
         socket
-        |> assign(:current_company_id, company_id)
+        |> assign(:current_tenant_id, tenant_id)
         |> assign(:current_authz_user_id, authz_user_id)
 
       {:error, _} ->
         # No company found - user needs to be added to a company
         socket
-        |> assign(:current_company_id, nil)
+        |> assign(:current_tenant_id, nil)
         |> assign(:current_authz_user_id, nil)
     end
   end
@@ -58,7 +58,7 @@ defmodule ClienttCrmAppWeb.LiveUserAuth do
          |> filter(authn_user_id == ^user.id and status == :active)
          |> limit(1)
          |> Ash.read() do
-      {:ok, [authz_user | _]} -> {:ok, authz_user.id, authz_user.company_id}
+      {:ok, [authz_user | _]} -> {:ok, authz_user.id, authz_user.tenant_id}
       {:ok, []} -> {:error, :no_company}
       {:error, _error} -> {:error, :error}
     end

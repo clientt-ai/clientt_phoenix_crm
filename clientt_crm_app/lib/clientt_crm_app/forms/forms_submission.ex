@@ -21,7 +21,7 @@ defmodule ClienttCrmApp.Forms.Submission do
   ## Business Rules
   - Submission data cannot be edited after creation (audit trail)
   - submitter_email extracted from form_data for indexing
-  - company_id inherited from parent form (multi-tenancy)
+  - tenant_id inherited from parent form (multi-tenancy)
   - Soft delete only (deleted_at timestamp)
   - Public submission endpoint requires no authentication
   - Only published forms can receive submissions
@@ -57,7 +57,7 @@ defmodule ClienttCrmApp.Forms.Submission do
       change fn changeset, _context ->
         form_id = Ash.Changeset.get_argument(changeset, :form_id)
 
-        # Load form to get company_id and validate status
+        # Load form to get tenant_id and validate status
         form = ClienttCrmApp.Forms.Form |> Ash.get!(form_id)
 
         # Validate form is published
@@ -87,7 +87,7 @@ defmodule ClienttCrmApp.Forms.Submission do
 
         changeset
         |> Ash.Changeset.force_change_attribute(:form_id, form_id)
-        |> Ash.Changeset.force_change_attribute(:company_id, form.company_id)
+        |> Ash.Changeset.force_change_attribute(:tenant_id, form.tenant_id)
         |> Ash.Changeset.force_change_attribute(:status, :new)
         |> Ash.Changeset.force_change_attribute(:submitted_at, now)
         |> Ash.Changeset.change_attribute(:submitter_email, submitter_email)
@@ -116,18 +116,18 @@ defmodule ClienttCrmApp.Forms.Submission do
         allow_nil? false
       end
 
-      argument :company_id, :uuid do
+      argument :tenant_id, :uuid do
         allow_nil? false
       end
 
       change fn changeset, _context ->
         form_id = Ash.Changeset.get_argument(changeset, :form_id)
-        company_id = Ash.Changeset.get_argument(changeset, :company_id)
+        tenant_id = Ash.Changeset.get_argument(changeset, :tenant_id)
         now = DateTime.utc_now()
 
         changeset
         |> Ash.Changeset.force_change_attribute(:form_id, form_id)
-        |> Ash.Changeset.force_change_attribute(:company_id, company_id)
+        |> Ash.Changeset.force_change_attribute(:tenant_id, tenant_id)
         |> Ash.Changeset.force_change_attribute(:status, :new)
         |> Ash.Changeset.force_change_attribute(:submitted_at, now)
       end
@@ -209,12 +209,12 @@ defmodule ClienttCrmApp.Forms.Submission do
     end
 
     read :for_company do
-      argument :company_id, :uuid do
+      argument :tenant_id, :uuid do
         allow_nil? false
       end
 
       prepare build(sort: [submitted_at: :desc])
-      filter expr(company_id == ^arg(:company_id) and is_nil(deleted_at))
+      filter expr(tenant_id == ^arg(:tenant_id) and is_nil(deleted_at))
     end
 
     read :by_status do
@@ -254,7 +254,7 @@ defmodule ClienttCrmApp.Forms.Submission do
   attributes do
     uuid_primary_key :id
 
-    attribute :company_id, :uuid do
+    attribute :tenant_id, :uuid do
       allow_nil? false
       public? true
     end
@@ -309,7 +309,7 @@ defmodule ClienttCrmApp.Forms.Submission do
 
   relationships do
     belongs_to :company, ClienttCrmApp.Authorization.Company do
-      source_attribute :company_id
+      source_attribute :tenant_id
       destination_attribute :id
       allow_nil? false
     end
@@ -352,7 +352,7 @@ defmodule ClienttCrmApp.Forms.Submission do
 
     # Policy: Company members can read submissions
     policy action_type(:read) do
-      # authorize_if actor_attribute_equals(:company_id, :company_id)
+      # authorize_if actor_attribute_equals(:tenant_id, :tenant_id)
       # Placeholder during development
       authorize_if always()
     end
@@ -372,7 +372,7 @@ defmodule ClienttCrmApp.Forms.Submission do
     # Policy: Admin and Manager can update status
     policy action(:update_status) do
       # authorize_if actor_attribute_in(:role, [:admin, :manager])
-      # authorize_if actor_attribute_equals(:company_id, :company_id)
+      # authorize_if actor_attribute_equals(:tenant_id, :tenant_id)
       # Placeholder during development
       authorize_if always()
     end
@@ -380,7 +380,7 @@ defmodule ClienttCrmApp.Forms.Submission do
     # Policy: Admin and Manager can soft delete
     policy action([:soft_delete, :restore]) do
       # authorize_if actor_attribute_in(:role, [:admin, :manager])
-      # authorize_if actor_attribute_equals(:company_id, :company_id)
+      # authorize_if actor_attribute_equals(:tenant_id, :tenant_id)
       # Placeholder during development
       authorize_if always()
     end
@@ -395,11 +395,11 @@ defmodule ClienttCrmApp.Forms.Submission do
   defp create_submission_notifications(submission, form) do
     # Get all active users in the company (admins and managers)
     import Ash.Query
-    company_id = form.company_id
+    tenant_id = form.tenant_id
 
     case ClienttCrmApp.Authorization.AuthzUser
          |> filter(
-           company_id == ^company_id and
+           tenant_id == ^tenant_id and
              status == :active and
              role in [:admin, :manager]
          )

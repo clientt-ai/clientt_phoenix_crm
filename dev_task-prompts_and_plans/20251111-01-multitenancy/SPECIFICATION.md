@@ -21,7 +21,7 @@ This specification defines a multi-tenant authorization system for the CRM appli
 ### Key Design Decisions
 
 1. **1:Many authn_user → authz_user relationship**: A single login identity can have multiple authorization identities (one per company membership)
-2. **Row-level tenancy**: All tenant data includes `company_id` with Ash policy enforcement
+2. **Row-level tenancy**: All tenant data includes `tenant_id` with Ash policy enforcement
 3. **Simple RBAC**: Predefined roles (Admin, Manager, User) with fixed permissions
 4. **Team support**: Sub-organizations within companies with team-specific roles
 
@@ -32,7 +32,7 @@ This specification defines a multi-tenant authorization system for the CRM appli
 ### Entities
 
 #### 1. Company (Aggregate Root)
-**Table:** `authz_companies`
+**Table:** `authz_tenants`
 
 **Purpose:** Represents a tenant organization in the multi-tenant system.
 
@@ -41,7 +41,7 @@ This specification defines a multi-tenant authorization system for the CRM appli
 - `name` (string, required) - Company name
 - `slug` (string, required, unique) - URL-friendly identifier
 - `status` (enum: active, suspended, archived) - Company lifecycle status
-- `settings_id` (uuid, FK → authz_company_settings) - Company-specific configuration
+- `settings_id` (uuid, FK → authz_tenant_settings) - Company-specific configuration
 - `created_at` (utc_datetime_usec)
 - `updated_at` (utc_datetime_usec)
 
@@ -73,7 +73,7 @@ This specification defines a multi-tenant authorization system for the CRM appli
 **Attributes:**
 - `id` (uuid, PK)
 - `authn_user_id` (uuid, FK → users, required) - Link to authentication identity
-- `company_id` (uuid, FK → authz_companies, required) - Company membership
+- `tenant_id` (uuid, FK → authz_tenants, required) - Company membership
 - `role` (enum: admin, manager, user) - Company-level role
 - `team_id` (uuid, FK → authz_teams, nullable) - Optional team membership
 - `team_role` (enum: team_lead, team_member, nullable) - Team-specific role
@@ -92,7 +92,7 @@ This specification defines a multi-tenant authorization system for the CRM appli
 
 **Business Rules:**
 - One `authn_user` can have multiple `authz_users` (one per company)
-- Each (`authn_user_id`, `company_id`) pair must be unique
+- Each (`authn_user_id`, `tenant_id`) pair must be unique
 - `team_role` can only be set if `team_id` is present
 - Cannot change role to non-admin if user is the last admin in company
 - Email comes from `authn_user` relationship (not duplicated)
@@ -113,7 +113,7 @@ This specification defines a multi-tenant authorization system for the CRM appli
 
 **Attributes:**
 - `id` (uuid, PK)
-- `company_id` (uuid, FK → authz_companies, required)
+- `tenant_id` (uuid, FK → authz_tenants, required)
 - `name` (string, required)
 - `description` (text, nullable)
 - `status` (enum: active, archived)
@@ -144,7 +144,7 @@ This specification defines a multi-tenant authorization system for the CRM appli
 
 **Attributes:**
 - `id` (uuid, PK)
-- `company_id` (uuid, FK → authz_companies, required)
+- `tenant_id` (uuid, FK → authz_tenants, required)
 - `email` (ci_string, required) - Invitee email
 - `invited_by_authz_user_id` (uuid, FK → authz_users, required)
 - `role` (enum: admin, manager, user) - Role to assign upon acceptance
@@ -182,13 +182,13 @@ This specification defines a multi-tenant authorization system for the CRM appli
 ---
 
 #### 5. CompanySettings (Entity)
-**Table:** `authz_company_settings`
+**Table:** `authz_tenant_settings`
 
 **Purpose:** Store company-specific configuration and feature flags.
 
 **Attributes:**
 - `id` (uuid, PK)
-- `company_id` (uuid, FK → authz_companies, required, unique)
+- `tenant_id` (uuid, FK → authz_tenants, required, unique)
 - `max_users` (integer, nullable) - User limit for company (null = unlimited)
 - `max_teams` (integer, nullable) - Team limit
 - `features` (map/jsonb) - Feature flags (e.g., `%{advanced_reports: true}`)
@@ -218,7 +218,7 @@ This specification defines a multi-tenant authorization system for the CRM appli
 
 **Attributes:**
 - `id` (uuid, PK)
-- `company_id` (uuid, FK → authz_companies, required)
+- `tenant_id` (uuid, FK → authz_tenants, required)
 - `actor_authz_user_id` (uuid, FK → authz_users, nullable) - Who performed action
 - `action` (enum: user_added, role_changed, team_assigned, invitation_sent, etc.)
 - `resource_type` (string) - e.g., "AuthzUser", "Team", "Invitation"
@@ -435,8 +435,8 @@ And an "InvitationExpired" event is emitted
 
 **Scenario: Row-level security**
 ```gherkin
-Given user "Alice" with authz_user in company "Acme Corp" (company_id: 1)
-And user "Bob" with authz_user in company "Beta Inc" (company_id: 2)
+Given user "Alice" with authz_user in company "Acme Corp" (tenant_id: 1)
+And user "Bob" with authz_user in company "Beta Inc" (tenant_id: 2)
 And a contact "John Doe" belonging to company "Acme Corp"
 When Alice queries contacts
 Then she sees "John Doe"
@@ -446,9 +446,9 @@ Then he does NOT see "John Doe"
 
 **Scenario: Company context filtering**
 ```gherkin
-Given the current session is scoped to company_id "1"
+Given the current session is scoped to tenant_id "1"
 When any query is executed for tenant-scoped resources
-Then an automatic filter `company_id: 1` is applied
+Then an automatic filter `tenant_id: 1` is applied
 And users cannot override this filter
 ```
 
@@ -463,9 +463,9 @@ authn_users (existing)
 authz_users ────┐
     ↓           │
     │           │ Many:1
-    │       authz_companies (aggregate root)
+    │       authz_tenants (aggregate root)
     │           │
-    │           ├─→ authz_company_settings (1:1)
+    │           ├─→ authz_tenant_settings (1:1)
     │           ├─→ authz_teams (1:Many)
     │           ├─→ authz_invitations (1:Many)
     │           └─→ authz_audit_logs (1:Many)
@@ -475,9 +475,9 @@ authz_users ────┐
 
 ### Table Definitions
 
-#### `authz_companies`
+#### `authz_tenants`
 ```sql
-CREATE TABLE authz_companies (
+CREATE TABLE authz_tenants (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name VARCHAR(255) NOT NULL,
   slug VARCHAR(100) NOT NULL UNIQUE,
@@ -489,15 +489,15 @@ CREATE TABLE authz_companies (
   CONSTRAINT chk_status CHECK (status IN ('active', 'suspended', 'archived'))
 );
 
-CREATE INDEX idx_authz_companies_slug ON authz_companies(slug);
-CREATE INDEX idx_authz_companies_status ON authz_companies(status);
+CREATE INDEX idx_authz_tenants_slug ON authz_tenants(slug);
+CREATE INDEX idx_authz_tenants_status ON authz_tenants(status);
 ```
 
-#### `authz_company_settings`
+#### `authz_tenant_settings`
 ```sql
-CREATE TABLE authz_company_settings (
+CREATE TABLE authz_tenant_settings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id UUID NOT NULL UNIQUE REFERENCES authz_companies(id) ON DELETE CASCADE,
+  tenant_id UUID NOT NULL UNIQUE REFERENCES authz_tenants(id) ON DELETE CASCADE,
   max_users INTEGER,
   max_teams INTEGER,
   features JSONB DEFAULT '{}',
@@ -507,7 +507,7 @@ CREATE TABLE authz_company_settings (
   updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_authz_company_settings_company ON authz_company_settings(company_id);
+CREATE INDEX idx_authz_tenant_settings_company ON authz_tenant_settings(tenant_id);
 ```
 
 #### `authz_users`
@@ -515,7 +515,7 @@ CREATE INDEX idx_authz_company_settings_company ON authz_company_settings(compan
 CREATE TABLE authz_users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   authn_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  company_id UUID NOT NULL REFERENCES authz_companies(id) ON DELETE CASCADE,
+  tenant_id UUID NOT NULL REFERENCES authz_tenants(id) ON DELETE CASCADE,
   role VARCHAR(20) NOT NULL,
   team_id UUID REFERENCES authz_teams(id) ON DELETE SET NULL,
   team_role VARCHAR(20),
@@ -526,7 +526,7 @@ CREATE TABLE authz_users (
   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
 
-  CONSTRAINT authz_users_unique_user_company UNIQUE (authn_user_id, company_id),
+  CONSTRAINT authz_users_unique_user_company UNIQUE (authn_user_id, tenant_id),
   CONSTRAINT chk_role CHECK (role IN ('admin', 'manager', 'user')),
   CONSTRAINT chk_team_role CHECK (team_role IN ('team_lead', 'team_member') OR team_role IS NULL),
   CONSTRAINT chk_status CHECK (status IN ('active', 'inactive', 'suspended')),
@@ -537,7 +537,7 @@ CREATE TABLE authz_users (
 );
 
 CREATE INDEX idx_authz_users_authn_user ON authz_users(authn_user_id);
-CREATE INDEX idx_authz_users_company ON authz_users(company_id);
+CREATE INDEX idx_authz_users_company ON authz_users(tenant_id);
 CREATE INDEX idx_authz_users_team ON authz_users(team_id);
 CREATE INDEX idx_authz_users_status ON authz_users(status);
 ```
@@ -546,18 +546,18 @@ CREATE INDEX idx_authz_users_status ON authz_users(status);
 ```sql
 CREATE TABLE authz_teams (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id UUID NOT NULL REFERENCES authz_companies(id) ON DELETE CASCADE,
+  tenant_id UUID NOT NULL REFERENCES authz_tenants(id) ON DELETE CASCADE,
   name VARCHAR(255) NOT NULL,
   description TEXT,
   status VARCHAR(20) NOT NULL DEFAULT 'active',
   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
 
-  CONSTRAINT authz_teams_unique_name_per_company UNIQUE (company_id, name),
+  CONSTRAINT authz_teams_unique_name_per_company UNIQUE (tenant_id, name),
   CONSTRAINT chk_status CHECK (status IN ('active', 'archived'))
 );
 
-CREATE INDEX idx_authz_teams_company ON authz_teams(company_id);
+CREATE INDEX idx_authz_teams_company ON authz_teams(tenant_id);
 CREATE INDEX idx_authz_teams_status ON authz_teams(status);
 ```
 
@@ -565,7 +565,7 @@ CREATE INDEX idx_authz_teams_status ON authz_teams(status);
 ```sql
 CREATE TABLE authz_invitations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id UUID NOT NULL REFERENCES authz_companies(id) ON DELETE CASCADE,
+  tenant_id UUID NOT NULL REFERENCES authz_tenants(id) ON DELETE CASCADE,
   email VARCHAR(255) NOT NULL,
   invited_by_authz_user_id UUID NOT NULL REFERENCES authz_users(id),
   role VARCHAR(20) NOT NULL,
@@ -585,11 +585,11 @@ CREATE TABLE authz_invitations (
   CONSTRAINT chk_status CHECK (status IN ('pending', 'accepted', 'expired', 'revoked'))
 );
 
-CREATE INDEX idx_authz_invitations_company ON authz_invitations(company_id);
+CREATE INDEX idx_authz_invitations_company ON authz_invitations(tenant_id);
 CREATE INDEX idx_authz_invitations_email ON authz_invitations(email);
 CREATE INDEX idx_authz_invitations_token ON authz_invitations(token);
 CREATE INDEX idx_authz_invitations_status ON authz_invitations(status);
-CREATE UNIQUE INDEX idx_authz_invitations_unique_pending ON authz_invitations(company_id, email)
+CREATE UNIQUE INDEX idx_authz_invitations_unique_pending ON authz_invitations(tenant_id, email)
   WHERE status = 'pending';
 ```
 
@@ -597,7 +597,7 @@ CREATE UNIQUE INDEX idx_authz_invitations_unique_pending ON authz_invitations(co
 ```sql
 CREATE TABLE authz_audit_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id UUID NOT NULL REFERENCES authz_companies(id) ON DELETE CASCADE,
+  tenant_id UUID NOT NULL REFERENCES authz_tenants(id) ON DELETE CASCADE,
   actor_authz_user_id UUID REFERENCES authz_users(id) ON DELETE SET NULL,
   action VARCHAR(50) NOT NULL,
   resource_type VARCHAR(50) NOT NULL,
@@ -607,7 +607,7 @@ CREATE TABLE authz_audit_logs (
   created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_authz_audit_logs_company ON authz_audit_logs(company_id);
+CREATE INDEX idx_authz_audit_logs_company ON authz_audit_logs(tenant_id);
 CREATE INDEX idx_authz_audit_logs_actor ON authz_audit_logs(actor_authz_user_id);
 CREATE INDEX idx_authz_audit_logs_resource ON authz_audit_logs(resource_type, resource_id);
 CREATE INDEX idx_authz_audit_logs_created_at ON authz_audit_logs(created_at);
@@ -796,8 +796,8 @@ end
 # Store in conn after login/company selection
 %{
   current_authn_user: %User{id: "..."},
-  current_company_id: "...",
-  current_authz_user: %AuthzUser{id: "...", role: :admin, company_id: "..."}
+  current_tenant_id: "...",
+  current_authz_user: %AuthzUser{id: "...", role: :admin, tenant_id: "..."}
 }
 ```
 
@@ -806,7 +806,7 @@ end
 # All queries automatically filtered
 ClienttCrmApp.Authorization
 |> Ash.Query.for_read(:list)
-|> Ash.Query.filter(company_id: ^current_company_id)
+|> Ash.Query.filter(tenant_id: ^current_tenant_id)
 |> Ash.read!(actor: current_authz_user)
 ```
 
@@ -868,9 +868,9 @@ ClienttCrmApp.Authorization
 - **Authorization (authz_users):** "What can you do?" - Permissions within company context
 
 ### Row-Level Security
-- All queries for tenant-scoped data MUST include company_id filter
+- All queries for tenant-scoped data MUST include tenant_id filter
 - Ash policies enforce this at the framework level
-- Never trust client-provided company_id; always use session context
+- Never trust client-provided tenant_id; always use session context
 
 ### Invitation Security
 - Use cryptographically secure tokens (32+ bytes)
@@ -885,7 +885,7 @@ ClienttCrmApp.Authorization
 - Require current password for sensitive role elevations
 
 ### Data Isolation
-- Each query scoped to `current_authz_user.company_id`
+- Each query scoped to `current_authz_user.tenant_id`
 - No cross-tenant data leakage
 - Validate all foreign keys belong to same company
 
@@ -900,7 +900,7 @@ ClienttCrmApp.Authorization
    - **Recommendation:** Add separate `is_super_admin` flag on authn_users for platform administration
 
 3. **Billing Integration:** Should CompanySettings track billing/subscription info?
-   - **Recommendation:** Create separate `Billing` domain; link via company_id
+   - **Recommendation:** Create separate `Billing` domain; link via tenant_id
 
 4. **Permission Granularity:** Are 3 roles (admin, manager, user) sufficient?
    - **Current:** Yes for MVP
@@ -918,7 +918,7 @@ ClienttCrmApp.Authorization
 - **authz_user**: Authorization user (company-scoped identity with roles)
 - **Company**: Tenant organization
 - **Team**: Sub-group within a company
-- **Row-level tenancy**: Multi-tenancy via company_id filtering on shared tables
+- **Row-level tenancy**: Multi-tenancy via tenant_id filtering on shared tables
 - **RBAC**: Role-Based Access Control
 - **Aggregate**: DDD pattern - cluster of entities treated as a single unit
 
@@ -938,7 +938,7 @@ All domain events follow this structure:
   metadata: %{
     actor_id: UUID,
     timestamp: DateTime,
-    company_id: UUID
+    tenant_id: UUID
   }
 }
 ```

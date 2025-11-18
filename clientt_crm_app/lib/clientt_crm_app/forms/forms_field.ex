@@ -62,7 +62,7 @@ defmodule ClienttCrmApp.Forms.FormField do
       change fn changeset, _context ->
         form_id = Ash.Changeset.get_argument(changeset, :form_id)
 
-        # Load form to get company_id and validate status
+        # Load form to get tenant_id and validate status
         form = ClienttCrmApp.Forms.Form |> Ash.get!(form_id)
 
         # Validate form is in draft status
@@ -71,7 +71,7 @@ defmodule ClienttCrmApp.Forms.FormField do
 
         changeset
         |> Ash.Changeset.force_change_attribute(:form_id, form_id)
-        |> Ash.Changeset.force_change_attribute(:company_id, form.company_id)
+        |> Ash.Changeset.force_change_attribute(:tenant_id, form.tenant_id)
       end
 
       # Validate select/radio types have options
@@ -151,7 +151,7 @@ defmodule ClienttCrmApp.Forms.FormField do
   attributes do
     uuid_primary_key :id
 
-    attribute :company_id, :uuid do
+    attribute :tenant_id, :uuid do
       allow_nil? false
       public? true
     end
@@ -232,7 +232,7 @@ defmodule ClienttCrmApp.Forms.FormField do
 
   relationships do
     belongs_to :company, ClienttCrmApp.Authorization.Company do
-      source_attribute :company_id
+      source_attribute :tenant_id
       destination_attribute :id
       allow_nil? false
     end
@@ -265,7 +265,7 @@ defmodule ClienttCrmApp.Forms.FormField do
 
     # Policy: Can read fields if can read parent form
     policy action_type(:read) do
-      # authorize_if relates_to_actor_via(:form, :company_id, :company_id)
+      # authorize_if relates_to_actor_via(:form, :tenant_id, :tenant_id)
       # Placeholder during development
       authorize_if always()
     end
@@ -273,7 +273,7 @@ defmodule ClienttCrmApp.Forms.FormField do
     # Policy: Admin and Manager can create/update/delete fields on draft forms
     policy action([:create, :update, :reorder, :destroy]) do
       # authorize_if actor_attribute_in(:role, [:admin, :manager])
-      # authorize_if relates_to_actor_via(:form, :company_id, :company_id)
+      # authorize_if relates_to_actor_via(:form, :tenant_id, :tenant_id)
       # authorize_if expr(form.status == :draft)
       # Placeholder during development
       authorize_if always()

@@ -13,7 +13,7 @@ Stores company-specific configuration, feature flags, branding, and operational 
 | Attribute | Type | Required | Validation | Description |
 |-----------|------|----------|------------|-------------|
 | id | uuid | Yes | - | Unique identifier |
-| company_id | uuid | Yes | valid Company id | Company these settings belong to (1:1) |
+| tenant_id | uuid | Yes | valid Company id | Company these settings belong to (1:1) |
 | max_users | integer | No | >= 1 if set | Maximum users allowed (null = unlimited) |
 | max_teams | integer | No | >= 1 if set | Maximum teams allowed (null = unlimited) |
 | features | map | Yes | valid JSON | Feature flags (e.g., {"advanced_reports": true}) |
@@ -54,22 +54,22 @@ branding: %{
 
 ## Relationships
 
-- **Belongs to**: Company via company_id (1:1)
+- **Belongs to**: Company via tenant_id (1:1)
 
 ## Domain Events
 
 ### Published Events
 - `authorization.settings_updated`: Triggered when settings change
-  - Payload: {company_id, setting_key, old_value, new_value, updated_by}
+  - Payload: {tenant_id, setting_key, old_value, new_value, updated_by}
   - Consumers: Feature Flag Service, Analytics
 
 - `authorization.feature_toggled`: Triggered when feature flag changes
-  - Payload: {company_id, feature_name, enabled, toggled_by}
+  - Payload: {tenant_id, feature_name, enabled, toggled_by}
   - Consumers: Feature Flag Service, Cache Invalidation
 
 ### Subscribed Events
 - `billing.subscription_changed`: Updates max_users based on plan
-  - Payload: {company_id, plan, max_users}
+  - Payload: {tenant_id, plan, max_users}
   - Action: Update max_users limit
 
 ## Access Patterns
@@ -106,7 +106,7 @@ branding: %{
 ### Actions
 ```elixir
 create :create do
-  accept [:company_id, :max_users, :max_teams, :timezone]
+  accept [:tenant_id, :max_users, :max_teams, :timezone]
   change set_attribute(:features, %{})
   change set_attribute(:branding, %{
     logo_url: nil,
@@ -117,8 +117,8 @@ end
 
 read :read
 read :for_company do
-  argument :company_id, :uuid, allow_nil?: false
-  filter expr(company_id == ^arg(:company_id))
+  argument :tenant_id, :uuid, allow_nil?: false
+  filter expr(tenant_id == ^arg(:tenant_id))
 end
 
 update :update do
@@ -148,7 +148,7 @@ end
 policies do
   # All company members can read settings
   policy action_type(:read) do
-    authorize_if expr(company_id == ^actor(:current_company_id))
+    authorize_if expr(tenant_id == ^actor(:current_tenant_id))
   end
 
   # Only admins can update settings
@@ -199,7 +199,7 @@ end
 
 ### Validations
 ```elixir
-validate present(:company_id)
+validate present(:tenant_id)
 validate numericality(:max_users, greater_than_or_equal_to: 1)
 validate numericality(:max_teams, greater_than_or_equal_to: 1)
 validate timezone_valid()
@@ -208,7 +208,7 @@ validate timezone_valid()
 ## Multi-Tenancy
 
 **Tenant-Scoped**: YES
-- Automatically filtered by company_id
+- Automatically filtered by tenant_id
 - Each company has exactly one settings record
 
 ## Feature Flags
@@ -282,5 +282,5 @@ When a team is created:
 - [ ] current_users_count calculation accurate
 - [ ] current_teams_count calculation accurate
 - [ ] users_remaining calculation accurate
-- [ ] Queries filtered by company_id
+- [ ] Queries filtered by tenant_id
 - [ ] Audit logs created for all updates

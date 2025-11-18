@@ -9,12 +9,12 @@ defmodule ClienttCrmAppWeb.FormLive.Index do
   def mount(_params, _session, socket) do
     # Load forms for current user's company
     import Ash.Query
-    company_id = socket.assigns.current_company_id
+    tenant_id = socket.assigns.current_tenant_id
 
     {:ok, forms} =
       Forms.Form
       |> for_read(:list)
-      |> filter(company_id == ^company_id)
+      |> filter(tenant_id == ^tenant_id)
       |> Ash.read()
 
     {:ok,

@@ -14,7 +14,7 @@ Represents a customizable data collection template that companies can create, co
 | Attribute | Type | Required | Validation | Description |
 |-----------|------|----------|------------|-------------|
 | id | uuid | Yes | - | Unique identifier |
-| company_id | uuid | Yes | valid Company id | Multi-tenancy reference |
+| tenant_id | uuid | Yes | valid Company id | Multi-tenancy reference |
 | name | string | Yes | min: 2, max: 100, unique within company | Form display name |
 | description | string | No | max: 500 | Form purpose description |
 | slug | string | Yes | unique within company, lowercase, alphanumeric + hyphens, max: 50 | URL-safe identifier for embedding |
@@ -110,7 +110,7 @@ Form behavior and configuration:
 
 ## Relationships
 
-- **Belongs to**: Company (via company_id)
+- **Belongs to**: Company (via tenant_id)
 - **Belongs to**: AuthzUser (via created_by)
 - **Has many**: FormField (1:Many, cascade delete)
 - **Has many**: Submission (1:Many, no cascade delete)
@@ -120,19 +120,19 @@ Form behavior and configuration:
 ### Published Events
 
 - `forms.form_created`: Triggered when form is created
-  - Payload: {form_id, company_id, name, slug, created_by, created_at}
+  - Payload: {form_id, tenant_id, name, slug, created_by, created_at}
   - Consumers: Analytics
 
 - `forms.form_published`: Triggered when status changes to published
-  - Payload: {form_id, company_id, name, public_url, published_at}
+  - Payload: {form_id, tenant_id, name, public_url, published_at}
   - Consumers: Analytics, Cache Invalidation, Marketing Automation (future)
 
 - `forms.form_archived`: Triggered when status changes to archived
-  - Payload: {form_id, company_id, archived_by, archived_at, submissions_count}
+  - Payload: {form_id, tenant_id, archived_by, archived_at, submissions_count}
   - Consumers: Analytics, Cleanup Service
 
 - `forms.form_duplicated`: Triggered when form is duplicated
-  - Payload: {new_form_id, original_form_id, company_id, duplicated_by}
+  - Payload: {new_form_id, original_form_id, tenant_id, duplicated_by}
   - Consumers: Analytics
 
 ### Subscribed Events
@@ -143,17 +143,17 @@ None
 
 ### Queries
 
-- **List forms for company**: Filter by company_id, order by updated_at DESC
+- **List forms for company**: Filter by tenant_id, order by updated_at DESC
 - **Get form by ID**: Include fields, submissions_count, last_submission_at
 - **Get form by slug**: Public lookup for embedding (status must be published)
-- **Get published forms**: Filter by status = published AND company_id
+- **Get published forms**: Filter by status = published AND tenant_id
 - **Search forms by name**: Full-text search on name (future enhancement)
 
 ### Common Operations
 
 #### Create
 
-**Required attributes**: name, company_id, created_by
+**Required attributes**: name, tenant_id, created_by
 **Optional attributes**: description, branding, settings
 
 **Side effects**:
@@ -168,7 +168,7 @@ None
 #### Read
 
 **Available to**: All company members
-**Filtering**: Always filtered by company_id via Ash policy
+**Filtering**: Always filtered by tenant_id via Ash policy
 **Public access**: Forms with status='published' accessible via public endpoint
 
 #### Update
@@ -178,7 +178,7 @@ None
 
 **Restrictions**:
 - Cannot update if status is 'published' or 'archived'
-- Cannot update company_id or created_by (immutable)
+- Cannot update tenant_id or created_by (immutable)
 - Slug changes require uniqueness check
 
 **Side effects**:
@@ -301,7 +301,7 @@ None
 
 **Create**:
 - Requires: Admin or Manager role
-- Multi-tenancy: Auto-set company_id from current_company_id
+- Multi-tenancy: Auto-set tenant_id from current_tenant_id
 
 **Update**:
 - Requires: Admin or Manager role
@@ -321,12 +321,12 @@ None
 
 ### Multi-Tenancy
 
-All queries automatically filtered by company_id:
+All queries automatically filtered by tenant_id:
 
 ```elixir
 # Ash policy example
 policy action_type(:read) do
-  authorize_if actor_attribute_equals(:company_id, :company_id)
+  authorize_if actor_attribute_equals(:tenant_id, :tenant_id)
 end
 ```
 
@@ -348,7 +348,7 @@ end
 ```sql
 CREATE TABLE forms_forms (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id UUID NOT NULL REFERENCES authz_companies(id) ON DELETE CASCADE,
+  tenant_id UUID NOT NULL REFERENCES authz_tenants(id) ON DELETE CASCADE,
   name VARCHAR(100) NOT NULL,
   description VARCHAR(500),
   slug VARCHAR(50) NOT NULL,
@@ -361,12 +361,12 @@ CREATE TABLE forms_forms (
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
 
   CONSTRAINT forms_forms_status_check CHECK (status IN ('draft', 'published', 'archived')),
-  CONSTRAINT forms_forms_name_company_unique UNIQUE (company_id, name),
-  CONSTRAINT forms_forms_slug_company_unique UNIQUE (company_id, slug)
+  CONSTRAINT forms_forms_name_company_unique UNIQUE (tenant_id, name),
+  CONSTRAINT forms_forms_slug_company_unique UNIQUE (tenant_id, slug)
 );
 
 -- Indexes for performance
-CREATE INDEX forms_forms_company_id_index ON forms_forms(company_id);
+CREATE INDEX forms_forms_tenant_id_index ON forms_forms(tenant_id);
 CREATE INDEX forms_forms_status_index ON forms_forms(status);
 CREATE INDEX forms_forms_slug_index ON forms_forms(slug);
 CREATE INDEX forms_forms_created_by_index ON forms_forms(created_by);
@@ -382,7 +382,7 @@ CREATE INDEX forms_forms_published_at_index ON forms_forms(published_at DESC) WH
 form = Forms.create_form!(%{
   name: "Contact Us",
   description: "Get in touch with our team",
-  company_id: current_company_id,
+  tenant_id: current_tenant_id,
   created_by: current_authz_user.id,
   branding: %{
     primary_color: "#3B82F6",
@@ -433,7 +433,7 @@ new_form = Forms.duplicate_form!(form, %{
 
 ## Performance Considerations
 
-- **Indexes**: Ensure company_id, status, slug all indexed
+- **Indexes**: Ensure tenant_id, status, slug all indexed
 - **Eager Loading**: When listing forms, load fields_count and submissions_count via Ash aggregates
 - **Caching**: Public form HTML can be cached (future optimization)
 - **Pagination**: List views should paginate at 25 forms per page

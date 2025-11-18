@@ -90,12 +90,12 @@
   "custom_indexes": [],
   "custom_statements": [],
   "has_create_action": true,
-  "hash": "8CE6958C82E45BDFD7D813B1E8B6C5103CC85E5B73E7A89139237F00585F3428",
+  "hash": "C86C37C44BDFDF967E692ACA8388F2843A117F759070A347DAC0AD5014D0147A",
   "identities": [
     {
       "all_tenants?": false,
       "base_filter": null,
-      "index_name": "authz_companies_unique_slug_index",
+      "index_name": "authz_tenants_unique_slug_index",
       "keys": [
         {
           "type": "atom",
@@ -114,5 +114,5 @@
   },
   "repo": "Elixir.ClienttCrmApp.Repo",
   "schema": null,
-  "table": "authz_companies"
+  "table": "authz_tenants"
 }
