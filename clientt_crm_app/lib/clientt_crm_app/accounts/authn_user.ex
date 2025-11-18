@@ -7,6 +7,8 @@ defmodule ClienttCrmApp.Accounts.AuthnUser do
     extensions: [AshAuthentication]
 
   authentication do
+    subject_name :user
+
     add_ons do
       log_out_everywhere do
         apply_on_password_change? true

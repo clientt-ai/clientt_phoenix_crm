@@ -152,7 +152,7 @@ defmodule ClienttCrmAppWeb.PublicFormLive do
                         <p class="mt-1 text-sm text-gray-500"><%= field.help_text %></p>
                       <% end %>
                       <%= if @errors[field.label] do %>
-                        <p class="mt-1 text-sm text-red-600"><%= @errors[field.label] %></p>
+                        <p data-testid={"error-#{slug}"} class="mt-1 text-sm text-red-600"><%= @errors[field.label] %></p>
                       <% end %>
                     </div>
                   <% end %>
