@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const path = require('path');
 
 /**
  * FM-SC-005: View and List All Forms
@@ -8,20 +9,38 @@ const { test, expect } = require('@playwright/test');
  */
 
 test.describe('FM-SC-005: View and List All Forms', () => {
+  const screenshotsDir = path.join(__dirname, 'screenshots');
+
+  // Helper function to capture screenshots with consistent naming
+  async function screenshot(page, name) {
+    await page.screenshot({
+      path: path.join(screenshotsDir, `${name}.png`),
+      fullPage: true
+    });
+  }
 
   test.beforeEach(async ({ page }) => {
     // Login to the application
     await page.goto('/sign-in');
+    await screenshot(page, '01-sign-in-page');
+
     await page.fill('input[name="user[email]"]', 'sample_admin@clientt.com');
     await page.fill('input[name="user[password]"]', 'SampleAdmin123!');
     await page.click('form:has(input[name="user[email]"]) button[type="submit"]');
 
     // Wait for authentication to complete
     await page.waitForLoadState('networkidle');
+    await screenshot(page, '02-after-login');
 
     // Navigate to forms page
-    await page.goto("/forms");
+    await page.goto('/forms');
     await page.waitForLoadState('networkidle');
+
+    // Verify header and sidebar navigation are present on authenticated pages
+    await expect(page.locator('header')).toBeVisible();
+    await expect(page.locator('[data-testid="nav-forms"]')).toBeVisible();
+    await expect(page.locator('h1')).toContainText('Forms');
+    await screenshot(page, '03-forms-listing-page');
   });
 
   test('should display forms listing page successfully', async ({ page }) => {
@@ -31,8 +50,8 @@ test.describe('FM-SC-005: View and List All Forms', () => {
     // Verify page heading
     await expect(page.locator('h1')).toContainText('Forms');
 
-    // Verify "Create Form" button exists
-    await expect(page.locator('a[href="/forms/new"]')).toBeVisible();
+    // Verify "Create Form" button exists (use testid to avoid matching sidebar link)
+    await expect(page.locator('[data-testid="create-form-button"]')).toBeVisible();
 
     // Verify table structure exists
     await expect(page.locator('table')).toBeVisible();
@@ -40,20 +59,24 @@ test.describe('FM-SC-005: View and List All Forms', () => {
     // Verify table headers
     const headers = page.locator('table thead th');
     await expect(headers.first()).toContainText('Name');
+    await screenshot(page, '04-listing-page-verified');
   });
 
   test('should display existing forms in the table', async ({ page }) => {
     // Create a test form first
     const formName = `List Test Form ${Date.now()}`;
 
-    await page.click('a[href="/forms/new"]');
+    await page.click('[data-testid="create-form-button"]');
     await page.waitForLoadState('networkidle');
+    await screenshot(page, '05-create-form-page');
     await page.fill('[data-testid="form-name-input"]', formName);
     await page.fill('[data-testid="form-description-input"]', 'Test description');
+    await screenshot(page, '06-form-filled');
     await page.click('[data-testid="save-form-button"]');
 
     // Wait for success notification
     await expect(page.locator('[data-testid="success-notification"]').first()).toBeVisible({ timeout: 10000 });
+    await screenshot(page, '07-form-saved');
 
     // Wait for notification to auto-dismiss before navigating
     // Notification may still be visible but should not block navigation
@@ -68,16 +91,18 @@ test.describe('FM-SC-005: View and List All Forms', () => {
 
     // Verify status column shows Draft
     await expect(formRow.locator('td').nth(1)).toContainText('Draft');
+    await screenshot(page, '08-form-in-listing');
   });
 
   test('should navigate to form builder when clicking Create Form', async ({ page }) => {
     // Click Create Form button
-    await page.click('a[href="/forms/new"]');
+    await page.click('[data-testid="create-form-button"]');
     await page.waitForLoadState('networkidle');
 
     // Verify we're on the form builder page
     await expect(page).toHaveURL(/.*forms\/new/);
     await expect(page.locator('h1')).toContainText('Create Form');
+    await screenshot(page, '09-create-form-navigation');
   });
 
   test('should navigate to form edit when clicking Edit link', async ({ page }) => {
@@ -92,16 +117,18 @@ test.describe('FM-SC-005: View and List All Forms', () => {
       // Verify we're on the edit page
       await expect(page).toHaveURL(/.*forms\/.*\/edit/);
       await expect(page.locator('h1')).toContainText('Edit Form');
+      await screenshot(page, '10-edit-form-navigation');
     } else {
       // Create a form first, then test edit
       const formName = `Edit Test Form ${Date.now()}`;
 
-      await page.click('a[href="/forms/new"]');
+      await page.click('[data-testid="create-form-button"]');
       await page.waitForLoadState('networkidle');
       await page.fill('[data-testid="form-name-input"]', formName);
       await page.fill('[data-testid="form-description-input"]', 'Test');
       await page.click('[data-testid="save-form-button"]');
       await expect(page.locator('[data-testid="success-notification"]').first()).toBeVisible({ timeout: 10000 });
+      await screenshot(page, '11-form-created-for-edit');
 
       // Wait for notification to auto-dismiss before navigating
       // Notification may still be visible but should not block navigation
@@ -115,6 +142,7 @@ test.describe('FM-SC-005: View and List All Forms', () => {
       await page.waitForLoadState('networkidle');
 
       await expect(page).toHaveURL(/.*forms\/.*\/edit/);
+      await screenshot(page, '12-edit-form-page');
     }
   });
 
