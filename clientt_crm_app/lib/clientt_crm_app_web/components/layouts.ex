@@ -250,19 +250,19 @@ defmodule ClienttCrmAppWeb.Layouts do
             icon="hero-document-text"
             expanded={true}
           >
-            <.sidebar_link navigate={~p"/forms/dashboard"} active={@current_page == "dashboard"}>
+            <.sidebar_link navigate={~p"/forms/dashboard"} active={@current_page == "dashboard"} data-testid="nav-dashboard">
               <.icon name="hero-chart-bar" class="w-4 h-4" />
               Dashboard
             </.sidebar_link>
-            <.sidebar_link navigate={~p"/forms"} active={@current_page == "forms"}>
+            <.sidebar_link navigate={~p"/forms"} active={@current_page == "forms"} data-testid="nav-forms">
               <.icon name="hero-document-duplicate" class="w-4 h-4" />
               All Forms
             </.sidebar_link>
-            <.sidebar_link navigate={~p"/forms/new"} active={@current_page == "form-builder"}>
+            <.sidebar_link navigate={~p"/forms/new"} active={@current_page == "form-builder"} data-testid="nav-form-builder">
               <.icon name="hero-plus-circle" class="w-4 h-4" />
               Form Builder
             </.sidebar_link>
-            <.sidebar_link navigate={~p"/forms/analytics"} active={@current_page == "analytics"}>
+            <.sidebar_link navigate={~p"/forms/analytics"} active={@current_page == "analytics"} data-testid="nav-analytics">
               <.icon name="hero-chart-pie" class="w-4 h-4" />
               Analytics
             </.sidebar_link>

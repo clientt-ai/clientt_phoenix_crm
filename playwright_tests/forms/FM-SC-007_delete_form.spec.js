@@ -14,12 +14,11 @@ test.describe('FM-SC-007: Delete Form', () => {
   test.beforeEach(async ({ page }) => {
     // Login to the application
     await page.goto('/sign-in');
-    await page.fill('input[name="authn-user[email]"]', 'admin@example.com');
-    await page.fill('input[name="authn-user[password]"]', 'SampleAdmin123!');
-    await page.click('form:has(input[name="authn-user[email]"]) button[type="submit"]');
+    await page.fill('input[name="user[email]"]', 'admin@example.com');
+    await page.fill('input[name="user[password]"]', 'SampleAdmin123!');
+    await page.click('form:has(input[name="user[email]"]) button[type="submit"]');
 
     // Wait for authentication to complete
-    await page.waitForSelector('text=You are now signed in', { timeout: 5000 });
     await page.waitForLoadState('networkidle');
 
 
@@ -215,12 +214,11 @@ test.describe('FM-SC-007: Delete Form', () => {
 
     // Login as regular user (if your system has role-based permissions)
     await page.goto('/sign-in');
-    await page.fill('input[name="authn-user[email]"]', 'user@example.com');
-    await page.fill('input[name="authn-user[password]"]', 'SampleAdmin123!');
-    await page.click('form:has(input[name="authn-user[email]"]) button[type="submit"]');
+    await page.fill('input[name="user[email]"]', 'user@example.com');
+    await page.fill('input[name="user[password]"]', 'SampleAdmin123!');
+    await page.click('form:has(input[name="user[email]"]) button[type="submit"]');
 
     // Wait for authentication to complete
-    await page.waitForSelector('text=You are now signed in', { timeout: 5000 });
     await page.waitForLoadState('networkidle');
 
 

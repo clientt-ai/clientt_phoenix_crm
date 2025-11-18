@@ -59,11 +59,14 @@ defmodule ClienttCrmAppWeb.CoreComponents do
       class="toast toast-top toast-end z-50"
       {@rest}
     >
-      <div class={[
-        "alert w-80 sm:w-96 max-w-80 sm:max-w-96 text-wrap",
-        @kind == :info && "alert-info",
-        @kind == :error && "alert-error"
-      ]}>
+      <div
+        data-testid={if @kind == :info, do: "success-notification", else: "error-notification"}
+        class={[
+          "alert w-80 sm:w-96 max-w-80 sm:max-w-96 text-wrap",
+          @kind == :info && "alert-info",
+          @kind == :error && "alert-error"
+        ]}
+      >
         <.icon :if={@kind == :info} name="hero-information-circle" class="size-5 shrink-0" />
         <.icon :if={@kind == :error} name="hero-exclamation-circle" class="size-5 shrink-0" />
         <div>
