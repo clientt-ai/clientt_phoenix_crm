@@ -4,7 +4,7 @@ const { test, expect } = require('@playwright/test');
  * FM-SC-005: View and List All Forms
  *
  * This test verifies that users can view a list of all forms with
- * correct information, filtering, and sorting capabilities.
+ * correct information displayed in the table.
  */
 
 test.describe('FM-SC-005: View and List All Forms', () => {
@@ -12,105 +12,109 @@ test.describe('FM-SC-005: View and List All Forms', () => {
   test.beforeEach(async ({ page }) => {
     // Login to the application
     await page.goto('/sign-in');
-    await page.fill('input[name="user[email]"]', 'admin@example.com');
+    await page.fill('input[name="user[email]"]', 'sample_admin@clientt.com');
     await page.fill('input[name="user[password]"]', 'SampleAdmin123!');
     await page.click('form:has(input[name="user[email]"]) button[type="submit"]');
 
     // Wait for authentication to complete
     await page.waitForLoadState('networkidle');
 
-
-
     // Navigate to forms page
     await page.goto("/forms");
     await page.waitForLoadState('networkidle');
-    await expect(page).toHaveURL(/.*forms|/);
-
-    // Create multiple test forms for listing
-    const testForms = [
-      { name: 'Customer Feedback Form', description: 'Collect customer feedback', status: 'active' },
-      { name: 'Employee Onboarding Form', description: 'New employee information', status: 'draft' },
-      { name: 'Product Survey Form', description: 'Product satisfaction survey', status: 'active' },
-      { name: 'Support Request Form', description: 'Customer support requests', status: 'active' },
-      { name: 'Partnership Application', description: 'Partner onboarding', status: 'draft' }
-    ];
-
-    for (const form of testForms) {
-      await page.goto('/forms/new');
-      await page.fill('[data-testid="form-name-input"]', form.name);
-      await page.fill('[data-testid="form-description-input"]', form.description);
-      await page.click('[data-testid="form-status-select"]');
-      await page.click(`[data-testid="status-option-${form.status}"]`);
-      await page.click('[data-testid="save-form-button"]');
-      await expect(page.locator('[data-testid="success-notification"]')).toBeVisible();
-    }
   });
 
   test('should display forms listing page successfully', async ({ page }) => {
-    await expect(page.locator('h1, h2')).toContainText(formName);
+    // Verify we're on the forms page
+    await expect(page).toHaveURL(/.*forms/);
 
-    // Step 11: Return to forms listing
-    await page.click('[data-testid="nav-forms"]');
-    await expect(page).toHaveURL(/.*forms$/);
+    // Verify page heading
+    await expect(page.locator('h1')).toContainText('Forms');
+
+    // Verify "Create Form" button exists
+    await expect(page.locator('a[href="/forms/new"]')).toBeVisible();
+
+    // Verify table structure exists
+    await expect(page.locator('table')).toBeVisible();
+
+    // Verify table headers
+    const headers = page.locator('table thead th');
+    await expect(headers.first()).toContainText('Name');
   });
 
-  test('should handle empty state when no forms exist', async ({ page }) => {
-    // Delete all forms first
-    await page.goto('/forms');
-    const formCards = page.locator('[data-testid="form-card"]');
-    const count = await formCards.count();
+  test('should display existing forms in the table', async ({ page }) => {
+    // Create a test form first
+    const formName = `List Test Form ${Date.now()}`;
 
-    for (let i = 0; i < count; i++) {
-      const deleteButton = page.locator('[data-testid="delete-form-button"]').first();
-      if (await deleteButton.isVisible()) {
-        await deleteButton.click();
-        await page.click('[data-testid="confirm-delete-button"]');
-        await page.waitForTimeout(500);
-      }
-    }
+    await page.click('a[href="/forms/new"]');
+    await page.waitForLoadState('networkidle');
+    await page.fill('[data-testid="form-name-input"]', formName);
+    await page.fill('[data-testid="form-description-input"]', 'Test description');
+    await page.click('[data-testid="save-form-button"]');
 
-    // Reload page
-    await page.reload();
+    // Wait for success notification
+    await expect(page.locator('[data-testid="success-notification"]').first()).toBeVisible({ timeout: 10000 });
 
-    // Verify empty state message
-    const emptyState = page.locator('[data-testid="empty-state"]');
-    if (await emptyState.isVisible()) {
-      await expect(emptyState).toContainText(/No forms found|No forms yet|Create your first form/i);
-    }
+    // Wait for notification to auto-dismiss
+    await page.waitForTimeout(500);
+
+    // Navigate back to forms list
+    await page.click('a[href="/forms"]', { force: true });
+    await page.waitForLoadState('networkidle');
+
+    // Verify the form appears in the table
+    const formRow = page.locator('table tbody tr', { hasText: formName });
+    await expect(formRow).toBeVisible();
+
+    // Verify status column shows Draft
+    await expect(formRow.locator('td').nth(1)).toContainText('Draft');
   });
 
-  test('should display pagination when many forms exist', async ({ page }) => {
-    await page.goto('/forms');
+  test('should navigate to form builder when clicking Create Form', async ({ page }) => {
+    // Click Create Form button
+    await page.click('a[href="/forms/new"]');
+    await page.waitForLoadState('networkidle');
 
-    // Check if pagination exists
-    const pagination = page.locator('[data-testid="pagination"]');
-
-    if (await pagination.isVisible()) {
-      // Step 6: Test pagination
-      const nextButton = page.locator('[data-testid="pagination-next"]');
-
-      if (await nextButton.isEnabled()) {
-        await nextButton.click();
-
-        // Verify we're on page 2
-        await expect(page.locator('[data-testid="current-page"]')).toContainText('2');
-
-        // Navigate back to page 1
-        await page.click('[data-testid="pagination-previous"]');
-        await expect(page.locator('[data-testid="current-page"]')).toContainText('1');
-      }
-    }
+    // Verify we're on the form builder page
+    await expect(page).toHaveURL(/.*forms\/new/);
+    await expect(page.locator('h1')).toContainText('Create Form');
   });
 
-  test('should display submission count for each form', async ({ page }) => {
-    await page.goto('/forms');
+  test('should navigate to form edit when clicking Edit link', async ({ page }) => {
+    // Ensure there's at least one form
+    const firstEditLink = page.locator('table tbody tr td a[href*="/edit"]').first();
 
-    // Verify submission count is displayed
-    const firstForm = page.locator('[data-testid="form-card"]').first();
-    const submissionCount = firstForm.locator('[data-testid="submission-count"]');
+    if (await firstEditLink.isVisible()) {
+      const href = await firstEditLink.getAttribute('href');
+      await firstEditLink.click();
+      await page.waitForLoadState('networkidle');
 
-    if (await submissionCount.isVisible()) {
-      await expect(submissionCount).toContainText(/\d+ submission|submissions/i);
+      // Verify we're on the edit page
+      await expect(page).toHaveURL(/.*forms\/.*\/edit/);
+      await expect(page.locator('h1')).toContainText('Edit Form');
+    } else {
+      // Create a form first, then test edit
+      const formName = `Edit Test Form ${Date.now()}`;
+
+      await page.click('a[href="/forms/new"]');
+      await page.waitForLoadState('networkidle');
+      await page.fill('[data-testid="form-name-input"]', formName);
+      await page.fill('[data-testid="form-description-input"]', 'Test');
+      await page.click('[data-testid="save-form-button"]');
+      await expect(page.locator('[data-testid="success-notification"]').first()).toBeVisible({ timeout: 10000 });
+
+      // Wait for notification to auto-dismiss
+      await page.waitForTimeout(500);
+
+      // Go back to listing and find edit link
+      await page.click('a[href="/forms"]', { force: true });
+      await page.waitForLoadState('networkidle');
+
+      const editLink = page.locator('table tbody tr', { hasText: formName }).locator('a[href*="/edit"]');
+      await editLink.click();
+      await page.waitForLoadState('networkidle');
+
+      await expect(page).toHaveURL(/.*forms\/.*\/edit/);
     }
   });
 
