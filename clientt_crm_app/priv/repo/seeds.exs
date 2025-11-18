@@ -46,8 +46,8 @@ company =
               AuthnUser
               |> Ash.Changeset.for_create(:register_with_password, %{
                 email: temp_admin_email,
-                password: "TempBootstrap123!",
-                password_confirmation: "TempBootstrap123!"
+                password: "Hang123!",
+                password_confirmation: "Hang123!"
               })
               |> Ash.create(authorize?: false)
 
@@ -85,7 +85,7 @@ IO.puts("\n👥 Setting up sample users for all roles...")
 for role <- roles do
   email = "sample_#{role}@clientt.com"
   display_name = "Sample #{String.capitalize(to_string(role))}"
-  password = "Sample#{String.capitalize(to_string(role))}123!"
+  password = "Hang123!"
 
   IO.puts("\n  📧 Processing #{email} (#{role})...")
 
@@ -174,7 +174,7 @@ IO.puts("")
 
 for role <- roles do
   email = "sample_#{role}@clientt.com"
-  password = "Sample#{String.capitalize(to_string(role))}123!"
+  password = "Hang123!"
   IO.puts("   • #{email}")
   IO.puts("     Role: #{role}")
   IO.puts("     Password: #{password}")
