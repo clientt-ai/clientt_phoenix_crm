@@ -20,16 +20,25 @@ test.describe('FM-SC-008: Form Field Type Configuration', () => {
     await page.click('form:has(input[name="user[email]"]) button[type="submit"]');
     await page.waitForLoadState('networkidle');
 
-    // Create a new form for field type testing
-    formName = `Field Types Test ${Date.now()}`;
-    await page.goto('/forms/new');
+    // Navigate to forms page via sidebar (like a manual tester would)
+    await page.click('a[href="/forms"]');
     await page.waitForLoadState('networkidle');
+    await expect(page.locator('h1')).toContainText('Forms');
+
+    // Create a new form for field type testing - click the Create Form button
+    formName = `Field Types Test ${Date.now()}`;
+    await page.click('[data-testid="create-form-button"]');
+    await page.waitForLoadState('networkidle');
+
     // Wait for form input to be ready
     await expect(page.locator('[data-testid="form-name-input"]')).toBeVisible({ timeout: 10000 });
     await page.fill('[data-testid="form-name-input"]', formName);
     await page.fill('[data-testid="form-description-input"]', 'Field type validation testing');
     await page.click('[data-testid="save-form-button"]');
     await expect(page.locator('[data-testid="success-notification"]').first()).toBeVisible({ timeout: 10000 });
+
+    // Wait for notification to auto-dismiss before navigating
+    // Notification may still be visible but should not block navigation
 
     // Navigate back to listing to get the proper edit URL
     await page.click('a[href="/forms"]');

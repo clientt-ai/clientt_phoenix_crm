@@ -16,14 +16,13 @@ test.describe('FM-SC-001: Create New Form Successfully', () => {
     await page.fill('input[name="user[password]"]', 'SampleAdmin123!');
     await page.click('form:has(input[name="user[email]"]) button[type="submit"]');
 
-    // Wait for authentication to complete
+    // Wait for authentication to complete and dashboard to load
     await page.waitForLoadState('networkidle');
 
-
-
-    // Navigate to forms page
-    await page.goto("/forms");
+    // Navigate to forms page via sidebar (like a manual tester would)
+    await page.click('a[href="/forms"]');
     await page.waitForLoadState('networkidle');
+    await expect(page.locator('h1')).toContainText('Forms');
   });
 
   test('should create a new form with valid data', async ({ page }) => {
@@ -60,9 +59,6 @@ test.describe('FM-SC-001: Create New Form Successfully', () => {
     console.log('Save button found, clicking...');
     await saveButton.click();
 
-    // Wait for LiveView to process
-    await page.waitForTimeout(2000);
-
     // Step 8: Verify success notification appears (allow time for LiveView to process)
     // Use .first() to get the actual notification (not the hidden client/server error containers)
     const successNotification = page.locator('[data-testid="success-notification"]').first();
@@ -75,9 +71,9 @@ test.describe('FM-SC-001: Create New Form Successfully', () => {
     // The form is saved but user stays on builder page
 
     // Step 10: Navigate back to forms listing using the "Back to Forms" link
-    // Wait a moment for notification to not block click
-    await page.waitForTimeout(500);
-    await page.click('a[href="/forms"]', { force: true });
+    // Wait for notification to auto-dismiss before clicking navigation
+    // Notification may still be visible but should not block navigation
+    await page.click('a[href="/forms"]');
     await page.waitForLoadState('networkidle');
 
     // Verify the form appears in the listing (table structure)
@@ -121,11 +117,11 @@ test.describe('FM-SC-001: Create New Form Successfully', () => {
     // Wait for success (allow time for LiveView to process)
     await expect(page.locator('[data-testid="success-notification"]').first()).toBeVisible({ timeout: 10000 });
 
-    // Wait for notification to not block clicks
-    await page.waitForTimeout(500);
+    // Wait for notification to auto-dismiss before clicking navigation
+    // Notification may still be visible but should not block navigation
 
-    // Try to create another form with the same name
-    await page.click('a[href="/forms"]', { force: true });
+    // Try to create another form with the same name - navigate via UI
+    await page.click('a[href="/forms"]');
     await page.waitForLoadState('networkidle');
     await page.click('[data-testid="create-form-button"]');
     await page.waitForLoadState('networkidle');
@@ -134,9 +130,6 @@ test.describe('FM-SC-001: Create New Form Successfully', () => {
     await page.fill('[data-testid="form-name-input"]', uniqueName);
     await page.fill('[data-testid="form-description-input"]', 'Another description');
     await page.click('[data-testid="save-form-button"]');
-
-    // Wait for LiveView to process
-    await page.waitForTimeout(2000);
 
     // Verify uniqueness validation error - this should show in the form errors
     // The error may be "has already been taken" from Ash identity constraint

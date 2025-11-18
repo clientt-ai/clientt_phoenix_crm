@@ -21,14 +21,16 @@ test.describe('FM-SC-002: Configure Form Fields and Validation', () => {
     // Wait for authentication to complete
     await page.waitForLoadState('networkidle');
 
-    // Navigate to forms page
-    await page.goto("/forms");
+    // Navigate to forms page via sidebar (like a manual tester would)
+    await page.click('a[href="/forms"]');
+    await page.waitForLoadState('networkidle');
+    await expect(page.locator('h1')).toContainText('Forms');
+
+    // Create a test form to configure - click the Create Form button
+    const formName = `Config Test Form ${Date.now()}`;
+    await page.click('[data-testid="create-form-button"]');
     await page.waitForLoadState('networkidle');
 
-    // Create a test form to configure
-    const formName = `Config Test Form ${Date.now()}`;
-    await page.goto('/forms/new');
-    await page.waitForLoadState('networkidle');
     // Wait for form input to be ready
     await expect(page.locator('[data-testid="form-name-input"]')).toBeVisible({ timeout: 10000 });
     await page.fill('[data-testid="form-name-input"]', formName);
@@ -36,8 +38,8 @@ test.describe('FM-SC-002: Configure Form Fields and Validation', () => {
     await page.click('[data-testid="save-form-button"]');
     await expect(page.locator('[data-testid="success-notification"]').first()).toBeVisible({ timeout: 10000 });
 
-    // Wait for notification to auto-dismiss
-    await page.waitForTimeout(500);
+    // Wait for notification to auto-dismiss before continuing
+    // Notification may still be visible but should not block navigation
 
     // Extract form ID from URL for later use
     await page.waitForURL(/.*forms\/[a-zA-Z0-9-]+/);
