@@ -155,14 +155,14 @@ Located in top navigation near user menu:
 ```heex
 <div class="dropdown dropdown-end mr-4">
   <label tabindex="0" class="btn btn-ghost">
-    <%= @current_company.name %> ▾
+    <%= @current_tenant.name %> ▾
   </label>
   <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
     <%= for company <- @user_companies do %>
       <li>
         <.link phx-click="switch_company" phx-value-id={company.id}>
           <%= company.name %>
-          <%= if company.id == @current_company.id do %>
+          <%= if company.id == @current_tenant.id do %>
             <span class="badge badge-primary">Active</span>
           <% end %>
         </.link>

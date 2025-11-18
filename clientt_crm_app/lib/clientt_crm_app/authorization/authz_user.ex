@@ -7,12 +7,12 @@ defmodule ClienttCrmApp.Authorization.AuthzUser do
 
   ## Key Concepts
   - **authn_user_id**: Reference to authentication user (WHO you are)
-  - **company_id**: Which company this authorization applies to
+  - **tenant_id**: Which company this authorization applies to
   - **role**: Company-level role (admin, manager, user)
   - **team_id/team_role**: Optional team membership and role
 
   ## Business Rules
-  - Each (authn_user_id, company_id) pair must be unique
+  - Each (authn_user_id, tenant_id) pair must be unique
   - If team_role is set, team_id MUST be set
   - If team_id is set, team must belong to same company
   """
@@ -43,16 +43,16 @@ defmodule ClienttCrmApp.Authorization.AuthzUser do
         allow_nil? false
       end
 
-      argument :company_id, :uuid do
+      argument :tenant_id, :uuid do
         allow_nil? false
       end
 
-      filter expr(authn_user_id == ^arg(:authn_user_id) and company_id == ^arg(:company_id))
+      filter expr(authn_user_id == ^arg(:authn_user_id) and tenant_id == ^arg(:tenant_id))
     end
 
     create :create do
       primary? true
-      accept [:authn_user_id, :company_id, :role, :team_id, :team_role, :display_name]
+      accept [:authn_user_id, :tenant_id, :role, :team_id, :team_role, :display_name]
 
       change fn changeset, _context ->
         changeset
@@ -78,7 +78,7 @@ defmodule ClienttCrmApp.Authorization.AuthzUser do
 
       validate fn changeset, _context ->
         team_id = Ash.Changeset.get_attribute(changeset, :team_id)
-        company_id = changeset.data.company_id
+        tenant_id = changeset.data.tenant_id
 
         if team_id do
           # TODO: Validate team belongs to same company
@@ -145,7 +145,7 @@ defmodule ClienttCrmApp.Authorization.AuthzUser do
       public? true
     end
 
-    attribute :company_id, :uuid do
+    attribute :tenant_id, :uuid do
       allow_nil? false
       public? true
     end
@@ -202,7 +202,7 @@ defmodule ClienttCrmApp.Authorization.AuthzUser do
     end
 
     belongs_to :company, ClienttCrmApp.Authorization.Company do
-      source_attribute :company_id
+      source_attribute :tenant_id
       destination_attribute :id
       allow_nil? false
     end
@@ -228,11 +228,11 @@ defmodule ClienttCrmApp.Authorization.AuthzUser do
   end
 
   identities do
-    identity :unique_user_company, [:authn_user_id, :company_id]
+    identity :unique_user_company, [:authn_user_id, :tenant_id]
   end
 
   policies do
-    # Multi-tenancy: All queries automatically filtered by company_id
+    # Multi-tenancy: All queries automatically filtered by tenant_id
     # This will be implemented in the multi-tenancy policies task
 
     # Policy: Company members can read authz_users in their company

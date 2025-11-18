@@ -21,7 +21,7 @@ I performed a comprehensive review of the Forms Dashboard dev_task-prompts_and_p
 ### ⚠️ What Needs Attention
 
 **CRITICAL (Must answer before implementation):**
-1. **Multi-tenancy scoping** - Forms database schema missing `company_id` despite project having multitenancy system
+1. **Multi-tenancy scoping** - Forms database schema missing `tenant_id` despite project having multitenancy system
 2. **Role assignment workflow** - How do users get form_admin role? No UI specified
 3. **Form lifecycle** - Status transitions not fully defined
 4. **Submission editing** - Can submissions be edited/deleted? By whom?
@@ -93,7 +93,7 @@ I performed a comprehensive review of the Forms Dashboard dev_task-prompts_and_p
 CREATE TABLE forms (
   id UUID PRIMARY KEY,
   user_id UUID NOT NULL,  -- ✅ Has this
-  -- Missing: company_id UUID  -- ❌ No company scoping!
+  -- Missing: tenant_id UUID  -- ❌ No company scoping!
   ...
 );
 ```
@@ -132,7 +132,7 @@ Read and answer these files **in this order:**
 Based on your answers, update:
 
 1. **PRIMARY-OVERVIEW.md**
-   - Database schema (add company_id if Q24 = Yes)
+   - Database schema (add tenant_id if Q24 = Yes)
    - Update phases if needed
 
 2. **Track READMEs**
@@ -162,7 +162,7 @@ START
 ├─ Q24: Multi-tenancy?
 │  ├─ YES → Update ALL schemas, resources, policies (+2-3 days work)
 │  ├─ NO → Use current schema (but risk future refactor)
-│  └─ HYBRID → Add nullable company_id (future-proof)
+│  └─ HYBRID → Add nullable tenant_id (future-proof)
 │
 ├─ Q25: Role assignment?
 │  ├─ Settings UI → Add to Track 5 scope

@@ -66,7 +66,7 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
     errors = validate_form_settings(name)
 
     cond do
-      is_nil(socket.assigns.current_company_id) || is_nil(socket.assigns.current_authz_user_id) ->
+      is_nil(socket.assigns.current_tenant_id) || is_nil(socket.assigns.current_authz_user_id) ->
         {:noreply, put_flash(socket, :error, "No company assigned. Please contact administrator.")}
 
       errors != %{} ->
@@ -76,7 +76,7 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
         form_attrs = %{
           name: name,
           description: description,
-          company_id: socket.assigns.current_company_id,
+          tenant_id: socket.assigns.current_tenant_id,
           created_by_id: socket.assigns.current_authz_user_id
         }
 

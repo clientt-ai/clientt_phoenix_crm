@@ -119,7 +119,7 @@ Use this skill when you have:
    - **Multi-Tenancy/Authorization Patterns:**
      - Check `specs/01-domains/authorization/` for company scoping requirements
      - Review `specs/01-domains/authorization/policies/row_level_security.md`
-     - Note: ALL tenant-scoped resources MUST have `company_id` column
+     - Note: ALL tenant-scoped resources MUST have `tenant_id` column
      - Review session management requirements (`live_authz_auth.ex`, `on_mount` hooks)
 
    - **Role-Based Access Control:**
@@ -148,7 +148,7 @@ Use this skill when you have:
    **Reviewed:** [Date]
 
    ## Multi-Tenancy Requirements
-   - [What was found about company_id requirements]
+   - [What was found about tenant_id requirements]
 
    ## Authorization Patterns
    - [Existing role structure]
@@ -169,18 +169,18 @@ Use this skill when you have:
 
 4. **Cross-Reference with Implementation Plans:**
    - Flag any conflicts between Figma export and existing specs
-   - Update database schemas to include `company_id` where needed
+   - Update database schemas to include `tenant_id` where needed
    - Align role definitions with existing authorization system
    - Note required session management components
 
 **Questions to Answer from Specs:**
-- Is multi-tenancy implemented? (Check for `authz_companies` table)
+- Is multi-tenancy implemented? (Check for `authz_tenants` table)
 - What roles exist? (Check authorization domain)
 - Is there a permission system? (Check for RBAC patterns)
 - What's the deletion strategy? (Soft delete vs status fields)
 - What design system is being used? (DaisyUI, etc.)
 
-**⚠️ CRITICAL:** If specs indicate multi-tenancy exists, ALL new tables MUST include `company_id` column and proper row-level security policies.
+**⚠️ CRITICAL:** If specs indicate multi-tenancy exists, ALL new tables MUST include `tenant_id` column and proper row-level security policies.
 
 **Output:** SPEC-INSIGHTS.md with all findings that inform implementation decisions
 

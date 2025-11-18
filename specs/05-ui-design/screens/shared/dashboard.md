@@ -146,11 +146,11 @@ Add company switcher and company-specific dashboard:
 ```heex
 <div class="flex justify-between items-center mb-6">
   <h1 class="text-3xl font-bold">Dashboard</h1>
-  <.company_switcher current_company={@current_company} />
+  <.company_switcher current_tenant={@current_tenant} />
 </div>
 
 <div class="alert alert-info mb-6">
-  Viewing: <%= @current_company.name %>
+  Viewing: <%= @current_tenant.name %>
 </div>
 ```
 

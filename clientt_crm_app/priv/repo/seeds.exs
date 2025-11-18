@@ -121,7 +121,7 @@ for role <- roles do
   if authn_user do
     # Create or update the authorization user (AuthzUser)
     case AuthzUser
-         |> Ash.Query.filter(authn_user_id == ^authn_user.id and company_id == ^company.id)
+         |> Ash.Query.filter(authn_user_id == ^authn_user.id and tenant_id == ^company.id)
          |> Ash.read_one(authorize?: false) do
       {:ok, nil} ->
         IO.puts("    ➕ Creating authorization record...")
@@ -129,7 +129,7 @@ for role <- roles do
         case AuthzUser
              |> Ash.Changeset.for_create(:create, %{
                authn_user_id: authn_user.id,
-               company_id: company.id,
+               tenant_id: company.id,
                role: role,
                display_name: display_name
              })
@@ -199,7 +199,7 @@ admin_email = "sample_admin@clientt.com"
 
 {:ok, admin_authz_user} =
   AuthzUser
-  |> Ash.Query.filter(authn_user_id == ^admin_authn_user.id and company_id == ^company.id)
+  |> Ash.Query.filter(authn_user_id == ^admin_authn_user.id and tenant_id == ^company.id)
   |> Ash.read_one(authorize?: false)
 
 # Sample Form 1: Contact Form (Published)
@@ -207,13 +207,13 @@ IO.puts("  📝 Creating Contact Form...")
 
 contact_form =
   case Form
-       |> Ash.Query.filter(company_id == ^company.id and slug == "contact-us")
+       |> Ash.Query.filter(tenant_id == ^company.id and slug == "contact-us")
        |> Ash.read_one(authorize?: false) do
     {:ok, nil} ->
       {:ok, form} =
         Form
         |> Ash.Changeset.new()
-        |> Ash.Changeset.set_argument(:company_id, company.id)
+        |> Ash.Changeset.set_argument(:tenant_id, company.id)
         |> Ash.Changeset.set_argument(:created_by_id, admin_authz_user.id)
         |> Ash.Changeset.for_create(
           :create,
@@ -296,13 +296,13 @@ IO.puts("\n  📝 Creating Job Application Form...")
 
 job_form =
   case Form
-       |> Ash.Query.filter(company_id == ^company.id and slug == "job-application")
+       |> Ash.Query.filter(tenant_id == ^company.id and slug == "job-application")
        |> Ash.read_one(authorize?: false) do
     {:ok, nil} ->
       {:ok, form} =
         Form
         |> Ash.Changeset.new()
-        |> Ash.Changeset.set_argument(:company_id, company.id)
+        |> Ash.Changeset.set_argument(:tenant_id, company.id)
         |> Ash.Changeset.set_argument(:created_by_id, admin_authz_user.id)
         |> Ash.Changeset.for_create(
           :create,
@@ -400,13 +400,13 @@ IO.puts("\n  📝 Creating Event Registration Form...")
 
 event_form =
   case Form
-       |> Ash.Query.filter(company_id == ^company.id and slug == "event-registration")
+       |> Ash.Query.filter(tenant_id == ^company.id and slug == "event-registration")
        |> Ash.read_one(authorize?: false) do
     {:ok, nil} ->
       {:ok, form} =
         Form
         |> Ash.Changeset.new()
-        |> Ash.Changeset.set_argument(:company_id, company.id)
+        |> Ash.Changeset.set_argument(:tenant_id, company.id)
         |> Ash.Changeset.set_argument(:created_by_id, admin_authz_user.id)
         |> Ash.Changeset.for_create(
           :create,

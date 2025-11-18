@@ -8,20 +8,20 @@ defmodule ClienttCrmAppWeb.DashboardLive do
   @impl true
   def mount(_params, _session, socket) do
     import Ash.Query
-    company_id = socket.assigns.current_company_id
+    tenant_id = socket.assigns.current_tenant_id
 
     # Load forms data for dashboard stats (filtered by company)
     {:ok, forms} =
       Forms.Form
       |> for_read(:list)
-      |> filter(company_id == ^company_id)
+      |> filter(tenant_id == ^tenant_id)
       |> Ash.read()
 
     # Load recent submissions (last 10, filtered by company)
     {:ok, recent_submissions} =
       Forms.Submission
       |> for_read(:list)
-      |> filter(company_id == ^company_id)
+      |> filter(tenant_id == ^tenant_id)
       |> sort(submitted_at: :desc)
       |> limit(10)
       |> Ash.read()

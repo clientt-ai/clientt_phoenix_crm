@@ -60,11 +60,11 @@ Represents a tenant organization in the multi-tenant CRM system. Acts as the agg
 
 ### Published Events
 - `authorization.company_created`: Triggered when company is created
-  - Payload: {company_id, name, slug, first_admin_authz_user_id, created_at}
+  - Payload: {tenant_id, name, slug, first_admin_authz_user_id, created_at}
   - Consumers: Analytics, Welcome Email Service
 
 - `authorization.company_archived`: Triggered when company is archived
-  - Payload: {company_id, archived_by_authz_user_id, archived_at}
+  - Payload: {tenant_id, archived_by_authz_user_id, archived_at}
   - Consumers: Cleanup Service, Analytics, Notification Service
 
 ### Subscribed Events
@@ -171,7 +171,7 @@ validate string_length(:slug, max: 50)
 
 ## Multi-Tenancy
 
-**Not Tenant-Scoped**: Company is not filtered by company_id since users can belong to multiple companies. Access is controlled through authz_user relationships.
+**Not Tenant-Scoped**: Company is not filtered by tenant_id since users can belong to multiple companies. Access is controlled through authz_user relationships.
 
 ## Security Considerations
 

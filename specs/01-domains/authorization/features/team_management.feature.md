@@ -37,7 +37,7 @@ When I create a team with:
   | description | Development team       |
 Then a Team record is created with:
   | field       | value                  |
-  | company_id  | [Acme Corp id]         |
+  | tenant_id  | [Acme Corp id]         |
   | name        | Engineering            |
   | description | Development team       |
   | status      | active                 |

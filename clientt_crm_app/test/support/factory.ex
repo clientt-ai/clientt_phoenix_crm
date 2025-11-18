@@ -59,7 +59,7 @@ defmodule ClienttCrmApp.Factory do
       Authorization.AuthzUser
       |> Ash.Query.for_read(:get_by_user_and_company, %{
         authn_user_id: authn_user.id,
-        company_id: company.id
+        tenant_id: company.id
       })
       |> Ash.read_one()
 
@@ -72,7 +72,7 @@ defmodule ClienttCrmApp.Factory do
           Authorization.AuthzUser
           |> Ash.Changeset.for_create(:create, %{
             authn_user_id: authn_user.id,
-            company_id: company.id,
+            tenant_id: company.id,
             role: role
           })
           |> Ash.create(authorize?: false)
@@ -98,7 +98,7 @@ defmodule ClienttCrmApp.Factory do
         description: description,
         branding: attrs[:branding] || %{},
         settings: attrs[:settings] || %{},
-        company_id: company.id,
+        tenant_id: company.id,
         created_by_id: created_by.id
       })
       |> Ash.create(authorize?: false)
@@ -154,7 +154,7 @@ defmodule ClienttCrmApp.Factory do
   """
   def submission_fixture(attrs \\ %{}) do
     form = attrs[:form] || form_fixture()
-    company = attrs[:company] || form.company_id
+    company = attrs[:company] || form.tenant_id
 
     # Ensure form is published if using public submission
     form =
@@ -188,7 +188,7 @@ defmodule ClienttCrmApp.Factory do
       else
         %{
           form_id: form.id,
-          company_id: company,
+          tenant_id: company,
           form_data: form_data,
           metadata: metadata,
           submitter_email: attrs[:submitter_email]

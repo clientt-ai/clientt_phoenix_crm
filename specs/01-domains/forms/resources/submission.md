@@ -14,7 +14,7 @@ Represents a completed form submission from a potential lead. Contains all submi
 | Attribute | Type | Required | Validation | Description |
 |-----------|------|----------|------------|-------------|
 | id | uuid | Yes | - | Unique identifier |
-| company_id | uuid | Yes | valid Company id | Multi-tenancy reference |
+| tenant_id | uuid | Yes | valid Company id | Multi-tenancy reference |
 | form_id | uuid | Yes | valid Form id | Parent form reference |
 | form_data | map | Yes | valid JSONB | Submitted field values |
 | metadata | map | No | valid JSONB | Tracking data (UTM, referrer, etc.) |
@@ -122,7 +122,7 @@ Lead workflow status - can be updated after creation:
 - **Immutability**: form_data and metadata cannot be changed after creation
 - **Status Workflow**: Status transitions must follow valid workflow
 - **Soft Delete**: Deleted submissions have deleted_at timestamp, not hard deleted
-- **Multi-Tenancy**: All submissions filtered by company_id (inherited from form)
+- **Multi-Tenancy**: All submissions filtered by tenant_id (inherited from form)
 - **Form Association**: Cannot create submission for archived form
 
 ### Validations
@@ -176,7 +176,7 @@ Lead workflow status - can be updated after creation:
 
 ## Relationships
 
-- **Belongs to**: Company (via company_id)
+- **Belongs to**: Company (via tenant_id)
 - **Belongs to**: Form (via form_id)
 
 ## Domain Events
@@ -184,7 +184,7 @@ Lead workflow status - can be updated after creation:
 ### Published Events
 
 - `forms.submission_created`: Triggered when submission is created
-  - Payload: {submission_id, form_id, company_id, submitter_email, status, submitted_at, metadata}
+  - Payload: {submission_id, form_id, tenant_id, submitter_email, status, submitted_at, metadata}
   - Consumers: **Notification Service** (send alerts), Analytics, Lead Scoring (future)
 
 - `forms.submission_status_changed`: Triggered when status is updated
@@ -207,7 +207,7 @@ None
 
 ### Queries
 
-- **List submissions for company**: Filter by company_id, exclude deleted, order by submitted_at DESC
+- **List submissions for company**: Filter by tenant_id, exclude deleted, order by submitted_at DESC
 - **List submissions for form**: Filter by form_id, exclude deleted, order by submitted_at DESC
 - **Get submission by ID**: Include form relationship
 - **Filter by status**: WHERE status = 'new' (for "new leads" dashboard)
@@ -229,7 +229,7 @@ None
 - Form_data size < 100KB
 
 **Side effects**:
-- Auto-set company_id from form.company_id
+- Auto-set tenant_id from form.tenant_id
 - Auto-set status to 'new'
 - Auto-set submitted_at to NOW()
 - Extract submitter_email from form_data if email field exists
@@ -242,7 +242,7 @@ None
 
 #### Read
 
-**Available to**: All company members (filtered by company_id)
+**Available to**: All company members (filtered by tenant_id)
 **Default filter**: WHERE deleted_at IS NULL (exclude soft-deleted)
 **Public access**: No public read access (submissions are private to company)
 
@@ -353,7 +353,7 @@ None
 
 **Read**:
 - Company members: Can read all submissions in their company
-- Filtering: Always filtered by company_id via Ash policy
+- Filtering: Always filtered by tenant_id via Ash policy
 - Default: Exclude soft-deleted (deleted_at IS NULL)
 
 **Create** (Public):
@@ -372,12 +372,12 @@ None
 
 ### Multi-Tenancy
 
-All queries automatically filtered by company_id:
+All queries automatically filtered by tenant_id:
 
 ```elixir
 # Ash policy example
 policy action_type(:read) do
-  authorize_if actor_attribute_equals(:company_id, :company_id)
+  authorize_if actor_attribute_equals(:tenant_id, :tenant_id)
 end
 ```
 
@@ -404,7 +404,7 @@ end
 #### Total Submissions
 ```elixir
 Submission
-|> where(company_id: ^company_id)
+|> where(tenant_id: ^tenant_id)
 |> where([s], is_nil(s.deleted_at))
 |> count()
 ```
@@ -418,7 +418,7 @@ submissions_count / form_views_count * 100
 #### Active Users (Last 30 Days)
 ```elixir
 Submission
-|> where(company_id: ^company_id)
+|> where(tenant_id: ^tenant_id)
 |> where([s], s.submitted_at > ago(30, "day"))
 |> where([s], is_nil(s.deleted_at))
 |> select([s], count(fragment("DISTINCT ?", s.submitter_email)))
@@ -428,7 +428,7 @@ Submission
 ```elixir
 # Requires tracking first_viewed_at in metadata
 Submission
-|> where(company_id: ^company_id)
+|> where(tenant_id: ^tenant_id)
 |> where([s], not is_nil(s.metadata["first_viewed_at"]))
 |> select([s], avg(fragment("EXTRACT(EPOCH FROM (? - (?->>'first_viewed_at')::timestamp))",
                            s.submitted_at, s.metadata)))
@@ -437,7 +437,7 @@ Submission
 #### Lead Source Tracking
 ```elixir
 Submission
-|> where(company_id: ^company_id)
+|> where(tenant_id: ^tenant_id)
 |> group_by([s], fragment("?->>'utm_source'", s.metadata))
 |> select([s], {fragment("?->>'utm_source'", s.metadata), count(s.id)})
 ```
@@ -453,7 +453,7 @@ Submission
 ```sql
 CREATE TABLE forms_submissions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id UUID NOT NULL REFERENCES authz_companies(id) ON DELETE CASCADE,
+  tenant_id UUID NOT NULL REFERENCES authz_tenants(id) ON DELETE CASCADE,
   form_id UUID NOT NULL REFERENCES forms_forms(id) ON DELETE RESTRICT,
   form_data JSONB NOT NULL,
   metadata JSONB DEFAULT '{}',
@@ -472,7 +472,7 @@ CREATE TABLE forms_submissions (
 );
 
 -- Critical indexes for multi-tenancy and performance
-CREATE INDEX forms_submissions_company_id_index ON forms_submissions(company_id);
+CREATE INDEX forms_submissions_tenant_id_index ON forms_submissions(tenant_id);
 CREATE INDEX forms_submissions_form_id_index ON forms_submissions(form_id);
 CREATE INDEX forms_submissions_status_index ON forms_submissions(status);
 CREATE INDEX forms_submissions_submitted_at_index ON forms_submissions(submitted_at DESC);
@@ -526,7 +526,7 @@ submission
 
 ```elixir
 Forms.list_submissions(%{
-  company_id: company_id,
+  tenant_id: tenant_id,
   status: "new",
   exclude_deleted: true,
   order_by: [submitted_at: :desc]
@@ -553,7 +553,7 @@ Forms.list_submissions(%{
 
 ## Performance Considerations
 
-- **Indexes**: All key columns indexed (company_id, form_id, status, submitted_at, submitter_email)
+- **Indexes**: All key columns indexed (tenant_id, form_id, status, submitted_at, submitter_email)
 - **JSONB Queries**: Use GIN index for metadata queries
 - **Pagination**: List views should paginate at 50 submissions per page
 - **Eager Loading**: Load form relationship when listing submissions

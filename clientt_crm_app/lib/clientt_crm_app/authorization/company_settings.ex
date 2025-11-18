@@ -19,7 +19,7 @@ defmodule ClienttCrmApp.Authorization.CompanySettings do
     authorizers: [Ash.Policy.Authorizer]
 
   postgres do
-    table "authz_company_settings"
+    table "authz_tenant_settings"
     repo ClienttCrmApp.Repo
   end
 
@@ -29,16 +29,16 @@ defmodule ClienttCrmApp.Authorization.CompanySettings do
     read :for_company do
       get? true
 
-      argument :company_id, :uuid do
+      argument :tenant_id, :uuid do
         allow_nil? false
       end
 
-      filter expr(company_id == ^arg(:company_id))
+      filter expr(tenant_id == ^arg(:tenant_id))
     end
 
     create :create do
       primary? true
-      accept [:company_id, :max_users, :max_teams, :timezone]
+      accept [:tenant_id, :max_users, :max_teams, :timezone]
 
       change fn changeset, _context ->
         changeset
@@ -128,7 +128,7 @@ defmodule ClienttCrmApp.Authorization.CompanySettings do
   attributes do
     uuid_primary_key :id
 
-    attribute :company_id, :uuid do
+    attribute :tenant_id, :uuid do
       allow_nil? false
       public? true
     end
@@ -172,7 +172,7 @@ defmodule ClienttCrmApp.Authorization.CompanySettings do
 
   relationships do
     belongs_to :company, ClienttCrmApp.Authorization.Company do
-      source_attribute :company_id
+      source_attribute :tenant_id
       destination_attribute :id
       allow_nil? false
     end
@@ -207,7 +207,7 @@ defmodule ClienttCrmApp.Authorization.CompanySettings do
   end
 
   identities do
-    identity :unique_company, [:company_id]
+    identity :unique_company, [:tenant_id]
   end
 
   policies do
@@ -218,7 +218,7 @@ defmodule ClienttCrmApp.Authorization.CompanySettings do
 
     # Policy: All company members can read settings
     policy action_type(:read) do
-      # authorize_if expr(company_id == ^actor(:current_company_id))
+      # authorize_if expr(tenant_id == ^actor(:current_tenant_id))
       # This will be implemented with proper actor context
       authorize_if always()
     end

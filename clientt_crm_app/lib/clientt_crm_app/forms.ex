@@ -11,7 +11,7 @@ defmodule ClienttCrmApp.Forms do
   - **FormField**: Individual input field within a form (10 types supported)
   - **Submission**: Completed form submission with lead data (immutable)
   - **Lead Status**: Workflow state (new → contacted → qualified → converted)
-  - **Multi-Tenancy**: All resources filtered by company_id
+  - **Multi-Tenancy**: All resources filtered by tenant_id
 
   ## Resources
 
@@ -28,7 +28,7 @@ defmodule ClienttCrmApp.Forms do
 
   ## Business Rules
 
-  1. **Multi-Tenancy**: All resources filtered by company_id
+  1. **Multi-Tenancy**: All resources filtered by tenant_id
   2. **Submission Immutability**: Once created, form_data cannot be modified
   3. **Field Type Constraints**: MVP supports exactly 10 types
   4. **Single-Page Forms**: No multi-page or conditional logic in MVP

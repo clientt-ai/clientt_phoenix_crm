@@ -242,7 +242,7 @@ end
 ```elixir
 # team.ex
 create :create do
-  accept [:company_id, :name, :description]
+  accept [:tenant_id, :name, :description]
 
   validate RateLimitSensitiveActions
   validate OnlyAdminCanCreateTeams
@@ -395,7 +395,7 @@ Logger.warning("Rate limit exceeded",
   authz_user_id: actor_id,
   action: action_name,
   remaining_ms: remaining,
-  company_id: company_id
+  tenant_id: tenant_id
 )
 ```
 

@@ -46,7 +46,7 @@ defmodule ClienttCrmApp.Forms.Form do
       primary? true
       accept [:name, :description, :branding, :settings]
 
-      argument :company_id, :uuid do
+      argument :tenant_id, :uuid do
         allow_nil? false
       end
 
@@ -55,8 +55,8 @@ defmodule ClienttCrmApp.Forms.Form do
       end
 
       change fn changeset, _context ->
-        # Set company_id and created_by from arguments
-        company_id = Ash.Changeset.get_argument(changeset, :company_id)
+        # Set tenant_id and created_by from arguments
+        tenant_id = Ash.Changeset.get_argument(changeset, :tenant_id)
         created_by_id = Ash.Changeset.get_argument(changeset, :created_by_id)
 
         # Generate slug from name
@@ -74,7 +74,7 @@ defmodule ClienttCrmApp.Forms.Form do
           end
 
         changeset
-        |> Ash.Changeset.force_change_attribute(:company_id, company_id)
+        |> Ash.Changeset.force_change_attribute(:tenant_id, tenant_id)
         |> Ash.Changeset.force_change_attribute(:created_by_id, created_by_id)
         |> Ash.Changeset.force_change_attribute(:status, :draft)
         |> Ash.Changeset.change_attribute(:slug, slug)
@@ -169,7 +169,7 @@ defmodule ClienttCrmApp.Forms.Form do
         copy_slug = "#{source_form.slug}-copy"
 
         changeset
-        |> Ash.Changeset.force_change_attribute(:company_id, source_form.company_id)
+        |> Ash.Changeset.force_change_attribute(:tenant_id, source_form.tenant_id)
         |> Ash.Changeset.force_change_attribute(:created_by_id, created_by_id)
         |> Ash.Changeset.force_change_attribute(:name, copy_name)
         |> Ash.Changeset.force_change_attribute(:slug, copy_slug)
@@ -186,12 +186,12 @@ defmodule ClienttCrmApp.Forms.Form do
     end
 
     read :for_company do
-      argument :company_id, :uuid do
+      argument :tenant_id, :uuid do
         allow_nil? false
       end
 
       prepare build(sort: [updated_at: :desc])
-      filter expr(company_id == ^arg(:company_id))
+      filter expr(tenant_id == ^arg(:tenant_id))
     end
 
     read :published do
@@ -219,7 +219,7 @@ defmodule ClienttCrmApp.Forms.Form do
   attributes do
     uuid_primary_key :id
 
-    attribute :company_id, :uuid do
+    attribute :tenant_id, :uuid do
       allow_nil? false
       public? true
     end
@@ -292,7 +292,7 @@ defmodule ClienttCrmApp.Forms.Form do
 
   relationships do
     belongs_to :company, ClienttCrmApp.Authorization.Company do
-      source_attribute :company_id
+      source_attribute :tenant_id
       destination_attribute :id
       allow_nil? false
     end
@@ -339,18 +339,18 @@ defmodule ClienttCrmApp.Forms.Form do
 
   identities do
     # Slug must be unique within company, not globally
-    identity :unique_slug_per_company, [:company_id, :slug]
+    identity :unique_slug_per_company, [:tenant_id, :slug]
     # Name must be unique within company
-    identity :unique_name_per_company, [:company_id, :name]
+    identity :unique_name_per_company, [:tenant_id, :name]
   end
 
   policies do
-    # Multi-tenancy: All queries automatically filtered by company_id
+    # Multi-tenancy: All queries automatically filtered by tenant_id
     # Users can only access forms in their current company
 
     # Policy: Read forms in own company
     policy action_type(:read) do
-      # authorize_if actor_attribute_equals(:company_id, :company_id)
+      # authorize_if actor_attribute_equals(:tenant_id, :tenant_id)
       # Placeholder during development
       authorize_if always()
     end

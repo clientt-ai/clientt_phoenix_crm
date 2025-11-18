@@ -14,7 +14,7 @@ Represents an individual input field within a form. Defines the field type, labe
 | Attribute | Type | Required | Validation | Description |
 |-----------|------|----------|------------|-------------|
 | id | uuid | Yes | - | Unique identifier |
-| company_id | uuid | Yes | valid Company id | Company reference (duplicative for debugging) |
+| tenant_id | uuid | Yes | valid Company id | Company reference (duplicative for debugging) |
 | form_id | uuid | Yes | valid Form id | Parent form reference |
 | field_type | enum | Yes | one of 10 types (see below) | Type of input field |
 | label | string | Yes | min: 1, max: 100 | Field display label |
@@ -233,7 +233,7 @@ None
 
 #### Read
 
-**Available to**: All company members (via form.company_id)
+**Available to**: All company members (via form.tenant_id)
 **Public access**: Published forms include fields in public API
 
 #### Update
@@ -418,7 +418,7 @@ When rendering a public form, each field type maps to specific HTML:
 **Create**:
 - Requires: Admin or Manager role
 - Restriction: Form must be in 'draft' status
-- Multi-tenancy: Validated via parent form.company_id
+- Multi-tenancy: Validated via parent form.tenant_id
 
 **Update**:
 - Requires: Admin or Manager role
@@ -430,7 +430,7 @@ When rendering a public form, each field type maps to specific HTML:
 
 ### Multi-Tenancy
 
-Fields inherit company context from parent Form - no separate company_id needed.
+Fields inherit company context from parent Form - no separate tenant_id needed.
 
 ### Data Validation
 
@@ -451,7 +451,7 @@ Fields inherit company context from parent Form - no separate company_id needed.
 ```sql
 CREATE TABLE forms_fields (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id UUID NOT NULL REFERENCES authz_companies(id) ON DELETE CASCADE,
+  tenant_id UUID NOT NULL REFERENCES authz_tenants(id) ON DELETE CASCADE,
   form_id UUID NOT NULL REFERENCES forms_forms(id) ON DELETE CASCADE,
   field_type VARCHAR(20) NOT NULL,
   label VARCHAR(100) NOT NULL,
@@ -473,7 +473,7 @@ CREATE TABLE forms_fields (
 );
 
 -- Indexes for performance
-CREATE INDEX forms_fields_company_id_index ON forms_fields(company_id);
+CREATE INDEX forms_fields_tenant_id_index ON forms_fields(tenant_id);
 CREATE INDEX forms_fields_form_id_index ON forms_fields(form_id);
 CREATE INDEX forms_fields_position_index ON forms_fields(form_id, position);
 ```

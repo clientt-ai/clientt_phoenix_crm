@@ -654,8 +654,8 @@ Reuse the `KpiCard` component from Track 2:
 2. **Required Indexes:**
 ```sql
 -- Critical for query performance
-CREATE INDEX forms_company_id_index ON forms(company_id);
-CREATE INDEX submissions_company_id_index ON submissions(company_id);
+CREATE INDEX forms_tenant_id_index ON forms(tenant_id);
+CREATE INDEX submissions_tenant_id_index ON submissions(tenant_id);
 CREATE INDEX submissions_form_id_index ON submissions(form_id);
 CREATE INDEX submissions_status_index ON submissions(status);
 CREATE INDEX submissions_submitted_at_index ON submissions(submitted_at DESC);

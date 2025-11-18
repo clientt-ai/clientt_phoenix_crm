@@ -10,8 +10,8 @@
 ### Example User Journey
 ```
 1. User creates account → authn_user created (email: user@example.com)
-2. User creates Company A → authz_user #1 created (company_id: A, role: admin)
-3. User invited to Company B → authz_user #2 created (company_id: B, role: user)
+2. User creates Company A → authz_user #1 created (tenant_id: A, role: admin)
+3. User invited to Company B → authz_user #2 created (tenant_id: B, role: user)
 4. User signs in → selects Company A → session has authz_user #1 context
 5. User switches to Company B → session has authz_user #2 context
 ```
@@ -20,12 +20,12 @@
 
 | Table | Purpose | Key Fields |
 |-------|---------|------------|
-| `authz_companies` | Tenant organizations | id, name, slug, status |
-| `authz_users` | User-company membership + roles | authn_user_id, company_id, role, team_id |
-| `authz_teams` | Sub-groups within companies | company_id, name, status |
-| `authz_invitations` | Email invites to join companies | email, company_id, token, status |
-| `authz_company_settings` | Company configuration | company_id, max_users, features, branding |
-| `authz_audit_logs` | Immutable audit trail | company_id, action, resource_type, changes |
+| `authz_tenants` | Tenant organizations | id, name, slug, status |
+| `authz_users` | User-company membership + roles | authn_user_id, tenant_id, role, team_id |
+| `authz_teams` | Sub-groups within companies | tenant_id, name, status |
+| `authz_invitations` | Email invites to join companies | email, tenant_id, token, status |
+| `authz_tenant_settings` | Company configuration | tenant_id, max_users, features, branding |
+| `authz_audit_logs` | Immutable audit trail | tenant_id, action, resource_type, changes |
 
 ## Roles & Permissions
 
@@ -61,7 +61,7 @@
 - Cannot delete company with active users (archive instead)
 
 ### AuthzUsers
-- Each (authn_user_id, company_id) pair is unique
+- Each (authn_user_id, tenant_id) pair is unique
 - Cannot remove last admin from company
 - team_role requires team_id (enforced at DB level)
 - Email comes from authn_user (not duplicated)
@@ -83,11 +83,11 @@
 # After login + company selection
 %{
   current_authn_user: %User{id: "auth-123"},
-  current_company_id: "company-456",
+  current_tenant_id: "company-456",
   current_authz_user: %AuthzUser{
     id: "authz-789",
     authn_user_id: "auth-123",
-    company_id: "company-456",
+    tenant_id: "company-456",
     role: :admin
   }
 }
@@ -96,10 +96,10 @@
 ### Row-Level Filtering
 All tenant-scoped queries automatically filtered:
 ```elixir
-# Automatic company_id filter applied
+# Automatic tenant_id filter applied
 AuthzUser
 |> Ash.Query.for_read(:list)
-# Ash policies add: |> Ash.Query.filter(company_id: ^current_company_id)
+# Ash policies add: |> Ash.Query.filter(tenant_id: ^current_tenant_id)
 |> Ash.read!(actor: current_authz_user)
 ```
 
@@ -126,7 +126,7 @@ AuthzUser
 ```elixir
 AuthzUser
 |> Ash.Query.for_read(:list)
-|> Ash.Query.filter(company_id: ^current_company_id)
+|> Ash.Query.filter(tenant_id: ^current_tenant_id)
 |> Ash.Query.filter(status: :active)
 |> Ash.Query.load([:authn_user])
 |> Ash.read!()
@@ -143,7 +143,7 @@ current_authz_user.role == :admin
   company_role: current_authz_user.role,
   team_role: current_authz_user.team_role,
   is_admin: current_authz_user.role == :admin,
-  company_id: current_authz_user.company_id
+  tenant_id: current_authz_user.tenant_id
 }
 ```
 
@@ -239,7 +239,7 @@ Company
 ```elixir
 Invitation
 |> Ash.Changeset.for_create(:create, %{
-  company_id: current_company_id,
+  tenant_id: current_tenant_id,
   email: "newuser@example.com",
   role: :user,
   team_id: team_id,  # optional
@@ -274,18 +274,18 @@ authz_user
 ### Switching Company Context
 ```elixir
 # In LiveView or controller
-def switch_company(socket, company_id) do
+def switch_company(socket, tenant_id) do
   authz_user =
     AuthzUser
     |> Ash.Query.for_read(:get_by_user_and_company)
     |> Ash.Query.filter(
       authn_user_id: ^socket.assigns.current_authn_user.id,
-      company_id: ^company_id
+      tenant_id: ^tenant_id
     )
     |> Ash.read_one!()
 
   socket
-  |> assign(:current_company_id, company_id)
+  |> assign(:current_tenant_id, tenant_id)
   |> assign(:current_authz_user, authz_user)
 end
 ```
@@ -309,7 +309,7 @@ end
 ### Security Tests
 - Cannot access other company's data
 - Cannot remove last admin
-- Cannot override company_id in queries
+- Cannot override tenant_id in queries
 - Token security (invitation tokens)
 - Policy enforcement
 
@@ -320,7 +320,7 @@ end
 - Fix: Promote another user to admin first
 
 ### "User already member of company"
-- Check: Does authz_user already exist for (authn_user_id, company_id)?
+- Check: Does authz_user already exist for (authn_user_id, tenant_id)?
 - Fix: Use update instead of create
 
 ### "Invitation expired"
@@ -328,7 +328,7 @@ end
 - Fix: Request new invitation
 
 ### Cross-tenant data leak
-- Check: Are all queries filtered by company_id?
+- Check: Are all queries filtered by tenant_id?
 - Fix: Ensure Ash policies are correctly applied
 
 ### Team role without team

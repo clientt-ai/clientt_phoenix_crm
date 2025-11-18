@@ -41,7 +41,7 @@ defmodule ClienttCrmApp.Authorization.CompanyTest do
 
       # Verify first admin authz_user was created
       all_authz_users = Ash.read!(AuthzUser)
-      authz_users = Enum.filter(all_authz_users, fn au -> au.company_id == company.id end)
+      authz_users = Enum.filter(all_authz_users, fn au -> au.tenant_id == company.id end)
 
       assert length(authz_users) == 1
       [authz_user] = authz_users

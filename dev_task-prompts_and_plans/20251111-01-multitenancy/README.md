@@ -155,9 +155,9 @@ This specification is organized into four complementary documents:
 **Rationale:** Simpler to implement than schema-level tenancy, easier to query across companies when needed, and Ash policies provide robust enforcement.
 
 **Implementation:**
-- All tenant-scoped tables include `company_id`
+- All tenant-scoped tables include `tenant_id`
 - Ash policies automatically filter queries by current company context
-- Session stores `current_company_id` and `current_authz_user`
+- Session stores `current_tenant_id` and `current_authz_user`
 
 ---
 
@@ -186,8 +186,8 @@ This specification is organized into four complementary documents:
 ### Tables Created (6 tables, all prefixed with `authz_`)
 
 ```
-authz_companies (root)
-├── authz_company_settings (1:1)
+authz_tenants (root)
+├── authz_tenant_settings (1:1)
 ├── authz_users (1:Many)
 │   └── belongs to users (authn_users) (Many:1)
 ├── authz_teams (1:Many)
@@ -242,7 +242,7 @@ authz_companies (root)
 - Company list with 50 companies
 
 ### Security Tests (~5 test files)
-- Policy enforcement (cannot bypass company_id filter)
+- Policy enforcement (cannot bypass tenant_id filter)
 - Last admin protection
 - Token security (invitations)
 - Cross-tenant data access attempts
@@ -255,11 +255,11 @@ authz_companies (root)
 
 Before going to production, verify:
 
-- [ ] All tenant-scoped queries filtered by company_id (enforced by Ash policies)
+- [ ] All tenant-scoped queries filtered by tenant_id (enforced by Ash policies)
 - [ ] Cannot remove last admin from company
 - [ ] Invitation tokens cryptographically secure (32+ bytes)
 - [ ] Audit logs immutable (no update/delete actions)
-- [ ] Session company_id cannot be overridden by client
+- [ ] Session tenant_id cannot be overridden by client
 - [ ] All forms have CSRF protection
 - [ ] No SQL injection vulnerabilities (Ash should prevent)
 - [ ] No authorization bypass via direct API calls
@@ -293,7 +293,7 @@ Before going to production, verify:
 ### Q3: Billing Integration
 **Question:** Should CompanySettings track billing/subscription info?
 
-**Recommendation:** Create separate `Billing` domain; link via company_id
+**Recommendation:** Create separate `Billing` domain; link via tenant_id
 
 **Status:** ⏸️ Out of scope for multi-tenancy project
 
@@ -333,7 +333,7 @@ Before going to production, verify:
 | **authz_user** | Authorization user - company-scoped identity with roles |
 | **Company** | Tenant organization in the multi-tenant system |
 | **Team** | Sub-group within a company (e.g., "Engineering", "Sales") |
-| **Row-level tenancy** | Multi-tenancy via company_id filtering on shared tables |
+| **Row-level tenancy** | Multi-tenancy via tenant_id filtering on shared tables |
 | **RBAC** | Role-Based Access Control |
 | **ABAC** | Attribute-Based Access Control (future) |
 | **Aggregate** | DDD pattern - cluster of entities treated as a single unit |
