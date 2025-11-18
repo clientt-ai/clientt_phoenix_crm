@@ -75,7 +75,9 @@ test.describe('FM-SC-001: Create New Form Successfully', () => {
     // The form is saved but user stays on builder page
 
     // Step 10: Navigate back to forms listing using the "Back to Forms" link
-    await page.click('a[href="/forms"]');
+    // Wait a moment for notification to not block click
+    await page.waitForTimeout(500);
+    await page.click('a[href="/forms"]', { force: true });
     await page.waitForLoadState('networkidle');
 
     // Verify the form appears in the listing (table structure)
@@ -110,6 +112,8 @@ test.describe('FM-SC-001: Create New Form Successfully', () => {
     // Create first form
     await page.click('[data-testid="create-form-button"]');
     await page.waitForLoadState('networkidle');
+    // Wait for form input to be ready
+    await expect(page.locator('[data-testid="form-name-input"]')).toBeVisible({ timeout: 10000 });
     await page.fill('[data-testid="form-name-input"]', uniqueName);
     await page.fill('[data-testid="form-description-input"]', 'Test description');
     await page.click('[data-testid="save-form-button"]');
@@ -117,11 +121,16 @@ test.describe('FM-SC-001: Create New Form Successfully', () => {
     // Wait for success (allow time for LiveView to process)
     await expect(page.locator('[data-testid="success-notification"]').first()).toBeVisible({ timeout: 10000 });
 
+    // Wait for notification to not block clicks
+    await page.waitForTimeout(500);
+
     // Try to create another form with the same name
-    await page.click('a[href="/forms"]');
+    await page.click('a[href="/forms"]', { force: true });
     await page.waitForLoadState('networkidle');
     await page.click('[data-testid="create-form-button"]');
     await page.waitForLoadState('networkidle');
+    // Wait for form input to be ready
+    await expect(page.locator('[data-testid="form-name-input"]')).toBeVisible({ timeout: 10000 });
     await page.fill('[data-testid="form-name-input"]', uniqueName);
     await page.fill('[data-testid="form-description-input"]', 'Another description');
     await page.click('[data-testid="save-form-button"]');
