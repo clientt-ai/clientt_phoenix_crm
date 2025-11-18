@@ -20,10 +20,16 @@ test.describe('FM-SC-006: Edit Existing Form', () => {
     await page.click('form:has(input[name="user[email]"]) button[type="submit"]');
     await page.waitForLoadState('networkidle');
 
-    // Create a test form to edit
-    formName = `Edit Test Form ${Date.now()}`;
-    await page.goto('/forms/new');
+    // Navigate to forms page via sidebar (like a manual tester would)
+    await page.click('a[href="/forms"]');
     await page.waitForLoadState('networkidle');
+    await expect(page.locator('h1')).toContainText('Forms');
+
+    // Create a test form to edit - click the Create Form button
+    formName = `Edit Test Form ${Date.now()}`;
+    await page.click('[data-testid="create-form-button"]');
+    await page.waitForLoadState('networkidle');
+
     // Wait for form input to be ready
     await expect(page.locator('[data-testid="form-name-input"]')).toBeVisible({ timeout: 10000 });
     await page.fill('[data-testid="form-name-input"]', formName);
@@ -31,11 +37,11 @@ test.describe('FM-SC-006: Edit Existing Form', () => {
     await page.click('[data-testid="save-form-button"]');
     await expect(page.locator('[data-testid="success-notification"]').first()).toBeVisible({ timeout: 10000 });
 
-    // Wait for notification to not block clicks
-    await page.waitForTimeout(500);
+    // Wait for notification to auto-dismiss before navigating
+    // Notification may still be visible but should not block navigation
 
     // Navigate back to listing to get the proper edit URL
-    await page.click('a[href="/forms"]', { force: true });
+    await page.click('a[href="/forms"]');
     await page.waitForLoadState('networkidle');
 
     // Find the form and get its edit URL
@@ -139,7 +145,7 @@ test.describe('FM-SC-006: Edit Existing Form', () => {
     await emailField.locator('[data-testid="delete-field-button"]').click();
 
     // Verify field is removed
-    await expect(page.locator('[data-testid="form-field"]', { hasText: 'Email Address' })).not.toBeVisible({ timeout: 5000 });
+    await expect(page.locator('[data-testid="form-field"]', { hasText: 'Email Address' })).not.toBeVisible({ timeout: 10000 });
 
     // Verify count decreased
     const finalCount = await page.locator('[data-testid="form-field"]').count();

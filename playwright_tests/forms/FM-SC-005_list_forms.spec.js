@@ -55,11 +55,11 @@ test.describe('FM-SC-005: View and List All Forms', () => {
     // Wait for success notification
     await expect(page.locator('[data-testid="success-notification"]').first()).toBeVisible({ timeout: 10000 });
 
-    // Wait for notification to auto-dismiss
-    await page.waitForTimeout(500);
+    // Wait for notification to auto-dismiss before navigating
+    // Notification may still be visible but should not block navigation
 
     // Navigate back to forms list
-    await page.click('a[href="/forms"]', { force: true });
+    await page.click('a[href="/forms"]');
     await page.waitForLoadState('networkidle');
 
     // Verify the form appears in the table
@@ -103,11 +103,11 @@ test.describe('FM-SC-005: View and List All Forms', () => {
       await page.click('[data-testid="save-form-button"]');
       await expect(page.locator('[data-testid="success-notification"]').first()).toBeVisible({ timeout: 10000 });
 
-      // Wait for notification to auto-dismiss
-      await page.waitForTimeout(500);
+      // Wait for notification to auto-dismiss before navigating
+      // Notification may still be visible but should not block navigation
 
       // Go back to listing and find edit link
-      await page.click('a[href="/forms"]', { force: true });
+      await page.click('a[href="/forms"]');
       await page.waitForLoadState('networkidle');
 
       const editLink = page.locator('table tbody tr', { hasText: formName }).locator('a[href*="/edit"]');

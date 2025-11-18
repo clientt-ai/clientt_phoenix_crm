@@ -8,7 +8,7 @@ const { test, expect } = require('@playwright/test');
  * be enabled once the feature is built.
  */
 
-test.describe('FM-SC-003: Submit Form with Valid Data', () => {
+test.describe('FM-SC-003: Form Creation with Fields', () => {
 
   test.beforeEach(async ({ page }) => {
     // Login to the application
@@ -17,13 +17,21 @@ test.describe('FM-SC-003: Submit Form with Valid Data', () => {
     await page.fill('input[name="user[password]"]', 'SampleAdmin123!');
     await page.click('form:has(input[name="user[email]"]) button[type="submit"]');
     await page.waitForLoadState('networkidle');
+
+    // Navigate to forms page via sidebar (like a manual tester would)
+    await page.click('a[href="/forms"]');
+    await page.waitForLoadState('networkidle');
+    await expect(page.locator('h1')).toContainText('Forms');
   });
 
   test('should create form with fields for future submission testing', async ({ page }) => {
     // Create a form with configured fields (submission UI not yet implemented)
     const formName = `Submit Test Form ${Date.now()}`;
-    await page.goto('/forms/new');
+
+    // Click Create Form button (like a manual tester would)
+    await page.click('[data-testid="create-form-button"]');
     await page.waitForLoadState('networkidle');
+    await expect(page.locator('[data-testid="form-name-input"]')).toBeVisible({ timeout: 10000 });
     await page.fill('[data-testid="form-name-input"]', formName);
     await page.fill('[data-testid="form-description-input"]', 'Collect customer feedback');
     await page.click('[data-testid="save-form-button"]');
@@ -57,8 +65,11 @@ test.describe('FM-SC-003: Submit Form with Valid Data', () => {
   test('should publish form for submission', async ({ page }) => {
     // Create and publish a form
     const formName = `Publish Test Form ${Date.now()}`;
-    await page.goto('/forms/new');
+
+    // Click Create Form button (like a manual tester would)
+    await page.click('[data-testid="create-form-button"]');
     await page.waitForLoadState('networkidle');
+    await expect(page.locator('[data-testid="form-name-input"]')).toBeVisible({ timeout: 10000 });
     await page.fill('[data-testid="form-name-input"]', formName);
     await page.fill('[data-testid="form-description-input"]', 'Test publishing');
     await page.click('[data-testid="save-form-button"]');
@@ -71,13 +82,23 @@ test.describe('FM-SC-003: Submit Form with Valid Data', () => {
     await page.click('[data-testid="save-field-button"]');
     await page.waitForSelector('[data-testid="form-field"]', { timeout: 5000 });
 
-    // Publish the form
-    // Wait for previous notification to auto-dismiss
-    await page.waitForTimeout(1000);
+    // Publish the form - wait for notification to auto-dismiss first
+    // Notification may still be visible but should not block navigation
 
     const publishButton = page.locator('[data-testid="publish-form-button"]');
     if (await publishButton.isVisible()) {
-      await publishButton.click({ force: true });
+      // The success notification overlays the publish button (UI issue)
+      // A manual tester would click on the notification to dismiss it first
+      const notification = page.locator('[data-testid="success-notification"]').first();
+      if (await notification.isVisible()) {
+        // Click the notification to dismiss it (common UX pattern)
+        await notification.click();
+        // Wait for notification to be dismissed
+        await expect(notification).not.toBeVisible({ timeout: 5000 });
+      }
+
+      // Now click the publish button
+      await publishButton.click();
       await expect(page.locator('[data-testid="success-notification"]').first()).toBeVisible({ timeout: 10000 });
     }
   });
@@ -85,8 +106,11 @@ test.describe('FM-SC-003: Submit Form with Valid Data', () => {
   test('should display form preview with all fields', async ({ page }) => {
     // Create a form and verify preview shows fields
     const formName = `Preview Test Form ${Date.now()}`;
-    await page.goto('/forms/new');
+
+    // Click Create Form button (like a manual tester would)
+    await page.click('[data-testid="create-form-button"]');
     await page.waitForLoadState('networkidle');
+    await expect(page.locator('[data-testid="form-name-input"]')).toBeVisible({ timeout: 10000 });
     await page.fill('[data-testid="form-name-input"]', formName);
     await page.fill('[data-testid="form-description-input"]', 'Preview test');
     await page.click('[data-testid="save-form-button"]');

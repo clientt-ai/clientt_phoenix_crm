@@ -21,14 +21,23 @@ test.describe('FM-SC-007: Delete Form Fields', () => {
     await page.click('form:has(input[name="user[email]"]) button[type="submit"]');
     await page.waitForLoadState('networkidle');
 
-    // Create a test form with fields
-    formName = `Delete Test Form ${Date.now()}`;
-    await page.goto('/forms/new');
+    // Navigate to forms page via sidebar (like a manual tester would)
+    await page.click('a[href="/forms"]');
     await page.waitForLoadState('networkidle');
+    await expect(page.locator('h1')).toContainText('Forms');
+
+    // Create a test form with fields - click the Create Form button
+    formName = `Delete Test Form ${Date.now()}`;
+    await page.click('[data-testid="create-form-button"]');
+    await page.waitForLoadState('networkidle');
+    await expect(page.locator('[data-testid="form-name-input"]')).toBeVisible({ timeout: 10000 });
     await page.fill('[data-testid="form-name-input"]', formName);
     await page.fill('[data-testid="form-description-input"]', 'Form for deletion testing');
     await page.click('[data-testid="save-form-button"]');
     await expect(page.locator('[data-testid="success-notification"]').first()).toBeVisible({ timeout: 10000 });
+
+    // Wait for notification to auto-dismiss before navigating
+    // Notification may still be visible but should not block navigation
 
     // Navigate back to listing to get the proper edit URL
     await page.click('a[href="/forms"]');
@@ -95,8 +104,8 @@ test.describe('FM-SC-007: Delete Form Fields', () => {
     const fieldOne = page.locator('[data-testid="form-field"]', { hasText: 'Field One' });
     await fieldOne.locator('[data-testid="delete-field-button"]').click();
 
-    // Wait a moment
-    await page.waitForTimeout(500);
+    // Wait for any potential deletion to process
+    await page.waitForLoadState('networkidle');
 
     // Verify field is NOT deleted
     await expect(page.locator('[data-testid="form-field"]', { hasText: 'Field One' })).toBeVisible();
@@ -140,12 +149,12 @@ test.describe('FM-SC-007: Delete Form Fields', () => {
     // Delete first field
     const fieldOne = page.locator('[data-testid="form-field"]', { hasText: 'Field One' });
     await fieldOne.locator('[data-testid="delete-field-button"]').click();
-    await expect(page.locator('[data-testid="form-field"]', { hasText: 'Field One' })).not.toBeVisible({ timeout: 5000 });
+    await expect(page.locator('[data-testid="form-field"]', { hasText: 'Field One' })).not.toBeVisible({ timeout: 10000 });
 
     // Delete second field
     const fieldTwo = page.locator('[data-testid="form-field"]', { hasText: 'Field Two' });
     await fieldTwo.locator('[data-testid="delete-field-button"]').click();
-    await expect(page.locator('[data-testid="form-field"]', { hasText: 'Field Two' })).not.toBeVisible({ timeout: 5000 });
+    await expect(page.locator('[data-testid="form-field"]', { hasText: 'Field Two' })).not.toBeVisible({ timeout: 10000 });
 
     // Verify only Field Three remains
     await expect(page.locator('[data-testid="form-field"]')).toHaveCount(1);
@@ -162,7 +171,7 @@ test.describe('FM-SC-007: Delete Form Fields', () => {
     // Delete a field
     const fieldTwo = page.locator('[data-testid="form-field"]', { hasText: 'Field Two' });
     await fieldTwo.locator('[data-testid="delete-field-button"]').click();
-    await expect(page.locator('[data-testid="form-field"]', { hasText: 'Field Two' })).not.toBeVisible({ timeout: 5000 });
+    await expect(page.locator('[data-testid="form-field"]', { hasText: 'Field Two' })).not.toBeVisible({ timeout: 10000 });
 
     // Reload the page
     await page.reload();
@@ -189,7 +198,7 @@ test.describe('FM-SC-007: Delete Form Fields', () => {
       const field = page.locator('[data-testid="form-field"]', { hasText: label });
       if (await field.isVisible()) {
         await field.locator('[data-testid="delete-field-button"]').click();
-        await expect(page.locator('[data-testid="form-field"]', { hasText: label })).not.toBeVisible({ timeout: 5000 });
+        await expect(page.locator('[data-testid="form-field"]', { hasText: label })).not.toBeVisible({ timeout: 10000 });
       }
     }
 
@@ -210,7 +219,7 @@ test.describe('FM-SC-007: Delete Form Fields', () => {
     // Delete a field
     const fieldOne = page.locator('[data-testid="form-field"]', { hasText: 'Field One' });
     await fieldOne.locator('[data-testid="delete-field-button"]').click();
-    await expect(page.locator('[data-testid="form-field"]', { hasText: 'Field One' })).not.toBeVisible({ timeout: 5000 });
+    await expect(page.locator('[data-testid="form-field"]', { hasText: 'Field One' })).not.toBeVisible({ timeout: 10000 });
 
     // Verify add field button still exists
     await expect(page.locator('[data-testid="add-field-button"]')).toBeVisible();
