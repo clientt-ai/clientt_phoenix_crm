@@ -11,7 +11,7 @@ test.describe('FG-SC-002: Form Builder - Detailed Screenshots', () => {
   async function screenshot(page, name) {
     await page.screenshot({
       path: path.join(screenshotsDir, `${name}.png`),
-      fullPage: true
+      fullPage: false
     });
   }
 

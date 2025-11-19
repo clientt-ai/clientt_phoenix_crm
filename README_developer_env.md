@@ -117,3 +117,13 @@ asdf set elixir 1.18.4-otp-27 --home
 
 ```
 
+# Other useful brews
+```
+
+# Stats for osx temps and such
+brew install --cask stats
+
+# Cursor, great to just use an better vscode
+brew install --cask cursor
+
+```
