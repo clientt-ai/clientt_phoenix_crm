@@ -87,7 +87,7 @@ test.describe('Screenshot Capture - Major Screens', () => {
     await page.waitForTimeout(1000);
 
     // Go to new form
-    await page.goto(`${BASE_URL}/forms/new`);
+    await page.goto(`${BASE_URL}/forms/new`, { timeout: 30000 });
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(500);
 
