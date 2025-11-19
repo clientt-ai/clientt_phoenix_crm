@@ -1,10 +1,30 @@
 
-  import { defineConfig } from 'vite';
+  import { defineConfig, Plugin } from 'vite';
   import react from '@vitejs/plugin-react-swc';
   import path from 'path';
 
+  // Plugin to handle Figma asset imports
+  function figmaAssetPlugin(): Plugin {
+    return {
+      name: 'figma-asset-plugin',
+      resolveId(id) {
+        if (id.startsWith('figma:asset/')) {
+          return id;
+        }
+        return null;
+      },
+      load(id) {
+        if (id.startsWith('figma:asset/')) {
+          // Return a placeholder data URL for the asset
+          return `export default "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect fill='%23e5e7eb' width='100' height='100'/%3E%3Ctext x='50' y='50' text-anchor='middle' dy='.3em' fill='%239ca3af' font-size='10'%3EPlaceholder%3C/text%3E%3C/svg%3E"`;
+        }
+        return null;
+      },
+    };
+  }
+
   export default defineConfig({
-    plugins: [react()],
+    plugins: [figmaAssetPlugin(), react()],
     resolve: {
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
       alias: {

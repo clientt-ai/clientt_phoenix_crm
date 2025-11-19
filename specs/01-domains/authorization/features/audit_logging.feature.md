@@ -33,7 +33,7 @@ Given I am an admin of "Acme Corp"
 When I invite "newuser@example.com" and they accept
 Then an audit log entry is created with:
   | field                 | value                        |
-  | company_id            | [Acme Corp id]               |
+  | tenant_id            | [Acme Corp id]               |
   | actor_authz_user_id   | [my authz_user id]           |
   | action                | user_added                   |
   | resource_type         | AuthzUser                    |
@@ -290,7 +290,7 @@ And "Beta Inc" has 20 audit log entries
 When I view the audit log
 Then I see only the 30 entries for "Acme Corp"
 And I cannot see "Beta Inc" entries
-And company_id filtering is enforced by policies
+And tenant_id filtering is enforced by policies
 ```
 
 ---

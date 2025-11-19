@@ -64,8 +64,8 @@ This document captures questions raised during comprehensive spec review that ne
 **Found scattered across:** All resource specs
 
 **Details needed:**
-- Unique constraints: `(company_id, name)` for teams
-- Partial unique index: `(company_id, email) WHERE status='pending'` for invitations
+- Unique constraints: `(tenant_id, name)` for teams
+- Partial unique index: `(tenant_id, email) WHERE status='pending'` for invitations
 - Check constraints: `team_role_requires_team`
 - Foreign keys with CASCADE behavior
 

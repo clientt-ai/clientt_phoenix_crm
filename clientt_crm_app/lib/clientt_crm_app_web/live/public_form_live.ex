@@ -100,15 +100,15 @@ defmodule ClienttCrmAppWeb.PublicFormLive do
         <div class="mx-auto max-w-2xl">
           <div class="bg-white shadow-lg sm:rounded-lg">
             <div class="px-4 py-5 sm:p-6">
-              <h1 class="text-3xl font-bold tracking-tight text-gray-900 mb-2">
+              <h1 data-testid="form-title" class="text-3xl font-bold tracking-tight text-gray-900 mb-2">
                 <%= @form.name %>
               </h1>
               <%= if @form.description do %>
-                <p class="text-sm text-gray-600 mb-6"><%= @form.description %></p>
+                <p data-testid="form-description" class="text-sm text-gray-600 mb-6"><%= @form.description %></p>
               <% end %>
 
               <%= if @submitted do %>
-                <div class="rounded-md bg-green-50 p-4 mb-6">
+                <div data-testid="success-message" class="rounded-md bg-green-50 p-4 mb-6">
                   <div class="flex">
                     <div class="flex-shrink-0">
                       <svg
@@ -136,14 +136,15 @@ defmodule ClienttCrmAppWeb.PublicFormLive do
               <% else %>
                 <form phx-submit="submit_form" class="space-y-6">
                   <%= for field <- @fields do %>
-                    <div>
+                    <% slug = field.label |> String.downcase() |> String.replace(~r/\s+/, "-") |> String.replace(~r/[^\w-]/, "") %>
+                    <div data-testid={"form-field-#{slug}"}>
                       <label
                         for={field.label}
                         class="block text-sm font-medium leading-6 text-gray-900"
                       >
                         <%= field.label %>
                         <%= if field.required do %>
-                          <span class="text-red-500">*</span>
+                          <span data-testid="required-indicator" class="text-red-500">*</span>
                         <% end %>
                       </label>
                       <%= render_field_input(field, @errors) %>
@@ -151,7 +152,7 @@ defmodule ClienttCrmAppWeb.PublicFormLive do
                         <p class="mt-1 text-sm text-gray-500"><%= field.help_text %></p>
                       <% end %>
                       <%= if @errors[field.label] do %>
-                        <p class="mt-1 text-sm text-red-600"><%= @errors[field.label] %></p>
+                        <p data-testid={"error-#{slug}"} class="mt-1 text-sm text-red-600"><%= @errors[field.label] %></p>
                       <% end %>
                     </div>
                   <% end %>
@@ -159,6 +160,7 @@ defmodule ClienttCrmAppWeb.PublicFormLive do
                   <div class="flex justify-end gap-3">
                     <button
                       type="submit"
+                      data-testid="submit-form-button"
                       class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                     >
                       Submit
@@ -208,7 +210,9 @@ defmodule ClienttCrmAppWeb.PublicFormLive do
 
   defp render_field_input(field, errors) do
     error_class = if errors[field.label], do: "border-red-300", else: "border-gray-300"
-    assigns = %{field: field, errors: errors, error_class: error_class}
+    # Create slug from label for testid
+    slug = field.label |> String.downcase() |> String.replace(~r/\s+/, "-") |> String.replace(~r/[^\w-]/, "")
+    assigns = %{field: field, errors: errors, error_class: error_class, slug: slug}
 
     case field.field_type do
       :textarea ->
@@ -216,6 +220,7 @@ defmodule ClienttCrmAppWeb.PublicFormLive do
         <textarea
           name={@field.label}
           id={@field.label}
+          data-testid={"textarea-#{@slug}"}
           rows="3"
           required={@field.required}
           placeholder={@field.placeholder}
@@ -229,6 +234,7 @@ defmodule ClienttCrmAppWeb.PublicFormLive do
           type="email"
           name={@field.label}
           id={@field.label}
+          data-testid={"input-#{@slug}"}
           required={@field.required}
           placeholder={@field.placeholder}
           class={"mt-2 block w-full rounded-md #{@error_class} shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"}
@@ -241,6 +247,7 @@ defmodule ClienttCrmAppWeb.PublicFormLive do
           type="number"
           name={@field.label}
           id={@field.label}
+          data-testid={"input-#{@slug}"}
           required={@field.required}
           placeholder={@field.placeholder}
           class={"mt-2 block w-full rounded-md #{@error_class} shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"}
@@ -253,6 +260,7 @@ defmodule ClienttCrmAppWeb.PublicFormLive do
           type="tel"
           name={@field.label}
           id={@field.label}
+          data-testid={"input-#{@slug}"}
           required={@field.required}
           placeholder={@field.placeholder}
           class={"mt-2 block w-full rounded-md #{@error_class} shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"}
@@ -265,6 +273,7 @@ defmodule ClienttCrmAppWeb.PublicFormLive do
           type="url"
           name={@field.label}
           id={@field.label}
+          data-testid={"input-#{@slug}"}
           required={@field.required}
           placeholder={@field.placeholder}
           class={"mt-2 block w-full rounded-md #{@error_class} shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"}
@@ -277,6 +286,7 @@ defmodule ClienttCrmAppWeb.PublicFormLive do
           type="date"
           name={@field.label}
           id={@field.label}
+          data-testid={"input-#{@slug}"}
           required={@field.required}
           class={"mt-2 block w-full rounded-md #{@error_class} shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"}
         />
@@ -289,6 +299,7 @@ defmodule ClienttCrmAppWeb.PublicFormLive do
             type="checkbox"
             name={@field.label}
             id={@field.label}
+            data-testid={"checkbox-#{@slug}"}
             value="true"
             class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
           />
@@ -300,6 +311,7 @@ defmodule ClienttCrmAppWeb.PublicFormLive do
         <select
           name={@field.label}
           id={@field.label}
+          data-testid={"select-#{@slug}"}
           required={@field.required}
           class={"mt-2 block w-full rounded-md #{@error_class} shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"}
         >
@@ -321,6 +333,7 @@ defmodule ClienttCrmAppWeb.PublicFormLive do
                 type="radio"
                 name={@field.label}
                 id={"#{@field.label}_#{option["value"] || option[:value]}"}
+                data-testid={"radio-#{@slug}"}
                 value={option["value"] || option[:value]}
                 required={@field.required}
                 class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
@@ -342,6 +355,7 @@ defmodule ClienttCrmAppWeb.PublicFormLive do
           type="text"
           name={@field.label}
           id={@field.label}
+          data-testid={"input-#{@slug}"}
           required={@field.required}
           placeholder={@field.placeholder}
           class={"mt-2 block w-full rounded-md #{@error_class} shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"}

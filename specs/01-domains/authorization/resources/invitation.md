@@ -13,7 +13,7 @@ Represents an email-based invitation for a user to join a company. Manages the i
 | Attribute | Type | Required | Validation | Description |
 |-----------|------|----------|------------|-------------|
 | id | uuid | Yes | - | Unique identifier |
-| company_id | uuid | Yes | valid Company id | Company user is invited to |
+| tenant_id | uuid | Yes | valid Company id | Company user is invited to |
 | email | string | Yes | valid email, lowercase | Email address of invitee |
 | invited_by_authz_user_id | uuid | Yes | valid AuthzUser id | Who sent the invitation |
 | role | enum | Yes | one of: admin, manager, user | Assigned role upon acceptance |
@@ -31,7 +31,7 @@ Represents an email-based invitation for a user to join a company. Manages the i
 ## Business Rules
 
 ### Invariants
-- Only one pending invitation allowed per (email, company_id)
+- Only one pending invitation allowed per (email, tenant_id)
 - If team_role is set, team_id MUST be set
 - Token must be cryptographically secure (32+ bytes)
 - Invitations expire after 7 days
@@ -74,7 +74,7 @@ pending → expired (automatic after 7 days)
 
 ## Relationships
 
-- **Belongs to**: Company via company_id (Many:1)
+- **Belongs to**: Company via tenant_id (Many:1)
 - **Belongs to**: AuthzUser via invited_by_authz_user_id (Many:1) - the inviter
 - **Belongs to**: Team via team_id (Many:1, optional)
 - **Belongs to**: User via accepted_by_authn_user_id (Many:1, optional) - who accepted
@@ -83,7 +83,7 @@ pending → expired (automatic after 7 days)
 
 ### Published Events
 - `authorization.invitation_sent`: Triggered when invitation created
-  - Payload: {invitation_id, email, company_id, role, team_id, invited_by, token}
+  - Payload: {invitation_id, email, tenant_id, role, team_id, invited_by, token}
   - Consumers: Email Service (sends invitation email)
 
 - `authorization.invitation_accepted`: Triggered when invitation accepted
@@ -106,7 +106,7 @@ None
 - List invitations sent by specific user
 
 ### Common Operations
-- **Create (Send)**: Requires email, company_id, role
+- **Create (Send)**: Requires email, tenant_id, role
   - Restricted to admins and managers
   - Generates secure token
   - Sets expires_at to 7 days from now
@@ -142,7 +142,7 @@ None
 ### Actions
 ```elixir
 create :send do
-  accept [:company_id, :email, :role, :team_id, :team_role, :message]
+  accept [:tenant_id, :email, :role, :team_id, :team_role, :message]
   argument :invited_by_authz_user_id, :uuid, allow_nil?: false
 
   validate EmailNotAlreadyMember
@@ -208,7 +208,7 @@ policies do
   # Admins and managers can view invitations
   policy action_type(:read) do
     authorize_if expr(role in [:admin, :manager])
-    authorize_if expr(company_id == ^actor(:current_company_id))
+    authorize_if expr(tenant_id == ^actor(:current_tenant_id))
   end
 
   # Accept is public (token-based)
@@ -244,11 +244,11 @@ end
 
 ### Validations
 ```elixir
-validate present([:company_id, :email, :role, :token, :status, :expires_at])
+validate present([:tenant_id, :email, :role, :token, :status, :expires_at])
 validate email_format(:email)
 validate lowercase(:email)
 validate string_length(:message, max: 500)
-validate unique_constraint([:email, :company_id, :status],
+validate unique_constraint([:email, :tenant_id, :status],
   where: "status = 'pending'",
   message: "Pending invitation already exists for this email")
 validate check_constraint(:team_role_requires_team,
@@ -258,7 +258,7 @@ validate check_constraint(:team_role_requires_team,
 ## Multi-Tenancy
 
 **Tenant-Scoped**: YES
-- All queries automatically filtered by company_id from session context
+- All queries automatically filtered by tenant_id from session context
 - Invitations are company-specific
 - Exception: Acceptance is public (token-based, no company context needed)
 
@@ -308,7 +308,7 @@ If you didn't expect this invitation, you can safely ignore this email.
 - [ ] Can revoke pending invitation
 - [ ] Only admins/managers can send invitations
 - [ ] Can resend invitation (new token, new expiration)
-- [ ] Queries filtered by company_id
+- [ ] Queries filtered by tenant_id
 - [ ] team_role requires team_id (database constraint)
 - [ ] Respects company max_users limit
 - [ ] Audit logs created for all operations

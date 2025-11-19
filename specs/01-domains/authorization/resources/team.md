@@ -13,7 +13,7 @@ Represents a sub-group within a company for organizing users into departments, p
 | Attribute | Type | Required | Validation | Description |
 |-----------|------|----------|------------|-------------|
 | id | uuid | Yes | - | Unique identifier |
-| company_id | uuid | Yes | valid Company id | Company this team belongs to |
+| tenant_id | uuid | Yes | valid Company id | Company this team belongs to |
 | name | string | Yes | unique per company, max: 100 | Team name |
 | description | string | No | max: 500 | Optional team description |
 | status | enum | Yes | one of: active, archived | Team operational status |
@@ -31,7 +31,7 @@ Represents a sub-group within a company for organizing users into departments, p
 - **name**: Required, 2-100 characters, unique per company
 - **description**: Max 500 characters if provided
 - **status**: Must be one of: active, archived
-- **company_id**: Must reference valid company
+- **tenant_id**: Must reference valid company
 
 ### Calculated Fields
 - **member_count**: Count of authz_users with this team_id and status: active
@@ -51,14 +51,14 @@ Represents a sub-group within a company for organizing users into departments, p
 
 ## Relationships
 
-- **Belongs to**: Company via company_id (Many:1)
+- **Belongs to**: Company via tenant_id (Many:1)
 - **Has many**: AuthzUser via team_id (1:Many)
 
 ## Domain Events
 
 ### Published Events
 - `authorization.team_created`: Triggered when team is created
-  - Payload: {team_id, company_id, name, created_by_authz_user_id}
+  - Payload: {team_id, tenant_id, name, created_by_authz_user_id}
   - Consumers: Analytics
 
 - `authorization.team_member_added`: Triggered when user assigned to team
@@ -79,14 +79,14 @@ None
 ## Access Patterns
 
 ### Queries
-- List all active teams for a company (filtered by company_id, status: active)
+- List all active teams for a company (filtered by tenant_id, status: active)
 - Find team by id
 - Find team by name within company
 - List teams with member counts
 - Get team with all members loaded
 
 ### Common Operations
-- **Create**: Requires name and company_id
+- **Create**: Requires name and tenant_id
   - Restricted to company admins
   - Creates with status: active
   - Records audit log entry
@@ -111,7 +111,7 @@ None
 ### Actions
 ```elixir
 create :create do
-  accept [:company_id, :name, :description]
+  accept [:tenant_id, :name, :description]
   validate unique_team_name_per_company()
   change set_attribute(:status, :active)
   change CreateAuditLog
@@ -120,8 +120,8 @@ end
 read :read
 read :list
 read :list_for_company do
-  argument :company_id, :uuid, allow_nil?: false
-  filter expr(company_id == ^arg(:company_id) and status == :active)
+  argument :tenant_id, :uuid, allow_nil?: false
+  filter expr(tenant_id == ^arg(:tenant_id) and status == :active)
 end
 
 update :update do
@@ -143,7 +143,7 @@ end
 policies do
   # All company members can read teams
   policy action_type(:read) do
-    authorize_if expr(company_id == ^actor(:current_company_id))
+    authorize_if expr(tenant_id == ^actor(:current_tenant_id))
   end
 
   # Only admins can create, update, or archive teams
@@ -170,17 +170,17 @@ end
 
 ### Validations
 ```elixir
-validate present([:company_id, :name, :status])
+validate present([:tenant_id, :name, :status])
 validate string_length(:name, min: 2, max: 100)
 validate string_length(:description, max: 500)
-validate unique_constraint([:company_id, :name],
+validate unique_constraint([:tenant_id, :name],
   message: "Team name already exists in this company")
 ```
 
 ## Multi-Tenancy
 
 **Tenant-Scoped**: YES
-- All queries automatically filtered by company_id from session context
+- All queries automatically filtered by tenant_id from session context
 - Teams are scoped to their company
 - Cannot access teams from other companies
 
@@ -193,17 +193,17 @@ validate unique_constraint([:company_id, :name],
 
 ## Testing Checklist
 
-- [ ] Can create team with valid name and company_id
+- [ ] Can create team with valid name and tenant_id
 - [ ] Cannot create team with duplicate name in same company
 - [ ] Can create teams with same name in different companies
 - [ ] Only admins can create teams
 - [ ] All company members can read teams
 - [ ] Can update team name and description
-- [ ] Cannot update company_id after creation
+- [ ] Cannot update tenant_id after creation
 - [ ] Cannot archive team with active members
 - [ ] Must reassign members before archiving
 - [ ] member_count calculation accurate
 - [ ] team_leads_count calculation accurate
-- [ ] Queries filtered by company_id
+- [ ] Queries filtered by tenant_id
 - [ ] Cannot read teams from other companies
 - [ ] Audit logs created for all operations

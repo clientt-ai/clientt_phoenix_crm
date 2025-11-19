@@ -42,7 +42,7 @@ mix ash.gen.resource ClienttCrmApp.Authorization.Company \
 
 **Manual Steps:**
 - [ ] Add attributes: name, slug, status, settings_id, timestamps
-- [ ] Add postgres configuration (table: authz_companies)
+- [ ] Add postgres configuration (table: authz_tenants)
 - [ ] Define actions:
   - [ ] `:create` - Create company with validations
   - [ ] `:read`, `:list` - Query companies
@@ -78,7 +78,7 @@ mix ash.gen.resource ClienttCrmApp.Authorization.AuthzUser \
 **Manual Steps:**
 - [ ] Add attributes:
   - [ ] authn_user_id (uuid)
-  - [ ] company_id (uuid)
+  - [ ] tenant_id (uuid)
   - [ ] role (enum: admin, manager, user)
   - [ ] team_id (uuid, nullable)
   - [ ] team_role (enum: team_lead, team_member, nullable)
@@ -87,7 +87,7 @@ mix ash.gen.resource ClienttCrmApp.Authorization.AuthzUser \
   - [ ] joined_at, last_active_at (timestamps)
   - [ ] created_at, updated_at
 - [ ] Add postgres configuration (table: authz_users)
-- [ ] Add identity: [:authn_user_id, :company_id] (unique constraint)
+- [ ] Add identity: [:authn_user_id, :tenant_id] (unique constraint)
 - [ ] Define actions:
   - [ ] `:create` - Create authz_user
   - [ ] `:read`, `:list` - Query authz_users
@@ -119,7 +119,7 @@ mix ash.gen.resource ClienttCrmApp.Authorization.AuthzUser \
 - [ ] Add policies to AuthzUser:
   - [ ] Company admins can manage authz_users in their company
   - [ ] Users can read authz_users in their company
-  - [ ] Automatically filter by current company_id
+  - [ ] Automatically filter by current tenant_id
 - [ ] Add policies to Company:
   - [ ] Users can read their own companies (via authz_user relationship)
   - [ ] Admins can update their own companies
@@ -140,14 +140,14 @@ mix ash_postgres.generate_migrations --name add_authorization_domain
 ```
 
 **Manual Review:**
-- [ ] Review generated migration for authz_companies
+- [ ] Review generated migration for authz_tenants
 - [ ] Review generated migration for authz_users
 - [ ] Add custom SQL for check constraints:
   - [ ] `chk_status` on companies
   - [ ] `chk_role`, `chk_team_role`, `chk_status` on authz_users
   - [ ] `chk_team_role_requires_team` on authz_users
 - [ ] Add indexes:
-  - [ ] `idx_authz_companies_slug`, `idx_authz_companies_status`
+  - [ ] `idx_authz_tenants_slug`, `idx_authz_tenants_status`
   - [ ] `idx_authz_users_authn_user`, `idx_authz_users_company`, `idx_authz_users_status`
 
 **Estimated Time:** 2 hours
@@ -189,7 +189,7 @@ mix ash_postgres.migrate
 
 **Test Cases:**
 - [ ] Create authz_user successfully
-- [ ] Validate (authn_user_id, company_id) uniqueness
+- [ ] Validate (authn_user_id, tenant_id) uniqueness
 - [ ] Validate team_role requires team_id
 - [ ] Update role successfully
 - [ ] Cannot remove last admin (error)
@@ -228,9 +228,9 @@ mix ash.gen.resource ClienttCrmApp.Authorization.Team \
 ```
 
 **Manual Steps:**
-- [ ] Add attributes: company_id, name, description, status, timestamps
+- [ ] Add attributes: tenant_id, name, description, status, timestamps
 - [ ] Add postgres configuration (table: authz_teams)
-- [ ] Add identity: [:company_id, :name] (unique per company)
+- [ ] Add identity: [:tenant_id, :name] (unique per company)
 - [ ] Define actions: create, read, list, update, archive
 - [ ] Add relationships: `belongs_to :company`, `has_many :authz_users`
 - [ ] Add calculations: `:member_count`, `:lead_count`
@@ -250,9 +250,9 @@ mix ash.gen.resource ClienttCrmApp.Authorization.CompanySettings \
 ```
 
 **Manual Steps:**
-- [ ] Add attributes: company_id, max_users, max_teams, features (map), branding (map), timezone, timestamps
-- [ ] Add postgres configuration (table: authz_company_settings)
-- [ ] Add identity: [:company_id] (unique)
+- [ ] Add attributes: tenant_id, max_users, max_teams, features (map), branding (map), timezone, timestamps
+- [ ] Add postgres configuration (table: authz_tenant_settings)
+- [ ] Add identity: [:tenant_id] (unique)
 - [ ] Define actions: create, read, update, toggle_feature
 - [ ] Add relationships: `belongs_to :company`
 - [ ] Add validations: validate max_users against current count
@@ -344,7 +344,7 @@ mix ash.gen.resource ClienttCrmApp.Authorization.Invitation \
 ```
 
 **Manual Steps:**
-- [ ] Add attributes: company_id, email, invited_by_authz_user_id, role, team_id, team_role, token, status, expires_at, accepted_at, accepted_by_authn_user_id, message, timestamps
+- [ ] Add attributes: tenant_id, email, invited_by_authz_user_id, role, team_id, team_role, token, status, expires_at, accepted_at, accepted_by_authn_user_id, message, timestamps
 - [ ] Add postgres configuration (table: authz_invitations)
 - [ ] Add identity: [:token] (unique)
 - [ ] Define actions:
@@ -421,7 +421,7 @@ mix ash_postgres.generate_migrations --name add_invitations
 
 **Manual Review:**
 - [ ] Review migration
-- [ ] Add partial unique index: (company_id, email) WHERE status = 'pending'
+- [ ] Add partial unique index: (tenant_id, email) WHERE status = 'pending'
 - [ ] Add check constraints for status, role, team_role
 - [ ] Add indexes
 - [ ] Run migrations
@@ -473,7 +473,7 @@ mix ash.gen.resource ClienttCrmApp.Authorization.AuditLog \
 ```
 
 **Manual Steps:**
-- [ ] Add attributes: company_id, actor_authz_user_id, action, resource_type, resource_id, changes (map), metadata (map), created_at
+- [ ] Add attributes: tenant_id, actor_authz_user_id, action, resource_type, resource_id, changes (map), metadata (map), created_at
 - [ ] Add postgres configuration (table: authz_audit_logs)
 - [ ] Define actions: create (only), read, list
 - [ ] NO update or destroy actions (immutable)
@@ -493,7 +493,7 @@ mix ash.gen.resource ClienttCrmApp.Authorization.AuditLog \
 - [ ] Extract before/after values from changeset
 - [ ] Determine action type from context
 - [ ] Create AuditLog entry with:
-  - [ ] company_id from current context
+  - [ ] tenant_id from current context
   - [ ] actor_authz_user_id from actor
   - [ ] action (e.g., "user_added", "role_changed")
   - [ ] resource_type, resource_id
@@ -527,7 +527,7 @@ mix ash_postgres.generate_migrations --name add_audit_logs
 
 **Manual Review:**
 - [ ] Review migration
-- [ ] Add indexes on company_id, actor_authz_user_id, created_at, (resource_type, resource_id)
+- [ ] Add indexes on tenant_id, actor_authz_user_id, created_at, (resource_type, resource_id)
 - [ ] Run migrations
 
 **Estimated Time:** 1 hour
@@ -733,7 +733,7 @@ Is user signed in?
   - [ ] If 0: Redirect to "Create Company" page
   - [ ] If 1: Auto-select that company → Dashboard
   - [ ] If 2+: Show company selector → Dashboard
-- [ ] Store in session: current_company_id, current_authz_user
+- [ ] Store in session: current_tenant_id, current_authz_user
 - [ ] Add `on_mount` hook: `:require_authz_user` (verifies company context)
 - [ ] All protected routes use `:require_authz_user` instead of `:require_authenticated_user`
 
@@ -785,7 +785,7 @@ Is user signed in?
   - [ ] Generate unique slug
   - [ ] Create CompanySettings (defaults)
   - [ ] Create AuthzUser (role: admin)
-  - [ ] Migrate user's existing data (contacts, deals, etc.) to company_id
+  - [ ] Migrate user's existing data (contacts, deals, etc.) to tenant_id
 - [ ] Log migration results
 - [ ] Rollback plan
 
@@ -793,13 +793,13 @@ Is user signed in?
 
 ---
 
-### Task 6.2: Add company_id to Existing Resources
+### Task 6.2: Add tenant_id to Existing Resources
 **Files:** CRM resources (e.g., Contact, Deal, etc.)
 
 **Manual Steps:**
-- [ ] Add `company_id` attribute to tenant-scoped resources
+- [ ] Add `tenant_id` attribute to tenant-scoped resources
 - [ ] Add `belongs_to :company` relationship
-- [ ] Add policies to filter by current company_id
+- [ ] Add policies to filter by current tenant_id
 - [ ] Generate migrations to add column + index
 - [ ] Update seed data
 
@@ -843,7 +843,7 @@ Is user signed in?
 - [ ] Test last admin protection (cannot remove/downgrade)
 - [ ] Test invitation token security (cryptographically secure, no collisions)
 - [ ] Test audit log immutability (cannot update/delete)
-- [ ] Review session management (company_id cannot be overridden by client)
+- [ ] Review session management (tenant_id cannot be overridden by client)
 - [ ] Test CSRF protection on all forms
 - [ ] Test SQL injection (Ash should prevent, but verify)
 - [ ] Test authorization bypass attempts
@@ -923,7 +923,7 @@ Is user signed in?
 
 ### Phase 6: Migration & Testing (Week 8) ✅
 - [ ] Data migration script
-- [ ] Add company_id to existing resources
+- [ ] Add tenant_id to existing resources
 - [ ] Integration testing
 - [ ] Performance testing
 - [ ] Security audit
@@ -942,7 +942,7 @@ Is user signed in?
 
 ### Risk 2: Performance Degradation
 **Mitigation:**
-- Add indexes on company_id to all tenant-scoped tables
+- Add indexes on tenant_id to all tenant-scoped tables
 - Query optimization (use Ash's preloading efficiently)
 - Consider caching for company settings
 

@@ -36,7 +36,7 @@ The [role_based_access.md](./role_based_access.md) specification defines three r
 
 **All permissions are scoped to a company.** Users can only access resources within their assigned company.
 
-- Enforced through: `actor_attribute_equals(:company_id, :company_id)`
+- Enforced through: `actor_attribute_equals(:tenant_id, :tenant_id)`
 - Applies to: All read and write operations
 - Exception: Public form submissions (unauthenticated)
 

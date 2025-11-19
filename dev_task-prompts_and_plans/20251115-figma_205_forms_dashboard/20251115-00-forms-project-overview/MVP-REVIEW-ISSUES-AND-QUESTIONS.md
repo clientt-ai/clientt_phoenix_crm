@@ -191,7 +191,7 @@ Answer these questions to finalize the MVP scope before creating specs.
 - **Your Answer:** ✅ **OPTION C - Real-time with Ash aggregates, optimize if needed**
 - **Notes:**
   - Use Ash aggregates (COUNT, etc.) for real-time calculation
-  - Ensure optimized SQL queries with proper indexes (company_id, status, submitted_at)
+  - Ensure optimized SQL queries with proper indexes (tenant_id, status, submitted_at)
   - Measure dashboard load time in testing
   - Add Oban background jobs + caching only if load time exceeds 500ms
   - Avoid premature optimization
@@ -348,7 +348,7 @@ Answer these questions to finalize the MVP scope before creating specs.
 - **Notes:**
   - Target 70% test coverage across the codebase
   - Focus testing on critical paths:
-    - Multi-tenancy data isolation (company_id filtering)
+    - Multi-tenancy data isolation (tenant_id filtering)
     - Form CRUD operations
     - Submission handling and immutability
     - Authorization policies (form roles, permissions)
@@ -372,7 +372,7 @@ Answer these questions to finalize the MVP scope before creating specs.
   - Simpler benchmark to track and measure
   - Allows flexibility for complex UIs (form builder, analytics)
   - Still provides good user experience
-  - Focus on optimized SQL queries (indexes on company_id, status, submitted_at)
+  - Focus on optimized SQL queries (indexes on tenant_id, status, submitted_at)
   - Monitor with Phoenix LiveDashboard in development
   - If any page consistently exceeds 1s, optimize that specific page
 

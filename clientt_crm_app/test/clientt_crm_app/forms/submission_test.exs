@@ -33,7 +33,7 @@ defmodule ClienttCrmApp.Forms.SubmissionTest do
 
       assert submission.status == :new
       assert submission.form_id == published_form.id
-      assert submission.company_id == published_form.company_id
+      assert submission.tenant_id == published_form.tenant_id
       assert submission.form_data == form_data
       assert submission.metadata == metadata
       assert submission.submitter_email == "john@example.com"
@@ -353,7 +353,7 @@ defmodule ClienttCrmApp.Forms.SubmissionTest do
   end
 
   describe "multi-tenancy" do
-    test "submissions inherit company_id from form" do
+    test "submissions inherit tenant_id from form" do
       company_a = company_fixture()
       form_a = form_fixture(%{company: company_a})
       {:ok, form_a} = publish_form(form_a)
@@ -367,7 +367,7 @@ defmodule ClienttCrmApp.Forms.SubmissionTest do
         })
         |> Ash.create()
 
-      assert submission.company_id == company_a.id
+      assert submission.tenant_id == company_a.id
     end
 
     test "for_company returns only submissions for that company" do
@@ -384,7 +384,7 @@ defmodule ClienttCrmApp.Forms.SubmissionTest do
 
       {:ok, submissions} =
         Forms.Submission
-        |> Ash.Query.for_read(:for_company, %{company_id: company_a.id})
+        |> Ash.Query.for_read(:for_company, %{tenant_id: company_a.id})
         |> Ash.read()
 
       submission_ids = Enum.map(submissions, & &1.id)

@@ -292,8 +292,8 @@ defmodule ClienttCrmApp.Forms.FormFieldTest do
       {:ok, loaded_field_a} = Forms.FormField |> Ash.get(field_a.id, load: [:form])
       {:ok, loaded_field_b} = Forms.FormField |> Ash.get(field_b.id, load: [:form])
 
-      assert loaded_field_a.form.company_id == company_a.id
-      assert loaded_field_b.form.company_id == company_b.id
+      assert loaded_field_a.form.tenant_id == company_a.id
+      assert loaded_field_b.form.tenant_id == company_b.id
     end
   end
 

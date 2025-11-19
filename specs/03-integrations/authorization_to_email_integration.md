@@ -57,7 +57,7 @@ The Authorization domain sends transactional emails for invitation workflows, ro
   "data": {
     "invitation_id": "invitation-uuid",
     "email": "newuser@example.com",
-    "company_id": "company-uuid",
+    "tenant_id": "company-uuid",
     "company_name": "Acme Corp",
     "company_slug": "acme-corp",
     "invited_by_authz_user_id": "inviter-authz-uuid",
@@ -117,7 +117,7 @@ The Authorization domain sends transactional emails for invitation workflows, ro
     "invitation_id": "invitation-uuid",
     "authz_user_id": "new-authz-user-uuid",
     "email": "newuser@example.com",
-    "company_id": "company-uuid",
+    "tenant_id": "company-uuid",
     "company_name": "Acme Corp",
     "invited_by_authz_user_id": "inviter-authz-uuid",
     "inviter_email": "admin@acme.com",
@@ -165,7 +165,7 @@ The Authorization domain sends transactional emails for invitation workflows, ro
   "data": {
     "authz_user_id": "authz-user-uuid",
     "email": "user@acme.com",
-    "company_id": "company-uuid",
+    "tenant_id": "company-uuid",
     "company_name": "Acme Corp",
     "old_role": "user",
     "new_role": "manager",
@@ -221,7 +221,7 @@ The Authorization domain sends transactional emails for invitation workflows, ro
   "data": {
     "authz_user_id": "authz-user-uuid",
     "email": "user@acme.com",
-    "company_id": "company-uuid",
+    "tenant_id": "company-uuid",
     "company_name": "Acme Corp",
     "removed_by_authz_user_id": "admin-authz-uuid",
     "removed_by_email": "admin@acme.com"
@@ -268,7 +268,7 @@ The Authorization domain sends transactional emails for invitation workflows, ro
   "data": {
     "authz_user_id": "authz-user-uuid",
     "email": "user@acme.com",
-    "company_id": "company-uuid",
+    "tenant_id": "company-uuid",
     "company_name": "Acme Corp",
     "team_id": "team-uuid",
     "team_name": "Engineering",
@@ -437,9 +437,9 @@ end
 **Enforcement**:
 ```elixir
 defmodule EmailRateLimiter do
-  def check_rate_limit(email, company_id) do
+  def check_rate_limit(email, tenant_id) do
     user_count = count_emails_sent(email, last_hour: true)
-    company_count = count_emails_sent(company_id, last_hour: true)
+    company_count = count_emails_sent(tenant_id, last_hour: true)
 
     cond do
       user_count >= 10 ->

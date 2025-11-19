@@ -48,15 +48,15 @@ My Companies:
 **So that** I can work with data from different organizations
 
 **Acceptance Criteria:**
-- Given I'm currently in "Acme Corp" (company_id: 1)
-- When I switch to "Beta Inc" (company_id: 2)
-- Then my session updates to company_id: 2
+- Given I'm currently in "Acme Corp" (tenant_id: 1)
+- When I switch to "Beta Inc" (tenant_id: 2)
+- Then my session updates to tenant_id: 2
 - And my current_authz_user is the one for Beta Inc
-- And all queries now filter by company_id: 2
+- And all queries now filter by tenant_id: 2
 - And I see Beta Inc's data and team members
 
 **Technical Notes:**
-- Update session assigns: current_company_id, current_authz_user
+- Update session assigns: current_tenant_id, current_authz_user
 - LiveView: Use assign(:current_authz_user, ...)
 - All tenant-scoped queries automatically refiltered
 
@@ -398,11 +398,11 @@ user@acme.com       User     Sales        2025-03-10  [Change Role] [Remove]
 **So that** other companies' data remains private
 
 **Acceptance Criteria:**
-- Given I am a member of "Acme Corp" (company_id: 1)
-- And there is data for "Beta Inc" (company_id: 2)
+- Given I am a member of "Acme Corp" (tenant_id: 1)
+- And there is data for "Beta Inc" (tenant_id: 2)
 - When I query any tenant-scoped resource (contacts, deals, etc.)
-- Then I only see data for company_id: 1
-- And I cannot access company_id: 2 data even with direct IDs
+- Then I only see data for tenant_id: 1
+- And I cannot access tenant_id: 2 data even with direct IDs
 - And this is enforced at the framework level (Ash policies)
 
 **Test Scenarios:**
@@ -422,11 +422,11 @@ user@acme.com       User     Sales        2025-03-10  [Change Role] [Remove]
 # Session assigns after login + company selection
 %{
   current_authn_user: %User{id: "...", email: "user@example.com"},
-  current_company_id: "company-uuid",
+  current_tenant_id: "company-uuid",
   current_authz_user: %AuthzUser{
     id: "authz-uuid",
     authn_user_id: "...",
-    company_id: "company-uuid",
+    tenant_id: "company-uuid",
     role: :admin
   }
 }
@@ -448,7 +448,7 @@ All LiveViews use `on_mount {ClienttCrmAppWeb.LiveUserAuth, :require_authz_user}
 2. Create authz_user linking user to their default company (role: admin)
 3. Create default CompanySettings
 4. Associate all existing user data (contacts, deals) with the default company
-5. Add company_id to all tenant-scoped tables
+5. Add tenant_id to all tenant-scoped tables
 
 **Rollback Plan:**
 - Backup database before migration

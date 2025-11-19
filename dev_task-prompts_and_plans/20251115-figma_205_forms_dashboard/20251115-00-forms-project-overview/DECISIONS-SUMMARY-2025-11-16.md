@@ -10,7 +10,7 @@
 
 All critical blocking questions (Q24-Q28) for the Forms Dashboard implementation have been answered. The project will implement full multi-tenancy with company-based data isolation, feature-specific roles stored in JSONB, and comprehensive row-level security following existing authorization patterns.
 
-**Key Decision:** Forms are company-scoped resources requiring `company_id` on all tables and proper isolation policies.
+**Key Decision:** Forms are company-scoped resources requiring `tenant_id` on all tables and proper isolation policies.
 
 ---
 
@@ -21,17 +21,17 @@ All critical blocking questions (Q24-Q28) for the Forms Dashboard implementation
 **Decision:** Forms belong to companies (Option A)
 
 **Implementation:**
-- Add `company_id UUID REFERENCES authz_companies(id)` to:
+- Add `tenant_id UUID REFERENCES authz_tenants(id)` to:
   - `forms` table
   - `form_fields` table
   - `submissions` table
 - Implement Ash row-level security policies (automatic company filtering)
-- All queries filtered by `current_company_id` from session
+- All queries filtered by `current_tenant_id` from session
 - Company_id automatically set on create, immutable after creation
 
 **Rationale:**
 - Project has existing multi-tenancy system (`lib/clientt_crm_app/authorization/`)
-- Specs (`specs/01-domains/authorization/policies/row_level_security.md:20`) explicitly require company_id for "all future tenant-scoped resources"
+- Specs (`specs/01-domains/authorization/policies/row_level_security.md:20`) explicitly require tenant_id for "all future tenant-scoped resources"
 - Ensures data isolation and consistency with existing architecture
 
 **Updated Files:**
@@ -191,7 +191,7 @@ end
 **Rationale (from specs):**
 - `specs/01-domains/authorization/REVIEW_QUESTIONS.md:Q2` mandates these components
 - Multi-tenancy requires company context in ALL LiveView pages
-- Row-level security policies depend on `actor(:current_company_id)` from session
+- Row-level security policies depend on `actor(:current_tenant_id)` from session
 - Building pages without layout = guaranteed rework
 
 **Updated Files:**
@@ -204,8 +204,8 @@ end
 ### Multi-Tenancy Patterns (from specs/01-domains/authorization/)
 
 **Row-Level Security Requirements:**
-- ALL tenant-scoped tables MUST have `company_id` column
-- Automatic filtering: `authorize_if expr(company_id == ^actor(:current_company_id))`
+- ALL tenant-scoped tables MUST have `tenant_id` column
+- Automatic filtering: `authorize_if expr(tenant_id == ^actor(:current_tenant_id))`
 - Company_id is immutable (set on create, never updateable)
 - Bulk operations automatically scoped to current company
 
@@ -213,10 +213,10 @@ end
 ```elixir
 %{
   current_authn_user: %User{id: "uuid", email: "user@example.com"},
-  current_company_id: "acme-uuid",
+  current_tenant_id: "acme-uuid",
   current_authz_user: %AuthzUser{
     id: "authz-uuid",
-    company_id: "acme-uuid",
+    tenant_id: "acme-uuid",
     role: :admin,
     feature_roles: %{forms: :form_admin}
   }
@@ -254,7 +254,7 @@ CREATE INDEX idx_authz_users_feature_roles_forms
 ```sql
 CREATE TABLE forms (
   id UUID PRIMARY KEY,
-  company_id UUID NOT NULL REFERENCES authz_companies(id) ON DELETE CASCADE,  -- NEW
+  tenant_id UUID NOT NULL REFERENCES authz_tenants(id) ON DELETE CASCADE,  -- NEW
   created_by_authz_user_id UUID NOT NULL REFERENCES authz_users(id),         -- NEW (was user_id)
   name VARCHAR(255) NOT NULL,
   description TEXT,
@@ -265,11 +265,11 @@ CREATE TABLE forms (
   submission_count INTEGER DEFAULT 0,
   inserted_at TIMESTAMP NOT NULL,
   updated_at TIMESTAMP NOT NULL,
-  UNIQUE(company_id, slug)  -- NEW: Slug unique per company
+  UNIQUE(tenant_id, slug)  -- NEW: Slug unique per company
 );
 
-CREATE INDEX idx_forms_company_id ON forms(company_id);
-CREATE INDEX idx_forms_company_status ON forms(company_id, status);
+CREATE INDEX idx_forms_tenant_id ON forms(tenant_id);
+CREATE INDEX idx_forms_company_status ON forms(tenant_id, status);
 CREATE INDEX idx_forms_created_by ON forms(created_by_authz_user_id);
 ```
 
@@ -278,7 +278,7 @@ CREATE INDEX idx_forms_created_by ON forms(created_by_authz_user_id);
 CREATE TABLE form_fields (
   id UUID PRIMARY KEY,
   form_id UUID NOT NULL REFERENCES forms(id) ON DELETE CASCADE,
-  company_id UUID NOT NULL REFERENCES authz_companies(id) ON DELETE CASCADE,  -- NEW
+  tenant_id UUID NOT NULL REFERENCES authz_tenants(id) ON DELETE CASCADE,  -- NEW
   field_type VARCHAR(50) NOT NULL,
   label VARCHAR(255) NOT NULL,
   placeholder VARCHAR(255),
@@ -290,7 +290,7 @@ CREATE TABLE form_fields (
   updated_at TIMESTAMP NOT NULL
 );
 
-CREATE INDEX idx_form_fields_company_id ON form_fields(company_id);
+CREATE INDEX idx_form_fields_tenant_id ON form_fields(tenant_id);
 ```
 
 **submissions:**
@@ -298,7 +298,7 @@ CREATE INDEX idx_form_fields_company_id ON form_fields(company_id);
 CREATE TABLE submissions (
   id UUID PRIMARY KEY,
   form_id UUID NOT NULL REFERENCES forms(id) ON DELETE CASCADE,
-  company_id UUID NOT NULL REFERENCES authz_companies(id) ON DELETE CASCADE,  -- NEW
+  tenant_id UUID NOT NULL REFERENCES authz_tenants(id) ON DELETE CASCADE,  -- NEW
   submitted_data JSONB NOT NULL,  -- Immutable
   lead_email VARCHAR(255),
   lead_name VARCHAR(255),
@@ -315,9 +315,9 @@ CREATE TABLE submissions (
   updated_at TIMESTAMP NOT NULL
 );
 
-CREATE INDEX idx_submissions_company_id ON submissions(company_id);
+CREATE INDEX idx_submissions_tenant_id ON submissions(tenant_id);
 CREATE INDEX idx_submissions_deleted_at ON submissions(deleted_at) WHERE deleted_at IS NOT NULL;
-CREATE INDEX idx_submissions_lead_status ON submissions(company_id, lead_status);
+CREATE INDEX idx_submissions_lead_status ON submissions(tenant_id, lead_status);
 ```
 
 ---
@@ -352,7 +352,7 @@ CREATE INDEX idx_submissions_lead_status ON submissions(company_id, lead_status)
    - Performance targets
 
 2. **Create Ash Resource Specifications**
-   - Form resource with company_id and policies
+   - Form resource with tenant_id and policies
    - FormField resource
    - Submission resource with metadata fields
    - Permissions module
@@ -388,7 +388,7 @@ CREATE INDEX idx_submissions_lead_status ON submissions(company_id, lead_status)
 
 8. **Build LiveView Pages**
    - Dashboard (with company context)
-   - Forms list (filtered by company_id)
+   - Forms list (filtered by tenant_id)
    - Form builder
    - Submission management
 
@@ -417,7 +417,7 @@ CREATE INDEX idx_submissions_lead_status ON submissions(company_id, lead_status)
 ## Success Criteria
 
 **Technical:**
-- ✅ All tables have company_id where required
+- ✅ All tables have tenant_id where required
 - ✅ Row-level security policies prevent cross-company data access
 - ✅ Session management provides company context to all pages
 - ✅ Permissions defined in code (not database)

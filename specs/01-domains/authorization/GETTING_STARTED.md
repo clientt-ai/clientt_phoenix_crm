@@ -32,7 +32,7 @@ All located in `features/`:
 ### Policy Specifications (4 policy files)
 All located in `policies/`:
 
-1. **row_level_security.md** - Multi-tenancy enforcement, company_id filtering
+1. **row_level_security.md** - Multi-tenancy enforcement, tenant_id filtering
 2. **role_based_access.md** - RBAC authorization matrix for admin/manager/user
 3. **invitation_security.md** - Token generation, validation, security
 4. **rate_limiting.md** - Rate limiting for sensitive actions (1 per second per user)
@@ -121,9 +121,9 @@ See IMPLEMENTATION_PLAN.md for details
 - Relationship: 1 authn_user → Many authz_users (one per company)
 
 ### 2. Row-Level Multi-Tenancy
-- All tenant-scoped resources filtered by `company_id`
+- All tenant-scoped resources filtered by `tenant_id`
 - Enforced through Ash policies
-- Session stores `current_company_id` and `current_authz_user`
+- Session stores `current_tenant_id` and `current_authz_user`
 
 ### 3. Simple RBAC (3 Roles)
 - `admin` - Full company management

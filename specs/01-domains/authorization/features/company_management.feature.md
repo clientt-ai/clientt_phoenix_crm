@@ -47,7 +47,7 @@ And default CompanySettings are created with:
 And an audit log entry records "CompanyCreated"
 And the company_created event is published with:
   | field                    | value         |
-  | company_id               | [company_id]  |
+  | tenant_id               | [tenant_id]  |
   | first_admin_authz_user_id| [authz_id]    |
 ```
 
@@ -107,24 +107,24 @@ And companies are sorted by name alphabetically
 ```gherkin
 Given I am logged in as "alice@example.com"
 And I have authz_users for:
-  | company   | role  | company_id |
+  | company   | role  | tenant_id |
   | Acme Corp | admin | uuid-1     |
   | Beta Inc  | user  | uuid-2     |
-And I am currently in "Acme Corp" (company_id: uuid-1)
+And I am currently in "Acme Corp" (tenant_id: uuid-1)
 And my current permissions are "admin"
 When I switch to "Beta Inc"
 Then my session is updated with:
   | field                | value  |
-  | current_company_id   | uuid-2 |
+  | current_tenant_id   | uuid-2 |
   | current_authz_user   | [Beta Inc authz_user] |
 And my current permissions are "user"
-And all subsequent queries filter by company_id: uuid-2
+And all subsequent queries filter by tenant_id: uuid-2
 And I see Beta Inc's data and team members
 And I no longer see Acme Corp's data
 ```
 
 **Technical Notes:**
-- Update session assigns: current_company_id, current_authz_user
+- Update session assigns: current_tenant_id, current_authz_user
 - LiveView: Use assign(:current_authz_user, ...)
 - All tenant-scoped queries automatically refiltered
 

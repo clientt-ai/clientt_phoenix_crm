@@ -14,7 +14,7 @@ Manages multi-tenant authorization for the ClienttCRM application, separating au
 - **authz_user**: Authorization user - company-scoped identity with roles and permissions (WHAT you can do)
 - **Company**: Tenant organization in the multi-tenant system (equivalent to "tenant")
 - **Team**: Sub-group within a company for organizing users (e.g., "Engineering", "Sales")
-- **Row-level tenancy**: Multi-tenancy approach using company_id filtering on shared tables
+- **Row-level tenancy**: Multi-tenancy approach using tenant_id filtering on shared tables
 - **RBAC**: Role-Based Access Control with predefined roles
 - **Aggregate**: DDD pattern - cluster of entities treated as a single unit
 - **Domain Event**: Significant occurrence in the domain (e.g., CompanyCreated, RoleChanged)
@@ -47,17 +47,17 @@ Manages multi-tenant authorization for the ClienttCRM application, separating au
 ### Integration Points
 
 - **Accounts Domain**: Consumes authn_user (User) for linking authorization identities
-- **Future Domains**: All tenant-scoped domains will reference authz_companies.id as company_id
+- **Future Domains**: All tenant-scoped domains will reference authz_tenants.id as tenant_id
 - **Email Service**: Sends invitation emails and role change notifications
-- **Session Management**: Stores current_company_id and current_authz_user in user session
+- **Session Management**: Stores current_tenant_id and current_authz_user in user session
 
 ## Core Business Rules
 
 1. **Separation of Authentication and Authorization**: A single authn_user (login identity) can have multiple authz_users (one per company membership), enabling multi-company access with different roles
-2. **Unique Company Membership**: Each (authn_user_id, company_id) pair must be unique - a user can only have one authorization identity per company
-3. **Row-Level Tenancy**: All tenant-scoped queries MUST be filtered by company_id through Ash policies
+2. **Unique Company Membership**: Each (authn_user_id, tenant_id) pair must be unique - a user can only have one authorization identity per company
+3. **Row-Level Tenancy**: All tenant-scoped queries MUST be filtered by tenant_id through Ash policies
 4. **Team Role Constraints**: If team_role is set, team_id MUST be set (enforced at database level)
-5. **Invitation Uniqueness**: Only one pending invitation allowed per (email, company_id) combination
+5. **Invitation Uniqueness**: Only one pending invitation allowed per (email, tenant_id) combination
 6. **Invitation Expiration**: Invitations expire after 7 days
 7. **Immutable Audit Logs**: Audit log entries cannot be updated or deleted - only created
 8. **Slug Uniqueness**: Company slugs must be globally unique and URL-safe
@@ -69,15 +69,15 @@ Manages multi-tenant authorization for the ClienttCRM application, separating au
 
 | Event Name | Trigger | Payload | Consumers |
 |------------|---------|---------|-----------|
-| authorization.company_created | Company created | {company_id, name, slug, first_admin_authz_user_id} | Analytics, Welcome Email Service |
-| authorization.authz_user_created | User joins company | {authz_user_id, company_id, authn_user_id, role} | Onboarding Service, Analytics |
+| authorization.company_created | Company created | {tenant_id, name, slug, first_admin_authz_user_id} | Analytics, Welcome Email Service |
+| authorization.authz_user_created | User joins company | {authz_user_id, tenant_id, authn_user_id, role} | Onboarding Service, Analytics |
 | authorization.role_changed | User role updated | {authz_user_id, old_role, new_role, changed_by} | Notification Service, Cache Invalidation |
-| authorization.team_created | Team created | {team_id, company_id, name} | Analytics |
+| authorization.team_created | Team created | {team_id, tenant_id, name} | Analytics |
 | authorization.team_member_added | User assigned to team | {authz_user_id, team_id, team_role} | Team Notification Service |
-| authorization.invitation_sent | Invitation created | {invitation_id, email, company_id, role} | Email Service |
+| authorization.invitation_sent | Invitation created | {invitation_id, email, tenant_id, role} | Email Service |
 | authorization.invitation_accepted | User accepts invite | {invitation_id, authz_user_id, accepted_by_authn_user_id} | Onboarding Service, Analytics |
-| authorization.company_archived | Company archived | {company_id, archived_by} | Cleanup Service, Analytics |
-| authorization.settings_updated | Company settings changed | {company_id, setting_key, old_value, new_value} | Feature Flag Service |
+| authorization.company_archived | Company archived | {tenant_id, archived_by} | Cleanup Service, Analytics |
+| authorization.settings_updated | Company settings changed | {tenant_id, setting_key, old_value, new_value} | Feature Flag Service |
 | authorization.user_suspended | User suspended from company | {authz_user_id, suspended_by} | Notification Service |
 
 ### Consumed Events
@@ -119,7 +119,7 @@ Manages multi-tenant authorization for the ClienttCRM application, separating au
 ## Multi-Tenancy Implementation
 
 ### Row-Level Filtering
-All tenant-scoped resources include `company_id` and are automatically filtered by current company context through Ash policies.
+All tenant-scoped resources include `tenant_id` and are automatically filtered by current company context through Ash policies.
 
 **Tenant-Scoped Resources**:
 - AuthzUser
@@ -136,16 +136,16 @@ All tenant-scoped resources include `company_id` and are automatically filtered 
 # Required session assigns for multi-tenancy
 %{
   current_authn_user: %User{},        # Authentication identity
-  current_company_id: "uuid",          # Active company
+  current_tenant_id: "uuid",          # Active company
   current_authz_user: %AuthzUser{}     # Authorization identity for current company
 }
 ```
 
 ### Company Switching
 Users can switch between companies they belong to, which updates:
-1. `current_company_id` in session
+1. `current_tenant_id` in session
 2. `current_authz_user` to the authz_user for selected company
-3. All subsequent queries automatically filter by new company_id
+3. All subsequent queries automatically filter by new tenant_id
 
 ## Security Considerations
 
@@ -153,10 +153,10 @@ Users can switch between companies they belong to, which updates:
 - All actions require appropriate role (admin, manager, user)
 - Managers can manage teams but not company settings
 - Users can only view, not manage
-- All policies enforce company_id filtering
+- All policies enforce tenant_id filtering
 
 ### Data Isolation
-- Ash policies ensure company_id filter on all queries
+- Ash policies ensure tenant_id filter on all queries
 - Cannot bypass tenancy through direct IDs
 - Cross-company data access prevented at framework level
 

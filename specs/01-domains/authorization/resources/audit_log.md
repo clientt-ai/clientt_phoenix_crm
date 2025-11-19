@@ -13,7 +13,7 @@ Provides immutable audit trail of all authorization changes within a company. Re
 | Attribute | Type | Required | Validation | Description |
 |-----------|------|----------|------------|-------------|
 | id | uuid | Yes | - | Unique identifier |
-| company_id | uuid | Yes | valid Company id | Company this log belongs to |
+| tenant_id | uuid | Yes | valid Company id | Company this log belongs to |
 | actor_authz_user_id | uuid | No | valid AuthzUser id | Who performed the action (null for system) |
 | action | string | Yes | max: 100 | Action performed (e.g., "role_changed") |
 | resource_type | string | Yes | max: 100 | Type of resource (e.g., "AuthzUser") |
@@ -116,7 +116,7 @@ Provides immutable audit trail of all authorization changes within a company. Re
 
 ## Relationships
 
-- **Belongs to**: Company via company_id (Many:1)
+- **Belongs to**: Company via tenant_id (Many:1)
 - **Belongs to**: AuthzUser via actor_authz_user_id (Many:1, optional)
 
 ## Domain Events
@@ -156,7 +156,7 @@ None (audit logs are the record, not the trigger)
 ### Actions
 ```elixir
 create :create do
-  accept [:company_id, :actor_authz_user_id, :action, :resource_type, :resource_id, :changes, :metadata]
+  accept [:tenant_id, :actor_authz_user_id, :action, :resource_type, :resource_id, :changes, :metadata]
   # This action should only be called internally, not exposed to users
   change set_attribute(:created_at, &DateTime.utc_now/0)
 end
@@ -168,8 +168,8 @@ read :list do
 end
 
 read :for_company do
-  argument :company_id, :uuid, allow_nil?: false
-  filter expr(company_id == ^arg(:company_id))
+  argument :tenant_id, :uuid, allow_nil?: false
+  filter expr(tenant_id == ^arg(:tenant_id))
   pagination offset?: true, countable: true
 end
 
@@ -198,7 +198,7 @@ policies do
   # Only admins can read audit logs
   policy action_type(:read) do
     authorize_if AuthzUserIsAdmin
-    authorize_if expr(company_id == ^actor(:current_company_id))
+    authorize_if expr(tenant_id == ^actor(:current_tenant_id))
   end
 
   # Create is system-only (not exposed to external actors)
@@ -241,7 +241,7 @@ end
 
 ### Validations
 ```elixir
-validate present([:company_id, :action, :resource_type, :resource_id, :changes, :created_at])
+validate present([:tenant_id, :action, :resource_type, :resource_id, :changes, :created_at])
 validate string_length(:action, max: 100)
 validate string_length(:resource_type, max: 100)
 ```
@@ -249,7 +249,7 @@ validate string_length(:resource_type, max: 100)
 ## Multi-Tenancy
 
 **Tenant-Scoped**: YES
-- All queries automatically filtered by company_id
+- All queries automatically filtered by tenant_id
 - Admins can only see logs for their company
 
 ## Retention Policy
@@ -295,7 +295,7 @@ validate string_length(:resource_type, max: 100)
 - [ ] Cannot update audit log
 - [ ] Cannot delete audit log
 - [ ] Only admins can read audit logs
-- [ ] Queries filtered by company_id
+- [ ] Queries filtered by tenant_id
 - [ ] Can filter by date range
 - [ ] Can filter by action type
 - [ ] Can filter by resource

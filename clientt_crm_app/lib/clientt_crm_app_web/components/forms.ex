@@ -182,6 +182,7 @@ defmodule ClienttCrmAppWeb.Components.Forms do
   def draggable_field_tile(assigns) do
     ~H"""
     <div
+      id={"draggable-field-#{@type}"}
       class="flex items-center gap-2 p-2 rounded-lg hover:bg-base-200 cursor-move transition-colors"
       draggable="true"
       data-field-type={@type}
@@ -216,9 +217,9 @@ defmodule ClienttCrmAppWeb.Components.Forms do
   def form_grid_canvas(assigns) do
     ~H"""
     <div
+      id="form-canvas"
       class="min-h-[600px] bg-base-200 p-8 rounded-lg"
       phx-hook="FormDropZone"
-      id="form-canvas"
       data-border-color={@border_color}
     >
       <div class="max-w-4xl mx-auto bg-base-100 shadow-lg rounded-lg p-8">

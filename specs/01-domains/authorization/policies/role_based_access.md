@@ -102,13 +102,13 @@ end
 **Examples**:
 ```yaml
 # Allowed
-actor: {authz_user: {role: admin, company_id: "acme"}}
+actor: {authz_user: {role: admin, tenant_id: "acme"}}
 action: update
 resource: Company (id: "acme")
 result: allowed
 
 # Denied
-actor: {authz_user: {role: manager, company_id: "acme"}}
+actor: {authz_user: {role: manager, tenant_id: "acme"}}
 action: update
 resource: Company (id: "acme")
 result: denied (admin required)
@@ -121,7 +121,7 @@ result: denied (admin required)
 #### Rule: All company members can read authz_users
 ```elixir
 policy action_type(:read) do
-  authorize_if expr(company_id == ^actor(:current_company_id))
+  authorize_if expr(tenant_id == ^actor(:current_tenant_id))
 end
 ```
 
@@ -196,7 +196,7 @@ end
 #### Rule: All company members can read teams
 ```elixir
 policy action_type(:read) do
-  authorize_if expr(company_id == ^actor(:current_company_id))
+  authorize_if expr(tenant_id == ^actor(:current_tenant_id))
 end
 ```
 
@@ -299,7 +299,7 @@ end
 #### Rule: All company members can read settings
 ```elixir
 policy action_type(:read) do
-  authorize_if expr(company_id == ^actor(:current_company_id))
+  authorize_if expr(tenant_id == ^actor(:current_tenant_id))
 end
 ```
 
@@ -421,9 +421,9 @@ permissions:
 
 ### Check Order
 1. **Authentication**: Is user logged in? (authn_user exists)
-2. **Company Context**: Is current_company_id set in session?
+2. **Company Context**: Is current_tenant_id set in session?
 3. **Authorization Identity**: Does authz_user exist for this company?
-4. **Multi-Tenancy**: Does resource belong to current company? (company_id match)
+4. **Multi-Tenancy**: Does resource belong to current company? (tenant_id match)
 5. **Role Permission**: Does user's role allow this action?
 
 ### Pseudo-code
@@ -432,7 +432,7 @@ def authorize(actor, action, resource) do
   with :ok <- check_authenticated(actor),
        :ok <- check_company_context(actor),
        :ok <- check_authz_user(actor),
-       :ok <- check_company_id(actor, resource),
+       :ok <- check_tenant_id(actor, resource),
        :ok <- check_role_permission(actor.role, action) do
     :authorized
   else

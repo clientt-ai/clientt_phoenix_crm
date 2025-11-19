@@ -371,7 +371,7 @@ end
 ```
 
 ### Real-time Updates
-- Subscribe to PubSub topic: `"forms:#{company_id}"`
+- Subscribe to PubSub topic: `"forms:#{tenant_id}"`
 - Update metrics on form submission events
 - Update recent forms on form update/create events
 
