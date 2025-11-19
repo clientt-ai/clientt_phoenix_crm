@@ -188,6 +188,38 @@ The `playwright.config.js` file contains:
 - **webServer**: Automatically starts Phoenix server before tests
 - **use**: Shared settings (screenshots, videos, traces)
 
+### Required Viewport and Screenshot Settings
+
+**IMPORTANT**: Always configure 1080p viewport in playwright.config.js:
+
+```javascript
+module.exports = defineConfig({
+  use: {
+    // 1080p viewport for all screenshots
+    viewport: { width: 1920, height: 1080 },
+
+    // Screenshot on failure (viewport only, not full page)
+    screenshot: {
+      mode: 'only-on-failure',
+      fullPage: false,  // MUST be false
+    },
+  },
+
+  projects: [
+    {
+      name: 'chromium',
+      // Explicit viewport to override device presets
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1920, height: 1080 } },
+    },
+  ],
+});
+```
+
+**Why this matters:**
+- Device presets (like `devices['Desktop Chrome']`) may override global viewport settings
+- Always explicitly set viewport in each project configuration
+- `fullPage: false` ensures screenshots stay at 1920x1080 max
+
 ## Environment Variables
 
 Create a `.env` file in `playwright_tests/`:
@@ -257,10 +289,28 @@ page.on('pageerror', error => console.log('PAGE ERROR:', error));
 
 ### Screenshots
 
+**IMPORTANT**: All screenshots must be captured at 1080p (1920x1080) viewport only. Do NOT use fullPage: true.
+
 ```javascript
-// Take screenshot
-await page.screenshot({ path: 'screenshot.png', fullPage: true });
+// Take screenshot at 1080p viewport (CORRECT)
+await page.screenshot({
+  path: 'screenshots/my-screenshot.png',
+  fullPage: false  // Always use false to capture viewport only
+});
+
+// Helper function pattern for consistent screenshots
+async function screenshot(page, name) {
+  await page.screenshot({
+    path: path.join(__dirname, 'screenshots', `${name}.png`),
+    fullPage: false  // Never use fullPage: true
+  });
+}
 ```
+
+**Screenshot Configuration Rules:**
+- Always use `fullPage: false` to capture viewport only (1920x1080)
+- Screenshots should never exceed 8000 pixels in any dimension
+- Viewport is set in playwright.config.js as `{ width: 1920, height: 1080 }`
 
 ### Pause Execution
 

@@ -17,7 +17,7 @@ test.describe('FG-SC-001: Figma Forms Dashboard - Screenshot Capture', () => {
     await page.waitForTimeout(300);
     await page.screenshot({
       path: path.join(screenshotsDir, `${name}-light.png`),
-      fullPage: true
+      fullPage: false
     });
 
     // Take dark mode screenshot
@@ -28,7 +28,7 @@ test.describe('FG-SC-001: Figma Forms Dashboard - Screenshot Capture', () => {
     await page.waitForTimeout(300);
     await page.screenshot({
       path: path.join(screenshotsDir, `${name}-dark.png`),
-      fullPage: true
+      fullPage: false
     });
 
     // Reset to light mode for next test
