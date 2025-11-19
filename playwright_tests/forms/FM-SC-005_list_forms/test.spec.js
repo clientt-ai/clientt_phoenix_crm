@@ -15,7 +15,7 @@ test.describe('FM-SC-005: View and List All Forms', () => {
   async function screenshot(page, name) {
     await page.screenshot({
       path: path.join(screenshotsDir, `${name}.png`),
-      fullPage: true
+      fullPage: false
     });
   }
 
@@ -25,7 +25,7 @@ test.describe('FM-SC-005: View and List All Forms', () => {
     await screenshot(page, '01-sign-in-page');
 
     await page.fill('input[name="user[email]"]', 'sample_admin@clientt.com');
-    await page.fill('input[name="user[password]"]', 'SampleAdmin123!');
+    await page.fill('input[name="user[password]"]', 'Hang123!');
     await page.click('form:has(input[name="user[email]"]) button[type="submit"]');
 
     // Wait for authentication to complete
