@@ -38,6 +38,37 @@ await register(page, email, 'Password123!');
 const uniqueEmail = generateTestEmail(); // testuser1699999999@example.com
 ```
 
+### Screenshot Helpers
+
+**IMPORTANT**: All screenshots must be 1080p (1920x1080) viewport only.
+
+```javascript
+// Screenshot helper function pattern
+const path = require('path');
+
+async function screenshot(page, name) {
+  await page.screenshot({
+    path: path.join(__dirname, 'screenshots', `${name}.png`),
+    fullPage: false  // MUST be false - never use fullPage: true
+  });
+}
+
+// Usage in test
+test('my test', async ({ page }) => {
+  await page.goto('/dashboard');
+  await screenshot(page, '01-dashboard');
+
+  await page.click('[data-testid="create-button"]');
+  await screenshot(page, '02-create-dialog');
+});
+```
+
+**Screenshot Rules:**
+- Always use `fullPage: false`
+- Screenshots captured at 1920x1080 viewport only
+- Never exceed 8000 pixels in any dimension
+- Use descriptive names with step numbers (e.g., `01-sign-in`, `02-after-login`)
+
 ### General Test Helpers
 
 Located in `tests/support/test-helpers.js`:
