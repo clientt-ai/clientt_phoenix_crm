@@ -30,12 +30,12 @@ test.describe('FM-SC-007: Delete Form Fields', () => {
     await page.fill('input[name="user[email]"]', 'sample_admin@clientt.com');
     await page.fill('input[name="user[password]"]', 'Hang123!');
     await page.click('form:has(input[name="user[email]"]) button[type="submit"]');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/dashboard');
     await screenshot(page, '02-after-login');
 
     // Navigate to forms page
     await page.goto('/forms');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms');
 
     // Verify header and sidebar navigation are present on authenticated pages
     await expect(page.locator('header')).toBeVisible();
@@ -46,7 +46,7 @@ test.describe('FM-SC-007: Delete Form Fields', () => {
     // Create a test form with fields - click the Create Form button
     formName = `Delete Test Form ${Date.now()}`;
     await page.click('[data-testid="create-form-button"]');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms/new');
     await expect(page.locator('[data-testid="form-name-input"]')).toBeVisible({ timeout: 10000 });
     await page.fill('[data-testid="form-name-input"]', formName);
     await page.fill('[data-testid="form-description-input"]', 'Form for deletion testing');
@@ -59,7 +59,7 @@ test.describe('FM-SC-007: Delete Form Fields', () => {
 
     // Navigate back to listing to get the proper edit URL
     await page.click('a[href="/forms"]');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms');
 
     // Find the form and get its edit URL
     const formRow = page.locator('table tbody tr', { hasText: formName });
@@ -68,7 +68,7 @@ test.describe('FM-SC-007: Delete Form Fields', () => {
 
     // Navigate to the edit page
     await editLink.click();
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms/*/edit');
 
     // Add multiple fields for deletion testing
     const fields = ['Field One', 'Field Two', 'Field Three'];
@@ -84,7 +84,7 @@ test.describe('FM-SC-007: Delete Form Fields', () => {
 
   test('should display delete button on form fields', async ({ page }) => {
     await page.goto(formUrl);
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms/*/edit');
 
     // Verify delete buttons exist on fields
     const fieldOne = page.locator('[data-testid="form-field"]', { hasText: 'Field One' });
@@ -94,7 +94,7 @@ test.describe('FM-SC-007: Delete Form Fields', () => {
 
   test('should show confirmation dialog when deleting field', async ({ page }) => {
     await page.goto(formUrl);
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms/*/edit');
 
     // Setup dialog handler to check for confirmation
     let dialogMessage = '';
@@ -114,7 +114,7 @@ test.describe('FM-SC-007: Delete Form Fields', () => {
 
   test('should cancel deletion when dismissing confirmation', async ({ page }) => {
     await page.goto(formUrl);
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms/*/edit');
 
     const initialCount = await page.locator('[data-testid="form-field"]').count();
     await screenshot(page, '08-before-cancel');
@@ -126,8 +126,8 @@ test.describe('FM-SC-007: Delete Form Fields', () => {
     const fieldOne = page.locator('[data-testid="form-field"]', { hasText: 'Field One' });
     await fieldOne.locator('[data-testid="delete-field-button"]').click();
 
-    // Wait for any potential deletion to process
-    await page.waitForLoadState('networkidle');
+    // Wait a moment for any potential deletion to process
+    await page.waitForTimeout(500);
 
     // Verify field is NOT deleted
     await expect(page.locator('[data-testid="form-field"]', { hasText: 'Field One' })).toBeVisible();
@@ -140,7 +140,7 @@ test.describe('FM-SC-007: Delete Form Fields', () => {
 
   test('should successfully delete field when confirmed', async ({ page }) => {
     await page.goto(formUrl);
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms/*/edit');
 
     const initialCount = await page.locator('[data-testid="form-field"]').count();
     await screenshot(page, '10-before-delete');
@@ -166,7 +166,7 @@ test.describe('FM-SC-007: Delete Form Fields', () => {
 
   test('should delete multiple fields in sequence', async ({ page }) => {
     await page.goto(formUrl);
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms/*/edit');
 
     // Setup dialog to accept
     page.on('dialog', dialog => dialog.accept());
@@ -191,7 +191,7 @@ test.describe('FM-SC-007: Delete Form Fields', () => {
 
   test('should persist deletion after page reload', async ({ page }) => {
     await page.goto(formUrl);
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms/*/edit');
 
     // Setup dialog to accept
     page.on('dialog', dialog => dialog.accept());
@@ -204,7 +204,7 @@ test.describe('FM-SC-007: Delete Form Fields', () => {
 
     // Reload the page
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms/*/edit');
 
     // Verify field is still gone
     await expect(page.locator('[data-testid="form-field"]', { hasText: 'Field Two' })).not.toBeVisible();
@@ -217,7 +217,7 @@ test.describe('FM-SC-007: Delete Form Fields', () => {
 
   test('should show empty state when all fields deleted', async ({ page }) => {
     await page.goto(formUrl);
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms/*/edit');
 
     // Setup dialog to accept
     page.on('dialog', dialog => dialog.accept());
@@ -242,7 +242,7 @@ test.describe('FM-SC-007: Delete Form Fields', () => {
 
   test('should still have add field button after deletion', async ({ page }) => {
     await page.goto(formUrl);
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms/*/edit');
 
     // Setup dialog to accept
     page.on('dialog', dialog => dialog.accept());

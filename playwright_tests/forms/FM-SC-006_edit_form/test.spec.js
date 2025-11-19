@@ -29,12 +29,12 @@ test.describe('FM-SC-006: Edit Existing Form', () => {
     await page.fill('input[name="user[email]"]', 'sample_admin@clientt.com');
     await page.fill('input[name="user[password]"]', 'Hang123!');
     await page.click('form:has(input[name="user[email]"]) button[type="submit"]');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/dashboard');
     await screenshot(page, '02-after-login');
 
     // Navigate to forms page
     await page.goto('/forms');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms');
 
     // Verify header and sidebar navigation are present on authenticated pages
     await expect(page.locator('header')).toBeVisible();
@@ -45,7 +45,7 @@ test.describe('FM-SC-006: Edit Existing Form', () => {
     // Create a test form to edit - click the Create Form button
     formName = `Edit Test Form ${Date.now()}`;
     await page.click('[data-testid="create-form-button"]');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms/new');
 
     // Wait for form input to be ready
     await expect(page.locator('[data-testid="form-name-input"]')).toBeVisible({ timeout: 10000 });
@@ -60,7 +60,7 @@ test.describe('FM-SC-006: Edit Existing Form', () => {
 
     // Navigate back to listing to get the proper edit URL
     await page.click('a[href="/forms"]');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms');
 
     // Find the form and get its edit URL
     const formRow = page.locator('table tbody tr', { hasText: formName });
@@ -69,7 +69,7 @@ test.describe('FM-SC-006: Edit Existing Form', () => {
 
     // Navigate to the edit page
     await editLink.click();
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms/*/edit');
     await screenshot(page, '05-edit-page-loaded');
 
     // Add initial fields
@@ -91,7 +91,7 @@ test.describe('FM-SC-006: Edit Existing Form', () => {
   test('should load form edit page with pre-filled data', async ({ page }) => {
     // Navigate to forms listing
     await page.goto('/forms');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms');
 
     // Find and click edit link for our form
     const formRow = page.locator('table tbody tr', { hasText: formName });
@@ -99,7 +99,7 @@ test.describe('FM-SC-006: Edit Existing Form', () => {
 
     const editLink = formRow.locator('a[href*="/edit"]');
     await editLink.click();
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms/*/edit');
 
     // Verify form edit page loads with current data
     await expect(page).toHaveURL(/.*forms\/.*\/edit|forms\/[a-zA-Z0-9-]+$/);
@@ -110,7 +110,7 @@ test.describe('FM-SC-006: Edit Existing Form', () => {
 
   test('should edit basic form information', async ({ page }) => {
     await page.goto(formUrl);
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms/*/edit');
 
     // Edit form name and description
     const newName = `Updated Form ${Date.now()}`;
@@ -125,7 +125,7 @@ test.describe('FM-SC-006: Edit Existing Form', () => {
 
     // Verify changes in listing
     await page.goto('/forms');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms');
     const formRow = page.locator('table tbody tr', { hasText: newName });
     await expect(formRow).toBeVisible();
     await screenshot(page, '10-updated-in-listing');
@@ -133,7 +133,7 @@ test.describe('FM-SC-006: Edit Existing Form', () => {
 
   test('should edit existing form field', async ({ page }) => {
     await page.goto(formUrl);
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms/*/edit');
 
     // Click edit button on the Full Name field
     const fullNameField = page.locator('[data-testid="form-field"]', { hasText: 'Full Name' });
@@ -159,7 +159,7 @@ test.describe('FM-SC-006: Edit Existing Form', () => {
 
   test('should remove a field from the form', async ({ page }) => {
     await page.goto(formUrl);
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms/*/edit');
 
     // Count initial fields
     const initialCount = await page.locator('[data-testid="form-field"]').count();
@@ -183,7 +183,7 @@ test.describe('FM-SC-006: Edit Existing Form', () => {
 
   test('should add a new field to existing form', async ({ page }) => {
     await page.goto(formUrl);
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms/*/edit');
 
     // Count initial fields
     const initialCount = await page.locator('[data-testid="form-field"]').count();
@@ -211,7 +211,7 @@ test.describe('FM-SC-006: Edit Existing Form', () => {
     const formId = match ? match[1] : null;
 
     await page.goto(formUrl);
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms/*/edit');
 
     // Change form name
     const newName = `Renamed Form ${Date.now()}`;
@@ -229,14 +229,14 @@ test.describe('FM-SC-006: Edit Existing Form', () => {
   test('should navigate from listing to edit and back', async ({ page }) => {
     // Start at listing
     await page.goto('/forms');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms');
     await screenshot(page, '20-listing-page');
 
     // Find and click edit
     const formRow = page.locator('table tbody tr', { hasText: formName });
     const editLink = formRow.locator('a[href*="/edit"]');
     await editLink.click();
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms/*/edit');
 
     // Verify we're on edit page
     await expect(page).toHaveURL(/.*forms\/.*\/edit|forms\/[a-zA-Z0-9-]+$/);
@@ -244,7 +244,7 @@ test.describe('FM-SC-006: Edit Existing Form', () => {
 
     // Navigate back to listing
     await page.click('a[href="/forms"]');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms');
 
     // Verify we're back at listing
     await expect(page).toHaveURL(/.*forms$/);
@@ -254,7 +254,7 @@ test.describe('FM-SC-006: Edit Existing Form', () => {
 
   test('should update multiple fields in sequence', async ({ page }) => {
     await page.goto(formUrl);
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms/*/edit');
 
     // Edit first field
     const fullNameField = page.locator('[data-testid="form-field"]', { hasText: 'Full Name' });

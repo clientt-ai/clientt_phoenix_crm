@@ -29,12 +29,12 @@ test.describe('FM-SC-005: View and List All Forms', () => {
     await page.click('form:has(input[name="user[email]"]) button[type="submit"]');
 
     // Wait for authentication to complete
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/dashboard');
     await screenshot(page, '02-after-login');
 
     // Navigate to forms page
     await page.goto('/forms');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms');
 
     // Verify header and sidebar navigation are present on authenticated pages
     await expect(page.locator('header')).toBeVisible();
@@ -67,7 +67,7 @@ test.describe('FM-SC-005: View and List All Forms', () => {
     const formName = `List Test Form ${Date.now()}`;
 
     await page.click('[data-testid="create-form-button"]');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms/new');
     await screenshot(page, '05-create-form-page');
     await page.fill('[data-testid="form-name-input"]', formName);
     await page.fill('[data-testid="form-description-input"]', 'Test description');
@@ -83,7 +83,7 @@ test.describe('FM-SC-005: View and List All Forms', () => {
 
     // Navigate back to forms list
     await page.click('a[href="/forms"]');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms');
 
     // Verify the form appears in the table
     const formRow = page.locator('table tbody tr', { hasText: formName });
@@ -97,7 +97,7 @@ test.describe('FM-SC-005: View and List All Forms', () => {
   test('should navigate to form builder when clicking Create Form', async ({ page }) => {
     // Click Create Form button
     await page.click('[data-testid="create-form-button"]');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms/new');
 
     // Verify we're on the form builder page
     await expect(page).toHaveURL(/.*forms\/new/);
@@ -112,7 +112,7 @@ test.describe('FM-SC-005: View and List All Forms', () => {
     if (await firstEditLink.isVisible()) {
       const href = await firstEditLink.getAttribute('href');
       await firstEditLink.click();
-      await page.waitForLoadState('networkidle');
+      await page.waitForURL('**/forms/*/edit');
 
       // Verify we're on the edit page
       await expect(page).toHaveURL(/.*forms\/.*\/edit/);
@@ -123,7 +123,7 @@ test.describe('FM-SC-005: View and List All Forms', () => {
       const formName = `Edit Test Form ${Date.now()}`;
 
       await page.click('[data-testid="create-form-button"]');
-      await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms/new');
       await page.fill('[data-testid="form-name-input"]', formName);
       await page.fill('[data-testid="form-description-input"]', 'Test');
       await page.click('[data-testid="save-form-button"]');
@@ -139,7 +139,7 @@ test.describe('FM-SC-005: View and List All Forms', () => {
 
       const editLink = page.locator('table tbody tr', { hasText: formName }).locator('a[href*="/edit"]');
       await editLink.click();
-      await page.waitForLoadState('networkidle');
+      await page.waitForURL('**/forms/*/edit');
 
       await expect(page).toHaveURL(/.*forms\/.*\/edit/);
       await screenshot(page, '12-edit-form-page');

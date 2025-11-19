@@ -69,7 +69,8 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
      |> assign(:form_errors, %{})
      |> assign(:field_errors, %{})
      |> assign(:form_title, form && form.name || "Form Title")
-     |> assign(:form_description, form && form.description || "")}
+     |> assign(:form_description, form && form.description || "")
+     |> assign(:current_page, "form-builder")}
   end
 
   @impl true
@@ -427,13 +428,23 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
               AI Assistant
               <span class="badge badge-xs badge-warning ml-1">Soon</span>
             </button>
-            <.link navigate={~p"/forms/#{@form && @form.id}/preview"} class="btn btn-ghost btn-sm">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-              </svg>
-              Show Preview
-            </.link>
+            <%= if @form && @form.id do %>
+              <.link navigate={~p"/forms/#{@form.id}/preview"} class="btn btn-ghost btn-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                Show Preview
+              </.link>
+            <% else %>
+              <button class="btn btn-ghost btn-sm" disabled>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                Show Preview
+              </button>
+            <% end %>
             <button
               phx-click="save_form"
               data-testid="save-form-button"

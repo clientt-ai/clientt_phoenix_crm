@@ -27,12 +27,12 @@ test.describe('FM-SC-004: Form Builder Validation', () => {
     await page.fill('input[name="user[email]"]', 'sample_admin@clientt.com');
     await page.fill('input[name="user[password]"]', 'Hang123!');
     await page.click('form:has(input[name="user[email]"]) button[type="submit"]');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/dashboard');
     await screenshot(page, '02-after-login');
 
     // Navigate to forms page
     await page.goto('/forms');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms');
 
     // Verify header and sidebar navigation are present on authenticated pages
     await expect(page.locator('header')).toBeVisible();
@@ -44,7 +44,7 @@ test.describe('FM-SC-004: Form Builder Validation', () => {
   test('should show error when form name is empty', async ({ page }) => {
     // Click Create Form button (like a manual tester would)
     await page.click('[data-testid="create-form-button"]');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms/new');
     await expect(page.locator('[data-testid="form-name-input"]')).toBeVisible({ timeout: 10000 });
     await screenshot(page, '04-empty-form-builder');
 
@@ -64,7 +64,7 @@ test.describe('FM-SC-004: Form Builder Validation', () => {
 
     // Click Create Form button (like a manual tester would)
     await page.click('[data-testid="create-form-button"]');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms/new');
     await expect(page.locator('[data-testid="form-name-input"]')).toBeVisible({ timeout: 10000 });
     await page.fill('[data-testid="form-name-input"]', formName);
     await screenshot(page, '06-first-form-name');
@@ -75,10 +75,10 @@ test.describe('FM-SC-004: Form Builder Validation', () => {
     // Navigate back to forms list and create another form with same name
     // Notification may still be visible but should not block navigation
     await page.click('a[href="/forms"]');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms');
 
     await page.click('[data-testid="create-form-button"]');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms/new');
     await expect(page.locator('[data-testid="form-name-input"]')).toBeVisible({ timeout: 10000 });
     await page.fill('[data-testid="form-name-input"]', formName);
     await screenshot(page, '08-duplicate-form-name');
@@ -99,7 +99,7 @@ test.describe('FM-SC-004: Form Builder Validation', () => {
 
     // Click Create Form button (like a manual tester would)
     await page.click('[data-testid="create-form-button"]');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms/new');
     await expect(page.locator('[data-testid="form-name-input"]')).toBeVisible({ timeout: 10000 });
     await page.fill('[data-testid="form-name-input"]', formName);
     await page.click('[data-testid="save-form-button"]');
@@ -127,7 +127,7 @@ test.describe('FM-SC-004: Form Builder Validation', () => {
 
     // Click Create Form button (like a manual tester would)
     await page.click('[data-testid="create-form-button"]');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms/new');
     await expect(page.locator('[data-testid="form-name-input"]')).toBeVisible({ timeout: 10000 });
     await page.fill('[data-testid="form-name-input"]', formName);
     await page.click('[data-testid="save-form-button"]');
@@ -151,7 +151,7 @@ test.describe('FM-SC-004: Form Builder Validation', () => {
   test('should successfully create form after fixing validation errors', async ({ page }) => {
     // Click Create Form button (like a manual tester would)
     await page.click('[data-testid="create-form-button"]');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms/new');
     await expect(page.locator('[data-testid="form-name-input"]')).toBeVisible({ timeout: 10000 });
 
     // First try without name (should fail)
@@ -172,7 +172,7 @@ test.describe('FM-SC-004: Form Builder Validation', () => {
     // Verify form was created - navigate back to listing via UI
     // Notification may still be visible but should not block navigation
     await page.click('a[href="/forms"]');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms');
     const formRow = page.locator('table tbody tr', { hasText: formName });
     await expect(formRow).toBeVisible();
     await screenshot(page, '19-form-in-listing');
@@ -181,7 +181,7 @@ test.describe('FM-SC-004: Form Builder Validation', () => {
   test('should clear error when field is corrected', async ({ page }) => {
     // Click Create Form button (like a manual tester would)
     await page.click('[data-testid="create-form-button"]');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms/new');
     await expect(page.locator('[data-testid="form-name-input"]')).toBeVisible({ timeout: 10000 });
 
     // Submit without name
@@ -203,7 +203,7 @@ test.describe('FM-SC-004: Form Builder Validation', () => {
   test('should handle special characters in form name', async ({ page }) => {
     // Click Create Form button (like a manual tester would)
     await page.click('[data-testid="create-form-button"]');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms/new');
     await expect(page.locator('[data-testid="form-name-input"]')).toBeVisible({ timeout: 10000 });
 
     // Create form with special characters

@@ -28,12 +28,12 @@ test.describe('FM-SC-003: Form Creation with Fields', () => {
     await page.fill('input[name="user[email]"]', 'sample_admin@clientt.com');
     await page.fill('input[name="user[password]"]', 'Hang123!');
     await page.click('form:has(input[name="user[email]"]) button[type="submit"]');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/dashboard');
     await screenshot(page, '02-after-login');
 
     // Navigate to forms page
     await page.goto('/forms');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms');
 
     // Verify header and sidebar navigation are present on authenticated pages
     await expect(page.locator('header')).toBeVisible();
@@ -46,9 +46,9 @@ test.describe('FM-SC-003: Form Creation with Fields', () => {
     // Create a form with configured fields (submission UI not yet implemented)
     const formName = `Submit Test Form ${Date.now()}`;
 
-    // Click Create Form button (like a manual tester would)
+    // Click Create Form button
     await page.click('[data-testid="create-form-button"]');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms/new');
     await expect(page.locator('[data-testid="form-name-input"]')).toBeVisible({ timeout: 10000 });
     await page.fill('[data-testid="form-name-input"]', formName);
     await page.fill('[data-testid="form-description-input"]', 'Collect customer feedback');
@@ -90,9 +90,9 @@ test.describe('FM-SC-003: Form Creation with Fields', () => {
     // Create and publish a form
     const formName = `Publish Test Form ${Date.now()}`;
 
-    // Click Create Form button (like a manual tester would)
+    // Click Create Form button
     await page.click('[data-testid="create-form-button"]');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms/new');
     await expect(page.locator('[data-testid="form-name-input"]')).toBeVisible({ timeout: 10000 });
     await page.fill('[data-testid="form-name-input"]', formName);
     await page.fill('[data-testid="form-description-input"]', 'Test publishing');
@@ -127,9 +127,9 @@ test.describe('FM-SC-003: Form Creation with Fields', () => {
     // Create a form and verify preview shows fields
     const formName = `Preview Test Form ${Date.now()}`;
 
-    // Click Create Form button (like a manual tester would)
+    // Click Create Form button
     await page.click('[data-testid="create-form-button"]');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms/new');
     await expect(page.locator('[data-testid="form-name-input"]')).toBeVisible({ timeout: 10000 });
     await page.fill('[data-testid="form-name-input"]', formName);
     await page.fill('[data-testid="form-description-input"]', 'Preview test');
