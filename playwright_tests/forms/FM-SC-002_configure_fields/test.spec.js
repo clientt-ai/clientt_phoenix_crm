@@ -6,6 +6,8 @@ const path = require('path');
  *
  * This test verifies that a user can add multiple field types to a form
  * and configure their validation rules successfully.
+ *
+ * Updated for new 3-column builder UI with field palette and properties panel.
  */
 
 test.describe('FM-SC-002: Configure Form Fields and Validation', () => {
@@ -18,6 +20,14 @@ test.describe('FM-SC-002: Configure Form Fields and Validation', () => {
       path: path.join(screenshotsDir, `${name}.png`),
       fullPage: false
     });
+  }
+
+  // Helper to add a field from the palette
+  async function addFieldFromPalette(page, fieldLabel) {
+    // Find and click the button with the field label text
+    const fieldButton = page.locator(`button:has-text("${fieldLabel}")`).first();
+    await fieldButton.click();
+    await page.waitForTimeout(500); // Wait for field to be added
   }
 
   test.beforeEach(async ({ page }) => {
@@ -37,27 +47,32 @@ test.describe('FM-SC-002: Configure Form Fields and Validation', () => {
     await page.goto('/forms');
     await page.waitForLoadState('networkidle');
 
-    // Verify header and sidebar navigation are present on authenticated pages
-    await expect(page.locator('header')).toBeVisible();
+    // Verify sidebar navigation and page content are present
     await expect(page.locator('[data-testid="nav-forms"]')).toBeVisible();
     await expect(page.locator('h1')).toContainText('Forms');
     await screenshot(page, '03-forms-listing-page');
 
-    // Create a test form to configure - click the Create Form button
+    // Create a test form to configure
     const formName = `Config Test Form ${Date.now()}`;
     await page.click('[data-testid="create-form-button"]');
     await page.waitForLoadState('networkidle');
 
-    // Wait for form input to be ready
-    await expect(page.locator('[data-testid="form-name-input"]')).toBeVisible({ timeout: 10000 });
-    await page.fill('[data-testid="form-name-input"]', formName);
-    await page.fill('[data-testid="form-description-input"]', 'Form for field configuration testing');
+    // Wait for form input to be ready and fill form details
+    const nameInput = page.locator('[data-testid="form-name-input"]');
+    await expect(nameInput).toBeVisible({ timeout: 10000 });
+    await nameInput.fill(formName);
+    await nameInput.blur();
+    await page.waitForTimeout(500);
+
+    const descInput = page.locator('[data-testid="form-description-input"]');
+    await descInput.fill('Form for field configuration testing');
+    await descInput.blur();
+    await page.waitForTimeout(500);
+
+    // Save the form first (required before adding fields)
     await page.click('[data-testid="save-form-button"]');
     await expect(page.locator('[data-testid="success-notification"]').first()).toBeVisible({ timeout: 10000 });
     await screenshot(page, '04-form-created');
-
-    // Wait for notification to auto-dismiss before continuing
-    // Notification may still be visible but should not block navigation
 
     // Extract form ID from URL for later use
     await page.waitForURL(/.*forms\/[a-zA-Z0-9-]+/);
@@ -67,149 +82,167 @@ test.describe('FM-SC-002: Configure Form Fields and Validation', () => {
   });
 
   test('should add text input field with validation', async ({ page }) => {
-    // Click Add Field button (visible after form is saved)
-    await page.click('[data-testid="add-field-button"]');
-    await screenshot(page, '05-add-field-modal');
+    // Add a text field from the Contacts category (First Name)
+    await addFieldFromPalette(page, 'First Name');
+    await screenshot(page, '05-field-added');
 
-    // Select field type from dropdown
-    await page.selectOption('[data-testid="field-type-select"]', 'text');
+    // Wait for the field to appear in the canvas
+    const field = page.locator('[data-testid="form-field"]').first();
+    await expect(field).toBeVisible({ timeout: 5000 });
 
-    // Configure field
-    await page.fill('[data-testid="field-label-input"]', 'Full Name');
-    await page.check('[data-testid="field-required-checkbox"]');
+    // The field should be selected automatically, showing properties panel
+    // Update the field label
+    const labelInput = page.locator('[data-testid="field-label-input"]');
+    await expect(labelInput).toBeVisible({ timeout: 5000 });
+    await labelInput.fill('Full Name');
+
+    // Check the required checkbox
+    const requiredCheckbox = page.locator('[data-testid="field-required-checkbox"]');
+    await requiredCheckbox.check();
+    await page.waitForTimeout(500); // Wait for auto-save
     await screenshot(page, '06-text-field-configured');
 
-    // Save field
-    await page.click('[data-testid="save-field-button"]');
-
-    // Wait for modal to close and field to appear
-    await page.waitForSelector('[data-testid="form-field"]', { timeout: 5000 });
-
-    // Verify field appears in form builder
-    const field = page.locator('[data-testid="form-field"]', { hasText: 'Full Name' });
-    await expect(field).toBeVisible();
-    await expect(field.locator('[data-testid="field-required-badge"]')).toBeVisible();
+    // Verify field appears with updated label
+    await expect(page.locator('[data-testid="form-field"]', { hasText: 'Full Name' })).toBeVisible();
     await screenshot(page, '07-text-field-added');
   });
 
   test('should add email field', async ({ page }) => {
-    // Add an Email field
-    await page.click('[data-testid="add-field-button"]');
-    await page.selectOption('[data-testid="field-type-select"]', 'email');
+    // Add an Email field from the Contacts category
+    await addFieldFromPalette(page, 'Email');
+    await screenshot(page, '08-email-field-added');
 
-    // Configure field
-    await page.fill('[data-testid="field-label-input"]', 'Email Address');
-    await page.check('[data-testid="field-required-checkbox"]');
-    await screenshot(page, '08-email-field-configured');
+    // Wait for the field to appear
+    const field = page.locator('[data-testid="form-field"]').first();
+    await expect(field).toBeVisible({ timeout: 5000 });
 
-    // Save field
-    await page.click('[data-testid="save-field-button"]');
+    // Update the field label
+    const labelInput = page.locator('[data-testid="field-label-input"]');
+    await expect(labelInput).toBeVisible({ timeout: 5000 });
+    await labelInput.fill('Email Address');
 
-    // Wait for modal to close
-    await page.waitForSelector('[data-testid="form-field"]', { timeout: 5000 });
+    // Check the required checkbox
+    const requiredCheckbox = page.locator('[data-testid="field-required-checkbox"]');
+    await requiredCheckbox.check();
+    await page.waitForTimeout(500);
+    await screenshot(page, '09-email-field-configured');
 
-    // Verify field appears
-    const field = page.locator('[data-testid="form-field"]', { hasText: 'Email Address' });
-    await expect(field).toBeVisible();
-    await expect(field.locator('[data-testid="field-required-badge"]')).toBeVisible();
-    await screenshot(page, '09-email-field-added');
+    // Verify field appears with updated label
+    await expect(page.locator('[data-testid="form-field"]', { hasText: 'Email Address' })).toBeVisible();
   });
 
   test('should add dropdown field with options', async ({ page }) => {
-    // Add a Select Dropdown field
-    await page.click('[data-testid="add-field-button"]');
-    await page.selectOption('[data-testid="field-type-select"]', 'select');
+    // Add a Select Dropdown field from the Choices category
+    await addFieldFromPalette(page, 'Select Dropdown');
+    await screenshot(page, '10-select-field-added');
 
-    // Configure field
-    await page.fill('[data-testid="field-label-input"]', 'Product Category');
-    await page.check('[data-testid="field-required-checkbox"]');
+    // Wait for the field to appear
+    const field = page.locator('[data-testid="form-field"]').first();
+    await expect(field).toBeVisible({ timeout: 5000 });
+
+    // Update the field label
+    const labelInput = page.locator('[data-testid="field-label-input"]');
+    await expect(labelInput).toBeVisible({ timeout: 5000 });
+    await labelInput.fill('Product Category');
+
+    // Check the required checkbox
+    const requiredCheckbox = page.locator('[data-testid="field-required-checkbox"]');
+    await requiredCheckbox.check();
 
     // Add options (one per line in the textarea)
-    await page.fill('textarea[name="options"]', 'Electronics\nClothing\nHome & Garden\nOther');
-    await screenshot(page, '10-select-field-configured');
+    const optionsTextarea = page.locator('textarea[name="options"]');
+    await optionsTextarea.fill('Electronics\nClothing\nHome & Garden\nOther');
+    await page.waitForTimeout(500);
+    await screenshot(page, '11-select-field-configured');
 
-    // Save field
-    await page.click('[data-testid="save-field-button"]');
-
-    // Wait for modal to close
-    await page.waitForSelector('[data-testid="form-field"]', { timeout: 5000 });
-
-    // Verify field appears with all options
-    const field = page.locator('[data-testid="form-field"]', { hasText: 'Product Category' });
-    await expect(field).toBeVisible();
-    await screenshot(page, '11-select-field-added');
+    // Verify field appears with updated label
+    await expect(page.locator('[data-testid="form-field"]', { hasText: 'Product Category' })).toBeVisible();
   });
 
   test('should add textarea field', async ({ page }) => {
-    // Add a Textarea field
-    await page.click('[data-testid="add-field-button"]');
-    await page.selectOption('[data-testid="field-type-select"]', 'textarea');
+    // Add a Text Area field from the General category
+    await addFieldFromPalette(page, 'Text Area');
+    await screenshot(page, '12-textarea-field-added');
 
-    // Configure field
-    await page.fill('[data-testid="field-label-input"]', 'Feedback Comments');
-    await page.check('[data-testid="field-required-checkbox"]');
-    await screenshot(page, '12-textarea-field-configured');
+    // Wait for the field to appear
+    const field = page.locator('[data-testid="form-field"]').first();
+    await expect(field).toBeVisible({ timeout: 5000 });
 
-    // Save field
-    await page.click('[data-testid="save-field-button"]');
+    // Update the field label
+    const labelInput = page.locator('[data-testid="field-label-input"]');
+    await expect(labelInput).toBeVisible({ timeout: 5000 });
+    await labelInput.fill('Feedback Comments');
 
-    // Wait for modal to close
-    await page.waitForSelector('[data-testid="form-field"]', { timeout: 5000 });
+    // Check the required checkbox
+    const requiredCheckbox = page.locator('[data-testid="field-required-checkbox"]');
+    await requiredCheckbox.check();
+    await page.waitForTimeout(500);
+    await screenshot(page, '13-textarea-field-configured');
 
-    // Verify field appears
-    const field = page.locator('[data-testid="form-field"]', { hasText: 'Feedback Comments' });
-    await expect(field).toBeVisible();
-    await screenshot(page, '13-textarea-field-added');
+    // Verify field appears with updated label
+    await expect(page.locator('[data-testid="form-field"]', { hasText: 'Feedback Comments' })).toBeVisible();
   });
 
   test('should add number field', async ({ page }) => {
-    // Add a Number field
-    await page.click('[data-testid="add-field-button"]');
-    await page.selectOption('[data-testid="field-type-select"]', 'number');
+    // Add a Number field from the General category
+    await addFieldFromPalette(page, 'Number');
+    await screenshot(page, '14-number-field-added');
 
-    // Configure field
-    await page.fill('[data-testid="field-label-input"]', 'Rating');
-    await page.check('[data-testid="field-required-checkbox"]');
-    await screenshot(page, '14-number-field-configured');
+    // Wait for the field to appear
+    const field = page.locator('[data-testid="form-field"]').first();
+    await expect(field).toBeVisible({ timeout: 5000 });
 
-    // Save field
-    await page.click('[data-testid="save-field-button"]');
+    // Update the field label
+    const labelInput = page.locator('[data-testid="field-label-input"]');
+    await expect(labelInput).toBeVisible({ timeout: 5000 });
+    await labelInput.fill('Rating');
 
-    // Wait for modal to close
-    await page.waitForSelector('[data-testid="form-field"]', { timeout: 5000 });
+    // Check the required checkbox
+    const requiredCheckbox = page.locator('[data-testid="field-required-checkbox"]');
+    await requiredCheckbox.check();
+    await page.waitForTimeout(500);
+    await screenshot(page, '15-number-field-configured');
 
-    // Verify field appears
-    const field = page.locator('[data-testid="form-field"]', { hasText: 'Rating' });
-    await expect(field).toBeVisible();
-    await screenshot(page, '15-number-field-added');
+    // Verify field appears with updated label
+    await expect(page.locator('[data-testid="form-field"]', { hasText: 'Rating' })).toBeVisible();
   });
 
   test('should configure multiple fields in sequence', async ({ page }) => {
     const fields = [
-      { type: 'text', label: 'Full Name' },
-      { type: 'email', label: 'Email Address' },
-      { type: 'select', label: 'Product Category', options: 'Option 1\nOption 2' },
-      { type: 'textarea', label: 'Feedback Comments' },
-      { type: 'number', label: 'Rating' }
+      { paletteLabel: 'First Name', configuredLabel: 'Full Name' },
+      { paletteLabel: 'Email', configuredLabel: 'Email Address' },
+      { paletteLabel: 'Select Dropdown', configuredLabel: 'Product Category', options: 'Option 1\nOption 2' },
+      { paletteLabel: 'Text Area', configuredLabel: 'Feedback Comments' },
+      { paletteLabel: 'Number', configuredLabel: 'Rating' }
     ];
 
     // Add each field
     for (let i = 0; i < fields.length; i++) {
       const fieldConfig = fields[i];
-      await page.click('[data-testid="add-field-button"]');
-      await page.selectOption('[data-testid="field-type-select"]', fieldConfig.type);
-      await page.fill('[data-testid="field-label-input"]', fieldConfig.label);
-      await page.check('[data-testid="field-required-checkbox"]');
 
+      // Add field from palette
+      await addFieldFromPalette(page, fieldConfig.paletteLabel);
+
+      // Wait for field to appear and properties panel to show
+      const fieldCount = i + 1;
+      await expect(page.locator('[data-testid="form-field"]')).toHaveCount(fieldCount, { timeout: 5000 });
+
+      // Configure the field
+      const labelInput = page.locator('[data-testid="field-label-input"]');
+      await expect(labelInput).toBeVisible({ timeout: 5000 });
+      await labelInput.fill(fieldConfig.configuredLabel);
+
+      // Check required
+      const requiredCheckbox = page.locator('[data-testid="field-required-checkbox"]');
+      await requiredCheckbox.check();
+
+      // Add options if this is a select field
       if (fieldConfig.options) {
-        await page.fill('textarea[name="options"]', fieldConfig.options);
+        const optionsTextarea = page.locator('textarea[name="options"]');
+        await optionsTextarea.fill(fieldConfig.options);
       }
 
-      await page.click('[data-testid="save-field-button"]');
-
-      // Wait for field to appear
-      const field = page.locator('[data-testid="form-field"]', { hasText: fieldConfig.label });
-      await expect(field).toBeVisible({ timeout: 5000 });
+      await page.waitForTimeout(300);
       await screenshot(page, `16-multiple-fields-${i + 1}-added`);
     }
 

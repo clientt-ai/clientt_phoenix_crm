@@ -62,7 +62,7 @@ defmodule ClienttCrmAppWeb.DashboardLive do
           <div class="mt-2">
             <.link
               navigate={~p"/forms"}
-              class="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+              class="text-sm font-medium text-primary hover:text-primary/80"
             >
               View all →
             </.link>
@@ -77,7 +77,7 @@ defmodule ClienttCrmAppWeb.DashboardLive do
           <div class="mt-2">
             <.link
               navigate={~p"/forms/new"}
-              class="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+              class="text-sm font-medium text-primary hover:text-primary/80"
             >
               Create new →
             </.link>
@@ -109,7 +109,7 @@ defmodule ClienttCrmAppWeb.DashboardLive do
             <div class="grid grid-cols-1 gap-3">
               <.link
                 navigate={~p"/forms/new"}
-                class="flex items-center justify-between rounded-md border border-gray-300 px-4 py-3 hover:border-indigo-500 hover:bg-indigo-50 transition-colors"
+                class="flex items-center justify-between rounded-md border border-gray-300 px-4 py-3 hover:border-primary hover:bg-primary/5 transition-colors"
               >
                 <div>
                   <p class="font-medium text-gray-900">Create New Form</p>
@@ -132,7 +132,7 @@ defmodule ClienttCrmAppWeb.DashboardLive do
 
               <.link
                 navigate={~p"/forms"}
-                class="flex items-center justify-between rounded-md border border-gray-300 px-4 py-3 hover:border-indigo-500 hover:bg-indigo-50 transition-colors"
+                class="flex items-center justify-between rounded-md border border-gray-300 px-4 py-3 hover:border-primary hover:bg-primary/5 transition-colors"
               >
                 <div>
                   <p class="font-medium text-gray-900">Manage Forms</p>
@@ -234,7 +234,7 @@ defmodule ClienttCrmAppWeb.DashboardLive do
               </h3>
               <.link
                 navigate={~p"/forms"}
-                class="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+                class="text-sm font-medium text-primary hover:text-primary/80"
               >
                 View all →
               </.link>
@@ -244,7 +244,7 @@ defmodule ClienttCrmAppWeb.DashboardLive do
               <%= for form <- Enum.take(@forms, 6) do %>
                 <.link
                   navigate={~p"/forms/#{form.id}"}
-                  class="relative rounded-lg border border-gray-300 bg-white px-4 py-4 shadow-sm hover:border-indigo-400 hover:shadow-md transition-all"
+                  class="relative rounded-lg border border-gray-300 bg-white px-4 py-4 shadow-sm hover:border-primary/70 hover:shadow-md transition-all"
                 >
                   <div class="flex items-center justify-between mb-2">
                     <span class={[

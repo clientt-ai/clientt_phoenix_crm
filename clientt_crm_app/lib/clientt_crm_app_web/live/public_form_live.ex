@@ -161,7 +161,7 @@ defmodule ClienttCrmAppWeb.PublicFormLive do
                     <button
                       type="submit"
                       data-testid="submit-form-button"
-                      class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                      class="btn btn-primary"
                     >
                       Submit
                     </button>
@@ -224,7 +224,7 @@ defmodule ClienttCrmAppWeb.PublicFormLive do
           rows="3"
           required={@field.required}
           placeholder={@field.placeholder}
-          class={"mt-2 block w-full rounded-md #{@error_class} shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"}
+          class={"mt-2 block w-full rounded-md #{@error_class} shadow-sm focus:border-primary focus:ring-primary sm:text-sm"}
         ></textarea>
         """
 
@@ -237,7 +237,7 @@ defmodule ClienttCrmAppWeb.PublicFormLive do
           data-testid={"input-#{@slug}"}
           required={@field.required}
           placeholder={@field.placeholder}
-          class={"mt-2 block w-full rounded-md #{@error_class} shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"}
+          class={"mt-2 block w-full rounded-md #{@error_class} shadow-sm focus:border-primary focus:ring-primary sm:text-sm"}
         />
         """
 
@@ -250,7 +250,7 @@ defmodule ClienttCrmAppWeb.PublicFormLive do
           data-testid={"input-#{@slug}"}
           required={@field.required}
           placeholder={@field.placeholder}
-          class={"mt-2 block w-full rounded-md #{@error_class} shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"}
+          class={"mt-2 block w-full rounded-md #{@error_class} shadow-sm focus:border-primary focus:ring-primary sm:text-sm"}
         />
         """
 
@@ -263,7 +263,7 @@ defmodule ClienttCrmAppWeb.PublicFormLive do
           data-testid={"input-#{@slug}"}
           required={@field.required}
           placeholder={@field.placeholder}
-          class={"mt-2 block w-full rounded-md #{@error_class} shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"}
+          class={"mt-2 block w-full rounded-md #{@error_class} shadow-sm focus:border-primary focus:ring-primary sm:text-sm"}
         />
         """
 
@@ -276,7 +276,7 @@ defmodule ClienttCrmAppWeb.PublicFormLive do
           data-testid={"input-#{@slug}"}
           required={@field.required}
           placeholder={@field.placeholder}
-          class={"mt-2 block w-full rounded-md #{@error_class} shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"}
+          class={"mt-2 block w-full rounded-md #{@error_class} shadow-sm focus:border-primary focus:ring-primary sm:text-sm"}
         />
         """
 
@@ -288,7 +288,7 @@ defmodule ClienttCrmAppWeb.PublicFormLive do
           id={@field.label}
           data-testid={"input-#{@slug}"}
           required={@field.required}
-          class={"mt-2 block w-full rounded-md #{@error_class} shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"}
+          class={"mt-2 block w-full rounded-md #{@error_class} shadow-sm focus:border-primary focus:ring-primary sm:text-sm"}
         />
         """
 
@@ -301,7 +301,7 @@ defmodule ClienttCrmAppWeb.PublicFormLive do
             id={@field.label}
             data-testid={"checkbox-#{@slug}"}
             value="true"
-            class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+            class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
           />
         </div>
         """
@@ -313,7 +313,7 @@ defmodule ClienttCrmAppWeb.PublicFormLive do
           id={@field.label}
           data-testid={"select-#{@slug}"}
           required={@field.required}
-          class={"mt-2 block w-full rounded-md #{@error_class} shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"}
+          class={"mt-2 block w-full rounded-md #{@error_class} shadow-sm focus:border-primary focus:ring-primary sm:text-sm"}
         >
           <option value="">Select an option</option>
           <%= for option <- @field.options do %>
@@ -336,7 +336,7 @@ defmodule ClienttCrmAppWeb.PublicFormLive do
                 data-testid={"radio-#{@slug}"}
                 value={option["value"] || option[:value]}
                 required={@field.required}
-                class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                class="h-4 w-4 border-gray-300 text-primary focus:ring-primary"
               />
               <label
                 for={"#{@field.label}_#{option["value"] || option[:value]}"}
@@ -358,7 +358,7 @@ defmodule ClienttCrmAppWeb.PublicFormLive do
           data-testid={"input-#{@slug}"}
           required={@field.required}
           placeholder={@field.placeholder}
-          class={"mt-2 block w-full rounded-md #{@error_class} shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"}
+          class={"mt-2 block w-full rounded-md #{@error_class} shadow-sm focus:border-primary focus:ring-primary sm:text-sm"}
         />
         """
     end

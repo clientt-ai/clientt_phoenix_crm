@@ -8,6 +8,9 @@ module.exports = defineConfig({
   testDir: './',
   testMatch: ['**/*.spec.js'],
 
+  // Global setup to seed the database before tests
+  globalSetup: require.resolve('./global-setup.js'),
+
   // Maximum time one test can run for
   timeout: 30 * 1000,
 

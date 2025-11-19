@@ -43,6 +43,7 @@ defmodule ClienttCrmAppWeb.Router do
       live "/forms", FormLive.Index, :index
       live "/forms/new", FormLive.Builder, :new
       live "/forms/:id/edit", FormLive.Builder, :edit
+      live "/forms/:id/preview", FormLive.Preview, :preview
       live "/forms/:id", FormLive.Show, :show
 
       # Submissions management routes

@@ -90,7 +90,7 @@ defmodule ClienttCrmAppWeb.SubmissionLive.Index do
         <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
           <button
             phx-click="export_csv"
-            class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
+            class="btn btn-primary btn-sm"
           >
             Export CSV
           </button>
@@ -194,7 +194,7 @@ defmodule ClienttCrmAppWeb.SubmissionLive.Index do
                       <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                         <.link
                           navigate={~p"/submissions/#{submission.id}"}
-                          class="text-indigo-600 hover:text-indigo-900"
+                          class="text-primary hover:text-primary/80"
                         >
                           View
                         </.link>
