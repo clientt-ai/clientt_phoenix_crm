@@ -11,66 +11,8 @@ defmodule ClienttCrmAppWeb.Layouts do
   # and other static content.
   embed_templates "layouts/*"
 
-  @doc """
-  Renders your app layout.
-
-  This function is typically invoked from every template,
-  and it often contains your application menu, sidebar,
-  or similar.
-
-  ## Examples
-
-      <Layouts.app flash={@flash}>
-        <h1>Content</h1>
-      </Layouts.app>
-
-  """
-  attr :flash, :map, required: true, doc: "the map of flash messages"
-
-  attr :current_scope, :map,
-    default: nil,
-    doc: "the current [scope](https://hexdocs.pm/phoenix/scopes.html)"
-
-  slot :inner_block, required: true
-
-  def app(assigns) do
-    ~H"""
-    <header class="navbar px-4 sm:px-6 lg:px-8">
-      <div class="flex-1">
-        <a href="/" class="flex-1 flex w-fit items-center gap-2">
-          <img src={~p"/images/logo.svg"} width="36" />
-          <span class="text-sm font-semibold">v{Application.spec(:phoenix, :vsn)}</span>
-        </a>
-      </div>
-      <div class="flex-none">
-        <ul class="flex flex-column px-1 space-x-4 items-center">
-          <li>
-            <a href="https://phoenixframework.org/" class="btn btn-ghost">Website</a>
-          </li>
-          <li>
-            <a href="https://github.com/phoenixframework/phoenix" class="btn btn-ghost">GitHub</a>
-          </li>
-          <li>
-            <.theme_toggle />
-          </li>
-          <li>
-            <a href="https://hexdocs.pm/phoenix/overview.html" class="btn btn-primary">
-              Get Started <span aria-hidden="true">&rarr;</span>
-            </a>
-          </li>
-        </ul>
-      </div>
-    </header>
-
-    <main class="px-4 py-20 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-2xl space-y-4">
-        {render_slot(@inner_block)}
-      </div>
-    </main>
-
-    <.flash_group flash={@flash} />
-    """
-  end
+  # The app layout is now defined in app.html.heex template
+  # It includes sidebar and header for authenticated pages
 
   @doc """
   Shows the flash group with standard titles and content.
@@ -159,7 +101,7 @@ defmodule ClienttCrmAppWeb.Layouts do
 
   ## Examples
 
-      <.header
+      <.app_header
         current_user={@current_user}
         sidebar_open={@sidebar_open}
         search_query={@search_query}
@@ -171,7 +113,7 @@ defmodule ClienttCrmAppWeb.Layouts do
   attr :search_query, :string, default: ""
   attr :unread_notifications, :integer, default: 0
 
-  def header(assigns) do
+  def app_header(assigns) do
     ~H"""
     <header class={[
       "h-16 bg-base-100 border-b border-base-300 fixed top-0 right-0 z-30",
@@ -250,19 +192,19 @@ defmodule ClienttCrmAppWeb.Layouts do
             icon="hero-document-text"
             expanded={true}
           >
-            <.sidebar_link navigate={~p"/forms/dashboard"} active={@current_page == "dashboard"}>
+            <.sidebar_link navigate={~p"/forms/dashboard"} active={@current_page == "dashboard"} data-testid="nav-dashboard">
               <.icon name="hero-chart-bar" class="w-4 h-4" />
               Dashboard
             </.sidebar_link>
-            <.sidebar_link navigate={~p"/forms"} active={@current_page == "forms"}>
+            <.sidebar_link navigate={~p"/forms"} active={@current_page == "forms"} data-testid="nav-forms">
               <.icon name="hero-document-duplicate" class="w-4 h-4" />
               All Forms
             </.sidebar_link>
-            <.sidebar_link navigate={~p"/forms/new"} active={@current_page == "form-builder"}>
+            <.sidebar_link navigate={~p"/forms/new"} active={@current_page == "form-builder"} data-testid="nav-form-builder">
               <.icon name="hero-plus-circle" class="w-4 h-4" />
               Form Builder
             </.sidebar_link>
-            <.sidebar_link navigate={~p"/forms/analytics"} active={@current_page == "analytics"}>
+            <.sidebar_link navigate={~p"/forms/analytics"} active={@current_page == "analytics"} data-testid="nav-analytics">
               <.icon name="hero-chart-pie" class="w-4 h-4" />
               Analytics
             </.sidebar_link>
@@ -452,7 +394,7 @@ defmodule ClienttCrmAppWeb.Layouts do
         <div class="avatar placeholder">
           <div class="bg-neutral text-neutral-content rounded-full w-8">
             <span class="text-xs">
-              {String.first(@user.email || "U") |> String.upcase()}
+              {(to_string(@user.email) || "U") |> String.first() |> String.upcase()}
             </span>
           </div>
         </div>

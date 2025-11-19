@@ -31,16 +31,16 @@ defmodule ClienttCrmApp.Authorization.Team do
     end
 
     read :list_for_company do
-      argument :company_id, :uuid do
+      argument :tenant_id, :uuid do
         allow_nil? false
       end
 
-      filter expr(company_id == ^arg(:company_id) and status == :active)
+      filter expr(tenant_id == ^arg(:tenant_id) and status == :active)
     end
 
     create :create do
       primary? true
-      accept [:company_id, :name, :description]
+      accept [:tenant_id, :name, :description]
 
       change fn changeset, _context ->
         Ash.Changeset.force_change_attribute(changeset, :status, :active)
@@ -98,7 +98,7 @@ defmodule ClienttCrmApp.Authorization.Team do
   attributes do
     uuid_primary_key :id
 
-    attribute :company_id, :uuid do
+    attribute :tenant_id, :uuid do
       allow_nil? false
       public? true
     end
@@ -128,7 +128,7 @@ defmodule ClienttCrmApp.Authorization.Team do
 
   relationships do
     belongs_to :company, ClienttCrmApp.Authorization.Company do
-      source_attribute :company_id
+      source_attribute :tenant_id
       destination_attribute :id
       allow_nil? false
     end
@@ -162,13 +162,13 @@ defmodule ClienttCrmApp.Authorization.Team do
   end
 
   identities do
-    identity :unique_name_per_company, [:company_id, :name]
+    identity :unique_name_per_company, [:tenant_id, :name]
   end
 
   policies do
     # Policy: All company members can read teams
     policy action_type(:read) do
-      # authorize_if expr(company_id == ^actor(:current_company_id))
+      # authorize_if expr(tenant_id == ^actor(:current_tenant_id))
       # This will be implemented with proper actor context
       authorize_if always()
     end

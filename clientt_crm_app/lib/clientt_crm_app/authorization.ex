@@ -11,7 +11,7 @@ defmodule ClienttCrmApp.Authorization do
   - **authz_user**: Authorization user (WHAT you can do in each company)
   - **Company**: Tenant organization (aggregate root)
   - **Team**: Sub-group within a company
-  - **Row-level tenancy**: Multi-tenancy using company_id filtering
+  - **Row-level tenancy**: Multi-tenancy using tenant_id filtering
 
   ## Resources
 

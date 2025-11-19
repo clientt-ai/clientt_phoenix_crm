@@ -25,14 +25,14 @@ I've identified **CRITICAL GAPS** that are not addressed in the current question
 **Context:**
 - The project has a `dev_task-prompts_and_plans/20251111-01-multitenancy/` folder with a complete multi-tenant spec
 - That spec defines: Companies, Teams, User roles scoped to companies
-- Current Forms database schema has `user_id` but NO `company_id` or `organization_id`
+- Current Forms database schema has `user_id` but NO `tenant_id` or `organization_id`
 - User roles specification (UI-LAYOUT-AND-ROLES.md) doesn't mention company scoping
 
 **Question:** Are Forms scoped to organizations/companies?
 
 **Options:**
 - **A) Yes - Forms belong to companies**
-  - Forms table needs `company_id UUID REFERENCES companies(id)`
+  - Forms table needs `tenant_id UUID REFERENCES companies(id)`
   - User roles are company-scoped (user is form_admin in Company A, not Company B)
   - Forms are only visible to users in the same company
   - Database policies enforce row-level security
@@ -45,9 +45,9 @@ I've identified **CRITICAL GAPS** that are not addressed in the current question
   - Simpler implementation
 
 - **C) Hybrid - Forms can be user-owned OR company-owned**
-  - Forms table needs nullable `company_id`
-  - User forms: `company_id = NULL`, visible only to creator
-  - Company forms: `company_id = <id>`, visible to all users in company with proper role
+  - Forms table needs nullable `tenant_id`
+  - User forms: `tenant_id = NULL`, visible only to creator
+  - Company forms: `tenant_id = <id>`, visible to all users in company with proper role
   - Most flexible but most complex
 
 **Impact if not answered:**
@@ -61,15 +61,15 @@ I've identified **CRITICAL GAPS** that are not addressed in the current question
 **Decision Date:** 2025-11-16
 **Rationale:**
 - Project has existing multi-tenancy system with Companies, AuthzUsers, Teams
-- Specs folder (`specs/01-domains/authorization/policies/row_level_security.md:20`) explicitly states "All future tenant-scoped resources (Contacts, Deals, etc.)" must have company_id
+- Specs folder (`specs/01-domains/authorization/policies/row_level_security.md:20`) explicitly states "All future tenant-scoped resources (Contacts, Deals, etc.)" must have tenant_id
 - Forms are tenant-scoped resources requiring complete data isolation
 - Consistency with existing architecture is critical
 
 **Implementation Impact:**
-- ✅ Add `company_id UUID REFERENCES authz_companies(id)` to forms, form_fields, submissions tables
+- ✅ Add `tenant_id UUID REFERENCES authz_tenants(id)` to forms, form_fields, submissions tables
 - ✅ Implement Ash policies following row_level_security.md patterns
-- ✅ All queries automatically filtered by `current_company_id` from session
-- ✅ Forms created with automatic company_id from actor context
+- ✅ All queries automatically filtered by `current_tenant_id` from session
+- ✅ Forms created with automatic tenant_id from actor context
 - ✅ Company_id is immutable after creation
 - ✅ LiveView pages require company context via `on_mount` hook
 
@@ -138,7 +138,7 @@ end
 **Implementation:**
 - Ash policy: `authorize_if actor_attribute_equals(:role, :admin)`
 - Only admins can update `feature_roles` field
-- Form roles are scoped to company (via authz_user's company_id)
+- Form roles are scoped to company (via authz_user's tenant_id)
 
 ---
 
@@ -355,8 +355,8 @@ end
   - `lib/clientt_crm_app_web/live_authz_auth.ex` module
   - `on_mount` hook for company context enforcement
   - Session plug for HTTP requests
-- Cannot build ANY LiveView pages without company_id filtering
-- Row-level security policies require `actor(:current_company_id)` from session
+- Cannot build ANY LiveView pages without tenant_id filtering
+- Row-level security policies require `actor(:current_tenant_id)` from session
 
 **Implementation Order (Phase 1, Week 1):**
 
@@ -370,10 +370,10 @@ end
      def on_mount(:require_company_context, _params, session, socket) do
        socket =
          socket
-         |> assign_current_company(session)
+         |> assign_current_tenant(session)
          |> assign_current_authz_user(session)
 
-       if socket.assigns[:current_company_id] do
+       if socket.assigns[:current_tenant_id] do
          {:cont, socket}
        else
          {:halt, redirect(socket, to: "/select-company")}
@@ -574,7 +574,7 @@ defmodule ClienttCrmApp.Forms.Submission do
       # Broadcast to company-scoped topic
       Phoenix.PubSub.broadcast(
         ClienttCrmApp.PubSub,
-        "company:#{submission.company_id}:submissions",
+        "company:#{submission.tenant_id}:submissions",
         {:new_submission, submission}
       )
       {:ok, submission}
@@ -584,8 +584,8 @@ end
 
 # In dashboard LiveView
 def mount(_params, _session, socket) do
-  company_id = socket.assigns.current_company_id
-  Phoenix.PubSub.subscribe(ClienttCrmApp.PubSub, "company:#{company_id}:submissions")
+  tenant_id = socket.assigns.current_tenant_id
+  Phoenix.PubSub.subscribe(ClienttCrmApp.PubSub, "company:#{tenant_id}:submissions")
   {:ok, load_dashboard_data(socket)}
 end
 
@@ -943,7 +943,7 @@ end
 Submission
 |> Ash.Changeset.for_create(:public_create, %{
   form_id: form.id,
-  company_id: form.company_id,  # Inherited from form
+  tenant_id: form.tenant_id,  # Inherited from form
   data: submitted_data,
   metadata: %{
     ip_address: get_ip(socket),
@@ -1028,7 +1028,7 @@ end
 -- Slug unique constraint per company (from Q24)
 ALTER TABLE forms
   ADD CONSTRAINT unique_slug_per_company
-  UNIQUE (company_id, slug);
+  UNIQUE (tenant_id, slug);
 
 -- Index for fast slug lookups
 CREATE INDEX idx_forms_slug ON forms(slug);
@@ -1086,10 +1086,10 @@ Verify these from `FIGMA-COVERAGE-ANALYSIS.md`:
 ### If Q24 (Multi-tenancy) is "Yes":
 
 **Immediate Impacts:**
-1. ⚠️ Database schema must change (add `company_id` to forms, form_fields, submissions)
+1. ⚠️ Database schema must change (add `tenant_id` to forms, form_fields, submissions)
 2. ⚠️ UserRole resource needs company scoping
 3. ⚠️ All Ash policies need company-level row-level security
-4. ⚠️ LiveView pages need current_company context
+4. ⚠️ LiveView pages need current_tenant context
 5. ⚠️ Sidebar needs company switcher
 6. ⚠️ Forms listing filtered by company
 7. ⚠️ Analytics scoped to company
@@ -1111,7 +1111,7 @@ Verify these from `FIGMA-COVERAGE-ANALYSIS.md`:
 2. ✅ Simpler policies (user-level only)
 3. ⚠️ May need to add later (costly refactor)
 
-**Recommendation:** Even if "No" for MVP, design schema to support adding `company_id` later (nullable column)
+**Recommendation:** Even if "No" for MVP, design schema to support adding `tenant_id` later (nullable column)
 
 ---
 

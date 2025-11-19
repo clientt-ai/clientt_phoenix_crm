@@ -39,7 +39,8 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
      |> assign(:fields, fields)
      |> assign(:field_types, @field_types)
      |> assign(:editing_field, nil)
-     |> assign(:show_field_modal, false)}
+     |> assign(:show_field_modal, false)
+     |> assign(:form_errors, %{})}
   end
 
   @impl true
@@ -59,37 +60,98 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
   end
 
   @impl true
-  def handle_event("save_form", %{"name" => name, "description" => description}, socket) do
-    form_attrs = %{
-      name: name,
-      description: description,
-      company_id: socket.assigns.current_company_id,
-      created_by_id: socket.assigns.current_user.id
-    }
+  def handle_event("save_form", params, socket) do
+    name = params["name"]
+    description = params["description"]
+    errors = validate_form_settings(name)
 
-    result =
-      if socket.assigns.form do
-        # Update existing form
-        socket.assigns.form
-        |> Ash.Changeset.for_update(:update, %{name: name, description: description})
-        |> Ash.update()
+    cond do
+      is_nil(socket.assigns.current_tenant_id) || is_nil(socket.assigns.current_authz_user_id) ->
+        {:noreply, put_flash(socket, :error, "No company assigned. Please contact administrator.")}
+
+      errors != %{} ->
+        {:noreply, assign(socket, :form_errors, errors)}
+
+      true ->
+        form_attrs = %{
+          name: name,
+          description: description,
+          tenant_id: socket.assigns.current_tenant_id,
+          created_by_id: socket.assigns.current_authz_user_id
+        }
+
+        result =
+          if socket.assigns.form do
+            # Update existing form
+            socket.assigns.form
+            |> Ash.Changeset.for_update(:update, %{name: name, description: description})
+            |> Ash.update()
+          else
+            # Create new form
+            Forms.Form
+            |> Ash.Changeset.for_create(:create, form_attrs)
+            |> Ash.create()
+          end
+
+        case result do
+          {:ok, form} ->
+            {:noreply,
+             socket
+             |> assign(:form, form)
+             |> assign(:form_errors, %{})
+             |> put_flash(:info, "Form saved successfully")}
+
+          {:error, error} ->
+            form_errors = extract_ash_errors(error)
+            {:noreply,
+             socket
+             |> assign(:form_errors, form_errors)
+             |> put_flash(:error, "Failed to save form")}
+        end
+    end
+  end
+
+  defp validate_form_settings(name) do
+    errors = %{}
+
+    errors =
+      if name == nil || String.trim(name) == "" do
+        Map.put(errors, :name, "Form name is required")
       else
-        # Create new form
-        Forms.Form
-        |> Ash.Changeset.for_create(:create, form_attrs)
-        |> Ash.create()
+        errors
       end
 
-    case result do
-      {:ok, form} ->
-        {:noreply,
-         socket
-         |> assign(:form, form)
-         |> put_flash(:info, "Form saved successfully")}
+    errors
+  end
 
-      {:error, _changeset} ->
-        {:noreply, put_flash(socket, :error, "Failed to save form")}
-    end
+  defp extract_ash_errors(error) do
+    # Handle Ash.Error.Invalid which contains nested errors
+    errors =
+      case error do
+        %Ash.Error.Invalid{errors: errs} -> errs
+        %{errors: errs} -> errs
+        errs when is_list(errs) -> errs
+        _ -> []
+      end
+
+    errors
+    |> Enum.reduce(%{}, fn err, acc ->
+      # Extract field and message from various Ash error types
+      {field, message} =
+        case err do
+          %{field: f, message: m} -> {f, m}
+          %Ash.Error.Changes.InvalidAttribute{field: f, message: m} -> {f, m}
+          %{vars: vars, message: m} -> {Map.get(vars, :field, :unknown), m}
+          _ -> {:unknown, "An error occurred"}
+        end
+
+      # Handle uniqueness errors for name
+      if field == :name do
+        Map.put(acc, :name, message)
+      else
+        Map.put(acc, field, message)
+      end
+    end)
   end
 
   @impl true
@@ -223,7 +285,8 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <Layouts.flash_group flash={@flash} />
+    <div data-testid="form-builder" class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <!-- Header -->
       <div class="sm:flex sm:items-center sm:justify-between mb-8">
         <div>
@@ -237,6 +300,7 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
         <%= if @form && @form.status == :draft do %>
           <button
             phx-click="publish_form"
+            data-testid="publish-form-button"
             class="rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500"
           >
             Publish Form
@@ -262,10 +326,13 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
                     type="text"
                     name="name"
                     id="name"
+                    data-testid="form-name-input"
                     value={@form && @form.name}
-                    class="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    required
+                    class={"mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 #{if @form_errors[:name], do: "ring-red-300", else: "ring-gray-300"}"}
                   />
+                  <%= if @form_errors[:name] do %>
+                    <p data-testid="form-name-error" class="mt-1 text-sm text-red-600"><%= @form_errors[:name] %></p>
+                  <% end %>
                 </div>
 
                 <div>
@@ -275,13 +342,48 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
                   <textarea
                     name="description"
                     id="description"
+                    data-testid="form-description-input"
                     rows="3"
                     class="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   ><%= @form && @form.description %></textarea>
                 </div>
 
+                <div>
+                  <label for="category" class="block text-sm font-medium leading-6 text-gray-900">
+                    Category
+                  </label>
+                  <select
+                    name="category"
+                    id="category"
+                    data-testid="form-category-select"
+                    class="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  >
+                    <option value="general">General</option>
+                    <option value="customer-service" data-testid="category-option-customer-service">Customer Service</option>
+                    <option value="feedback">Feedback</option>
+                    <option value="sales">Sales</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label for="status" class="block text-sm font-medium leading-6 text-gray-900">
+                    Status
+                  </label>
+                  <select
+                    name="status"
+                    id="status"
+                    data-testid="form-status-select"
+                    class="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  >
+                    <option value="draft" data-testid="status-option-draft">Draft</option>
+                    <option value="published">Published</option>
+                    <option value="archived">Archived</option>
+                  </select>
+                </div>
+
                 <button
                   type="submit"
+                  data-testid="save-form-button"
                   class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
                 >
                   <%= if @form, do: "Update Form", else: "Create Form" %>
@@ -317,18 +419,21 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
                 <% else %>
                   <ul class="divide-y divide-gray-200">
                     <%= for field <- @fields do %>
-                      <li class="py-4 flex justify-between items-center">
+                      <li data-testid="form-field" class="py-4 flex justify-between items-center">
                         <div>
                           <p class="text-sm font-medium text-gray-900"><%= field.label %></p>
                           <p class="text-sm text-gray-500">
                             <%= format_field_type(field.field_type) %>
-                            <%= if field.required, do: "• Required" %>
+                            <%= if field.required do %>
+                              <span data-testid="field-required-badge">• Required</span>
+                            <% end %>
                           </p>
                         </div>
                         <div class="flex gap-2">
                           <button
                             phx-click="edit_field"
                             phx-value-id={field.id}
+                            data-testid="edit-field-button"
                             class="text-indigo-600 hover:text-indigo-900 text-sm"
                           >
                             Edit
@@ -336,6 +441,7 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
                           <button
                             phx-click="delete_field"
                             phx-value-id={field.id}
+                            data-testid="delete-field-button"
                             data-confirm="Are you sure?"
                             class="text-red-600 hover:text-red-900 text-sm"
                           >
@@ -349,6 +455,7 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
 
                 <button
                   phx-click="add_field"
+                  data-testid="add-field-button"
                   class="mt-4 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
                 >
                   Add Field
@@ -430,12 +537,14 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
                       <select
                         name="field_type"
                         id="field_type"
+                        data-testid="field-type-select"
                         required
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                       >
                         <%= for {type, label} <- @field_types do %>
                           <option
                             value={type}
+                            data-testid={"field-type-#{type}"}
                             selected={@editing_field && @editing_field.field_type == type}
                           >
                             <%= label %>
@@ -452,6 +561,7 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
                         type="text"
                         name="label"
                         id="label"
+                        data-testid="field-label-input"
                         value={@editing_field && @editing_field.label}
                         required
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
@@ -466,6 +576,7 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
                         type="text"
                         name="placeholder"
                         id="placeholder"
+                        data-testid="field-placeholder-input"
                         value={@editing_field && @editing_field.placeholder}
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                       />
@@ -479,6 +590,7 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
                         type="text"
                         name="help_text"
                         id="help_text"
+                        data-testid="field-help-text-input"
                         value={@editing_field && @editing_field.help_text}
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                       />
@@ -522,6 +634,7 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
                         type="checkbox"
                         name="required"
                         id="required"
+                        data-testid="field-required-checkbox"
                         value="true"
                         checked={@editing_field && @editing_field.required}
                         class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
@@ -534,6 +647,7 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
                     <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse gap-2">
                       <button
                         type="submit"
+                        data-testid="save-field-button"
                         class="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 sm:w-auto"
                       >
                         Save Field
@@ -541,6 +655,7 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
                       <button
                         type="button"
                         phx-click="close_modal"
+                        data-testid="cancel-button"
                         class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
                       >
                         Cancel

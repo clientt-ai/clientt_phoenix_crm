@@ -481,7 +481,7 @@ end
 ```
 
 ### Real-time Updates
-- Subscribe to PubSub: `"forms:#{company_id}"`
+- Subscribe to PubSub: `"forms:#{tenant_id}"`
 - Update list on form create/update/delete events
 - Optimistic updates for status changes
 

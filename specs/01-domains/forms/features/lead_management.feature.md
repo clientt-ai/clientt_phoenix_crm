@@ -54,7 +54,7 @@ Then a Submission record is created with:
   | field           | value                              |
   | status          | new                                |
   | submitter_email | john@example.com                   |
-  | company_id      | [form.company_id]                  |
+  | tenant_id      | [form.tenant_id]                  |
   | submitted_at    | [current_timestamp]                |
 And form_data contains:
   | field_id  | value                  |
@@ -73,7 +73,7 @@ And immediate emails are sent to users with "immediate" preference
 
 **Technical Notes:**
 - No authentication required (public endpoint)
-- company_id inherited from form
+- tenant_id inherited from form
 - Status defaults to 'new'
 - submitter_email extracted from email field (if present)
 - Metadata includes UTM params, referrer, user_agent, IP

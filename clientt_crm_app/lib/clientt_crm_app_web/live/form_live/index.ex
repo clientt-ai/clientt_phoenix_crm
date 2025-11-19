@@ -9,12 +9,12 @@ defmodule ClienttCrmAppWeb.FormLive.Index do
   def mount(_params, _session, socket) do
     # Load forms for current user's company
     import Ash.Query
-    company_id = socket.assigns.current_company_id
+    tenant_id = socket.assigns.current_tenant_id
 
     {:ok, forms} =
       Forms.Form
       |> for_read(:list)
-      |> filter(company_id == ^company_id)
+      |> filter(tenant_id == ^tenant_id)
       |> Ash.read()
 
     {:ok,
@@ -53,6 +53,7 @@ defmodule ClienttCrmAppWeb.FormLive.Index do
         <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
           <.link
             navigate={~p"/forms/new"}
+            data-testid="create-form-button"
             class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           >
             Create Form
@@ -92,14 +93,14 @@ defmodule ClienttCrmAppWeb.FormLive.Index do
                 </thead>
                 <tbody class="divide-y divide-gray-200 bg-white">
                   <%= for form <- @forms do %>
-                    <tr>
+                    <tr data-testid="form-card">
                       <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                        <.link navigate={~p"/forms/#{form.id}"} class="text-indigo-600 hover:text-indigo-900">
+                        <.link navigate={~p"/forms/#{form.id}"} data-testid="form-title" class="text-indigo-600 hover:text-indigo-900">
                           <%= form.name %>
                         </.link>
                       </td>
                       <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        <span class={[
+                        <span data-testid="form-status" class={[
                           "inline-flex rounded-full px-2 text-xs font-semibold leading-5",
                           status_badge_class(form.status)
                         ]}>
@@ -118,6 +119,7 @@ defmodule ClienttCrmAppWeb.FormLive.Index do
                       <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                         <.link
                           navigate={~p"/forms/#{form.id}/edit"}
+                          data-testid="edit-form-button"
                           class="text-indigo-600 hover:text-indigo-900 mr-4"
                         >
                           Edit
@@ -125,6 +127,7 @@ defmodule ClienttCrmAppWeb.FormLive.Index do
                         <%= if form.status == :published do %>
                           <.link
                             navigate={~p"/forms/#{form.id}/submissions"}
+                            data-testid="view-submissions-button"
                             class="text-indigo-600 hover:text-indigo-900"
                           >
                             View Submissions
@@ -136,7 +139,7 @@ defmodule ClienttCrmAppWeb.FormLive.Index do
 
                   <%= if @forms == [] do %>
                     <tr>
-                      <td colspan="6" class="px-3 py-12 text-center text-sm text-gray-500">
+                      <td colspan="6" class="px-3 py-12 text-center text-sm text-gray-500" data-testid="no-results">
                         <svg
                           class="mx-auto h-12 w-12 text-gray-400"
                           fill="none"
@@ -157,6 +160,7 @@ defmodule ClienttCrmAppWeb.FormLive.Index do
                         <div class="mt-6">
                           <.link
                             navigate={~p"/forms/new"}
+                            data-testid="create-form-button"
                             class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                           >
                             Create Form

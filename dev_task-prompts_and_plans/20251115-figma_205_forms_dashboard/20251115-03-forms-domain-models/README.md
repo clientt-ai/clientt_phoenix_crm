@@ -64,7 +64,7 @@ All Forms domain resources must implement role-based policies:
 - No conditional logic in MVP
 - Basic validation only (required, format, min/max length/value)
 - Form duplication feature included
-- Multi-tenancy via `company_id` filtering
+- Multi-tenancy via `tenant_id` filtering
 
 ### Analytics (Not a separate domain)
 Uses calculations and aggregates on Forms domain resources (see Track 4).
@@ -216,8 +216,8 @@ CREATE INDEX submissions_submitted_at_index ON submissions(submitted_at DESC);
 ```
 
 **Important Notes for MVP:**
-- Add `company_id UUID NOT NULL` to all tables for multi-tenancy
-- Add `company_id` indexes for query performance
+- Add `tenant_id UUID NOT NULL` to all tables for multi-tenancy
+- Add `tenant_id` indexes for query performance
 - Field types in MVP: text, email, tel, number, date, textarea, select, radio, checkbox, url (NO file upload)
 - No conditional_logic implemented in MVP (column exists but not used)
 - Submission status values: new, contacted, qualified, converted, spam

@@ -14,7 +14,7 @@ Represents a user's authorization identity within a specific company. Links an a
 |-----------|------|----------|------------|-------------|
 | id | uuid | Yes | - | Unique identifier |
 | authn_user_id | uuid | Yes | valid User id | Reference to authentication user |
-| company_id | uuid | Yes | valid Company id | Company this authorization belongs to |
+| tenant_id | uuid | Yes | valid Company id | Company this authorization belongs to |
 | role | enum | Yes | one of: admin, manager, user | Company-level role |
 | team_id | uuid | No | valid Team id in same company | Team membership (optional) |
 | team_role | enum | No | one of: team_lead, team_member | Role within team (requires team_id) |
@@ -28,7 +28,7 @@ Represents a user's authorization identity within a specific company. Links an a
 ## Business Rules
 
 ### Invariants
-- Each (authn_user_id, company_id) pair must be unique
+- Each (authn_user_id, tenant_id) pair must be unique
 - If team_role is set, team_id MUST be set (CHECK constraint)
 - If team_id is set, team must belong to same company
 
@@ -63,7 +63,7 @@ Represents a user's authorization identity within a specific company. Links an a
 ## Relationships
 
 - **Belongs to**: User (authn_user) via authn_user_id (Many:1)
-- **Belongs to**: Company via company_id (Many:1)
+- **Belongs to**: Company via tenant_id (Many:1)
 - **Belongs to**: Team via team_id (Many:1, optional)
 - **Has many**: AuditLog entries as actor
 
@@ -71,7 +71,7 @@ Represents a user's authorization identity within a specific company. Links an a
 
 ### Published Events
 - `authorization.authz_user_created`: Triggered when user joins company
-  - Payload: {authz_user_id, authn_user_id, company_id, role, team_id, created_by}
+  - Payload: {authz_user_id, authn_user_id, tenant_id, role, team_id, created_by}
   - Consumers: Onboarding Service, Analytics, Notification Service
 
 - `authorization.role_changed`: Triggered when role is updated
@@ -93,19 +93,19 @@ Represents a user's authorization identity within a specific company. Links an a
 ## Access Patterns
 
 ### Queries
-- List all authz_users for a company (filtered by company_id)
+- List all authz_users for a company (filtered by tenant_id)
 - List all companies for an authn_user (via authn_user_id)
-- Find authz_user by (authn_user_id, company_id) for context switching
+- Find authz_user by (authn_user_id, tenant_id) for context switching
 - List team members (filtered by team_id)
 - Check if user is admin of company
 
 ### Common Operations
-- **Create**: Requires authn_user_id, company_id, role
+- **Create**: Requires authn_user_id, tenant_id, role
   - Usually created via invitation acceptance
   - Validates company has space (respects max_users)
   - Records audit log entry
 
-- **Read**: Available to all company members (filtered by company_id)
+- **Read**: Available to all company members (filtered by tenant_id)
   - Loads email from authn_user
 
 - **Update Role**: Changes role (admin/manager/user)
@@ -128,7 +128,7 @@ Represents a user's authorization identity within a specific company. Links an a
 ### Actions
 ```elixir
 create :create do
-  accept [:authn_user_id, :company_id, :role, :team_id, :team_role, :display_name]
+  accept [:authn_user_id, :tenant_id, :role, :team_id, :team_role, :display_name]
   validate UniqueAuthzUserPerCompany
   validate TeamBelongsToCompany, where: [present(:team_id)]
   validate CompanyHasCapacity
@@ -140,7 +140,7 @@ read :list
 read :get_by_user_and_company do
   # For company switching - find authz_user for specific (authn_user, company) pair
   argument :authn_user_id, :uuid, allow_nil?: false
-  argument :company_id, :uuid, allow_nil?: false
+  argument :tenant_id, :uuid, allow_nil?: false
 end
 
 update :update_role do
@@ -231,8 +231,8 @@ end
 
 ### Validations
 ```elixir
-validate present([:authn_user_id, :company_id, :role, :status])
-validate unique_constraint([:authn_user_id, :company_id],
+validate present([:authn_user_id, :tenant_id, :role, :status])
+validate unique_constraint([:authn_user_id, :tenant_id],
   message: "User already member of this company")
 validate check_constraint(:team_role_requires_team,
   message: "team_role requires team_id to be set")
@@ -241,13 +241,13 @@ validate check_constraint(:team_role_requires_team,
 ## Multi-Tenancy
 
 **Tenant-Scoped**: YES
-- All queries automatically filtered by company_id from session context
+- All queries automatically filtered by tenant_id from session context
 - Users see only authz_users within their current company
 - Exception: Listing user's own companies (via authn_user_id)
 
 ## Security Considerations
 
-- Cannot bypass company_id filter through direct IDs
+- Cannot bypass tenant_id filter through direct IDs
 - Role changes trigger email notifications
 - Suspended users have sessions invalidated immediately
 - Audit log records all role/status changes
@@ -265,7 +265,7 @@ validate check_constraint(:team_role_requires_team,
 - [ ] Only admins can suspend users
 - [ ] Admins and managers can assign to teams
 - [ ] Regular users cannot modify roles or assignments
-- [ ] Queries filtered by company_id
+- [ ] Queries filtered by tenant_id
 - [ ] Cannot read authz_users from other companies
 - [ ] Email loaded correctly from authn_user
 - [ ] Audit logs created for all changes

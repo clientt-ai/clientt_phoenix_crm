@@ -10,7 +10,7 @@ I want complete data isolation between companies
 So that each company's data remains private and secure
 
 ## Acceptance Criteria
-- [ ] All tenant-scoped queries filtered by company_id
+- [ ] All tenant-scoped queries filtered by tenant_id
 - [ ] Users can only access data from their current company
 - [ ] Cross-company data access prevented at framework level
 - [ ] Company context stored in session
@@ -30,8 +30,8 @@ So that each company's data remains private and secure
 **Tags**: `@critical @domain:authorization @priority:critical @multi-tenancy @security`
 
 ```gherkin
-Given user "Alice" with authz_user in "Acme Corp" (company_id: uuid-1)
-And user "Bob" with authz_user in "Beta Inc" (company_id: uuid-2)
+Given user "Alice" with authz_user in "Acme Corp" (tenant_id: uuid-1)
+And user "Bob" with authz_user in "Beta Inc" (tenant_id: uuid-2)
 And "Acme Corp" has 10 contacts, 5 deals, 3 teams
 And "Beta Inc" has 8 contacts, 6 deals, 2 teams
 When Alice queries contacts
@@ -49,12 +49,12 @@ And this is enforced at the Ash policy level
 **Tags**: `@critical @domain:authorization @security @multi-tenancy`
 
 ```gherkin
-Given Alice is a member of "Acme Corp" (company_id: uuid-1)
-And Bob is a member of "Beta Inc" (company_id: uuid-2)
+Given Alice is a member of "Acme Corp" (tenant_id: uuid-1)
+And Bob is a member of "Beta Inc" (tenant_id: uuid-2)
 And Bob's team "Engineering" has id "team-456"
 When Alice attempts to read team "team-456" by direct ID
 Then the read is rejected with "Not found" (or unauthorized)
-And Alice cannot bypass company_id filter
+And Alice cannot bypass tenant_id filter
 And the team data is not exposed
 ```
 
@@ -84,19 +84,19 @@ And Alice selects "Acme Corp" as active company
 Then the session is updated with:
   | field                | value                     |
   | current_authn_user   | [Alice's authn_user]      |
-  | current_company_id   | [Acme Corp uuid]          |
+  | current_tenant_id   | [Acme Corp uuid]          |
   | current_authz_user   | [Acme Corp authz_user]    |
-And all subsequent queries use company_id from session
+And all subsequent queries use tenant_id from session
 And the company context cannot be overridden by client
 ```
 
 ---
 
-### Scenario: Automatic company_id filtering on queries
+### Scenario: Automatic tenant_id filtering on queries
 **Tags**: `@critical @domain:authorization @multi-tenancy @policies`
 
 ```gherkin
-Given the current session has current_company_id: "uuid-1"
+Given the current session has current_tenant_id: "uuid-1"
 When any query is executed for tenant-scoped resources:
   | resource      |
   | AuthzUser     |
@@ -105,22 +105,22 @@ When any query is executed for tenant-scoped resources:
   | AuditLog      |
   | Contact       |
   | Deal          |
-Then an automatic filter is applied: company_id == "uuid-1"
+Then an automatic filter is applied: tenant_id == "uuid-1"
 And users cannot override this filter
 And queries for non-tenant resources (Company) are not filtered
 ```
 
 ---
 
-### Scenario: Session company_id cannot be tampered with
+### Scenario: Session tenant_id cannot be tampered with
 **Tags**: `@critical @domain:authorization @security @multi-tenancy`
 
 ```gherkin
 Given Alice is a member of "Acme Corp" only
-And Alice's session has current_company_id: "acme-uuid"
+And Alice's session has current_tenant_id: "acme-uuid"
 When a malicious client attempts to modify the session to:
   | field              | malicious_value |
-  | current_company_id | "beta-uuid"     |
+  | current_tenant_id | "beta-uuid"     |
 Then the modification is rejected (server-side session)
 And Alice's session remains scoped to "Acme Corp"
 And no data from "Beta Inc" is accessible
@@ -159,7 +159,7 @@ Then she sees "Engineering" from "Acme Corp" only
 When Bob queries his team
 Then he sees "Engineering" from "Beta Inc" only
 And team names can be duplicated across companies
-And relationships are scoped by company_id
+And relationships are scoped by tenant_id
 ```
 
 ---
@@ -201,11 +201,11 @@ And the user will have separate authz_users for each company
 ```gherkin
 Given a LiveView is mounted with on_mount hook
 And the current_authn_user is Alice
-And Alice has current_company_id: "acme-uuid"
+And Alice has current_tenant_id: "acme-uuid"
 Then the LiveView socket assigns include:
   | assign              | value               |
   | current_authn_user  | [Alice's authn_user]|
-  | current_company_id  | "acme-uuid"         |
+  | current_tenant_id  | "acme-uuid"         |
   | current_authz_user  | [Acme authz_user]   |
 And all LiveView queries use these assigns
 And LiveView cannot be mounted without valid company context
@@ -224,33 +224,33 @@ When a query attempts to join across companies:
   Alice's AuthzUser (company: Acme) → Team Engineering (company: Beta)
   """
 Then the join produces no results
-And the foreign key references respect company_id boundaries
+And the foreign key references respect tenant_id boundaries
 ```
 
 ---
 
-### Scenario: Resource creation inherits company_id
+### Scenario: Resource creation inherits tenant_id
 **Tags**: `@happy-path @domain:authorization @multi-tenancy`
 
 ```gherkin
-Given Alice is an admin of "Acme Corp" (company_id: uuid-1)
-And current session has current_company_id: uuid-1
+Given Alice is an admin of "Acme Corp" (tenant_id: uuid-1)
+And current session has current_tenant_id: uuid-1
 When Alice creates a new team "Marketing"
-Then the team is created with company_id: uuid-1
-And the company_id is set automatically from session
+Then the team is created with tenant_id: uuid-1
+And the tenant_id is set automatically from session
 And Alice cannot create a team for another company
 ```
 
 ---
 
-### Scenario: Prevent company_id override on create
+### Scenario: Prevent tenant_id override on create
 **Tags**: `@critical @domain:authorization @security @multi-tenancy`
 
 ```gherkin
-Given Alice is a member of "Acme Corp" (company_id: uuid-1)
-And current session has current_company_id: uuid-1
-When Alice attempts to create a team with explicitly set company_id: uuid-2
-Then the creation is rejected or company_id is overridden to uuid-1
+Given Alice is a member of "Acme Corp" (tenant_id: uuid-1)
+And current session has current_tenant_id: uuid-1
+When Alice attempts to create a team with explicitly set tenant_id: uuid-2
+Then the creation is rejected or tenant_id is overridden to uuid-1
 And no resources can be created for other companies
 ```
 
@@ -266,7 +266,7 @@ And "Beta Inc" has 8 users
 When Alice performs bulk operation "update all users set status: inactive"
 Then only the 10 users from "Acme Corp" are updated
 And the 8 users from "Beta Inc" remain unchanged
-And bulk operations automatically scoped by company_id
+And bulk operations automatically scoped by tenant_id
 ```
 
 ---
@@ -278,23 +278,23 @@ And bulk operations automatically scoped by company_id
 Given Alice has authz_users for "Acme Corp" and "Beta Inc"
 When Alice queries companies
 Then she sees both companies in her list
-And Company resource is not filtered by company_id
+And Company resource is not filtered by tenant_id
 And this allows viewing all companies user belongs to
 ```
 
 ---
 
-## Scenario Outline: Tenant-scoped resources enforce company_id
+## Scenario Outline: Tenant-scoped resources enforce tenant_id
 **Tags**: `@multi-tenancy @domain:authorization @comprehensive`
 
 ```gherkin
-Given the current session has current_company_id: "<company_id>"
+Given the current session has current_tenant_id: "<tenant_id>"
 When querying resource "<resource>"
-Then all results have company_id: "<company_id>"
+Then all results have tenant_id: "<tenant_id>"
 And no results from other companies are returned
 
 Examples:
-| resource          | company_id |
+| resource          | tenant_id |
 | AuthzUser         | uuid-1     |
 | Team              | uuid-1     |
 | Invitation        | uuid-1     |
@@ -320,13 +320,13 @@ Examples:
 
 ### EC-3: Race condition on company switching
 **Scenario:** User switches companies rapidly
-**Expected:** Session updates are serialized, queries always use current company_id
+**Expected:** Session updates are serialized, queries always use current tenant_id
 **Test:** Rapid company switching with concurrent queries
 
 ### EC-4: Database-level enforcement
 **Scenario:** Direct database queries (bypassing Ash)
 **Expected:** Application-level policies prevent this, but foreign keys provide safety
-**Test:** Verify foreign key constraints on company_id
+**Test:** Verify foreign key constraints on tenant_id
 
 ---
 
@@ -342,7 +342,7 @@ Examples:
 ## Security Testing
 
 ### Test: SQL Injection Attempts
-**Scenario:** Malicious company_id in query params
+**Scenario:** Malicious tenant_id in query params
 **Expected:** Parameterized queries prevent injection
 
 ### Test: Authorization Bypass Attempts
@@ -351,7 +351,7 @@ Examples:
 
 ### Test: Session Hijacking
 **Scenario:** Stolen session token
-**Expected:** Server-side sessions prevent company_id tampering
+**Expected:** Server-side sessions prevent tenant_id tampering
 
 ---
 

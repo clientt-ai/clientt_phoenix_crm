@@ -117,12 +117,12 @@ error: "This invitation has expired"
 
 ### Rule 3: Unique Pending Invitation per Email per Company
 **Condition**: Creating a new invitation
-**Requirement**: Only one pending invitation allowed per (email, company_id) pair
+**Requirement**: Only one pending invitation allowed per (email, tenant_id) pair
 
 **Database Constraint**:
 ```sql
 CREATE UNIQUE INDEX idx_invitations_unique_pending
-  ON authz_invitations(company_id, email)
+  ON authz_invitations(tenant_id, email)
   WHERE status = 'pending';
 ```
 
@@ -165,12 +165,12 @@ result: allowed (user already a member, but system prevents duplicate authz_user
 ```elixir
 validate NotAlreadyMember do
   validate fn changeset, _context ->
-    company_id = Ash.Changeset.get_attribute(changeset, :company_id)
+    tenant_id = Ash.Changeset.get_attribute(changeset, :tenant_id)
     authn_user_id = actor(:authn_user_id)
 
     existing_authz_user =
       AuthzUser
-      |> Ash.Query.filter(company_id: ^company_id)
+      |> Ash.Query.filter(tenant_id: ^tenant_id)
       |> Ash.Query.filter(authn_user_id: ^authn_user_id)
       |> Ash.read_one()
 
@@ -266,12 +266,12 @@ result: error "Invitation not found"
 ```elixir
 validate RateLimitInvitations do
   validate fn changeset, _context ->
-    company_id = Ash.Changeset.get_attribute(changeset, :company_id)
+    tenant_id = Ash.Changeset.get_attribute(changeset, :tenant_id)
     one_hour_ago = DateTime.utc_now() |> DateTime.add(-1, :hour)
 
     recent_count =
       Invitation
-      |> Ash.Query.filter(company_id: ^company_id)
+      |> Ash.Query.filter(tenant_id: ^tenant_id)
       |> Ash.Query.filter(created_at > ^one_hour_ago)
       |> Ash.count!()
 

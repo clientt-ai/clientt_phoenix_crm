@@ -11,6 +11,7 @@ defmodule ClienttCrmAppWeb.Components.Dashboard do
   """
   use Phoenix.Component
   import ClienttCrmAppWeb.CoreComponents
+  use ClienttCrmAppWeb, :verified_routes
 
   @doc """
   Renders a KPI card with value, trend, and icon.

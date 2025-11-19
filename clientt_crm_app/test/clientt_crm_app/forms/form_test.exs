@@ -15,7 +15,7 @@ defmodule ClienttCrmApp.Forms.FormTest do
                |> Ash.Changeset.for_create(:create, %{
                  name: "Contact Form",
                  description: "Get in touch",
-                 company_id: company.id,
+                 tenant_id: company.id,
                  created_by_id: created_by.id
                })
                |> Ash.create()
@@ -24,7 +24,7 @@ defmodule ClienttCrmApp.Forms.FormTest do
       assert form.description == "Get in touch"
       assert form.status == :draft
       assert form.slug == "contact-form"
-      assert form.company_id == company.id
+      assert form.tenant_id == company.id
       assert form.created_by_id == created_by.id
       assert form.view_count == 0
       assert form.submission_count == 0
@@ -157,7 +157,7 @@ defmodule ClienttCrmApp.Forms.FormTest do
       assert duplicated_form.slug == String.slice(form.slug, 0, 50) <> "-copy"
       assert duplicated_form.description == form.description
       assert duplicated_form.status == :draft
-      assert duplicated_form.company_id == form.company_id
+      assert duplicated_form.tenant_id == form.tenant_id
       assert duplicated_form.published_at == nil
     end
   end
@@ -201,7 +201,7 @@ defmodule ClienttCrmApp.Forms.FormTest do
 
       {:ok, forms} =
         Forms.Form
-        |> Ash.Query.for_read(:for_company, %{company_id: company_a.id})
+        |> Ash.Query.for_read(:for_company, %{tenant_id: company_a.id})
         |> Ash.read()
 
       form_ids = Enum.map(forms, & &1.id)
@@ -303,7 +303,7 @@ defmodule ClienttCrmApp.Forms.FormTest do
                |> Ash.Changeset.for_create(:create, %{
                  name: "Contact Form",
                  description: "Test",
-                 company_id: company.id,
+                 tenant_id: company.id,
                  created_by_id: created_by.id
                })
                |> Ash.create(authorize?: false)
@@ -317,7 +317,7 @@ defmodule ClienttCrmApp.Forms.FormTest do
       form_b = form_fixture(%{company: company_b, name: "Contact"})
 
       assert form_a.slug == form_b.slug
-      assert form_a.company_id != form_b.company_id
+      assert form_a.tenant_id != form_b.tenant_id
     end
   end
 end

@@ -26,7 +26,7 @@ defmodule ClienttCrmApp.Authorization.Company do
     authorizers: [Ash.Policy.Authorizer]
 
   postgres do
-    table "authz_companies"
+    table "authz_tenants"
     repo ClienttCrmApp.Repo
   end
 
@@ -58,7 +58,7 @@ defmodule ClienttCrmApp.Authorization.Company do
                  ClienttCrmApp.Authorization.AuthzUser
                  |> Ash.Changeset.for_create(:create, %{
                    authn_user_id: first_admin_id,
-                   company_id: company.id,
+                   tenant_id: company.id,
                    role: :admin
                  })
                  |> Ash.create(),
@@ -66,7 +66,7 @@ defmodule ClienttCrmApp.Authorization.Company do
                {:ok, _settings} <-
                  ClienttCrmApp.Authorization.CompanySettings
                  |> Ash.Changeset.for_create(:create, %{
-                   company_id: company.id
+                   tenant_id: company.id
                  })
                  |> Ash.create() do
             {:ok, company}
@@ -136,15 +136,15 @@ defmodule ClienttCrmApp.Authorization.Company do
 
   relationships do
     has_many :authz_users, ClienttCrmApp.Authorization.AuthzUser do
-      destination_attribute :company_id
+      destination_attribute :tenant_id
     end
 
     has_many :teams, ClienttCrmApp.Authorization.Team do
-      destination_attribute :company_id
+      destination_attribute :tenant_id
     end
 
     has_one :settings, ClienttCrmApp.Authorization.CompanySettings do
-      destination_attribute :company_id
+      destination_attribute :tenant_id
     end
 
     # has_many :invitations, ClienttCrmApp.Authorization.Invitation

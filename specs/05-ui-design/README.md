@@ -353,7 +353,7 @@ live_session :require_authz,
     {ClienttCrmAppWeb.LiveAuthzAuth, :ensure_company_context}
   ] do
 
-  scope "/companies/:company_id" do
+  scope "/companies/:tenant_id" do
     live "/members", MemberLive.Index, :index
     live "/teams", TeamLive.Index, :index
   end

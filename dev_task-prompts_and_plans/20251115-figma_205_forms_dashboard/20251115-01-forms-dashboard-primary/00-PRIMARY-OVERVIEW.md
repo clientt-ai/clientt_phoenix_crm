@@ -227,7 +227,7 @@ These features are fully documented but NOT implemented in MVP. UI shows "Coming
 #### Forms Domain
 
 **🔴 UPDATED 2025-11-16: Multi-Tenancy & Role Architecture Changes**
-- Added `company_id` to all tables (Q24 decision - forms belong to companies)
+- Added `tenant_id` to all tables (Q24 decision - forms belong to companies)
 - Removed `user_roles` table (Q25 decision - roles stored in authz_users.feature_roles JSONB)
 - Added submission metadata fields (Q27 decisions - notes, tags, soft delete)
 - See: `ADDITIONAL-BLOCKING-QUESTIONS.md` for detailed rationale
@@ -236,7 +236,7 @@ These features are fully documented but NOT implemented in MVP. UI shows "Coming
 -- Main forms table
 CREATE TABLE forms (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id UUID NOT NULL REFERENCES authz_companies(id) ON DELETE CASCADE,
+  tenant_id UUID NOT NULL REFERENCES authz_tenants(id) ON DELETE CASCADE,
   created_by_authz_user_id UUID NOT NULL REFERENCES authz_users(id),
   name VARCHAR(255) NOT NULL,
   description TEXT,
@@ -247,14 +247,14 @@ CREATE TABLE forms (
   submission_count INTEGER DEFAULT 0,
   inserted_at TIMESTAMP NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  UNIQUE(company_id, slug)  -- Slug unique within company (not globally)
+  UNIQUE(tenant_id, slug)  -- Slug unique within company (not globally)
 );
 
 -- Form fields (each form has multiple fields)
 CREATE TABLE form_fields (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   form_id UUID NOT NULL REFERENCES forms(id) ON DELETE CASCADE,
-  company_id UUID NOT NULL REFERENCES authz_companies(id) ON DELETE CASCADE,  -- Denormalized for query performance
+  tenant_id UUID NOT NULL REFERENCES authz_tenants(id) ON DELETE CASCADE,  -- Denormalized for query performance
   field_type VARCHAR(50) NOT NULL,  -- text, email, select, textarea, number, date, checkbox, radio
   label VARCHAR(255) NOT NULL,
   placeholder VARCHAR(255),
@@ -270,7 +270,7 @@ CREATE TABLE form_fields (
 CREATE TABLE submissions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   form_id UUID NOT NULL REFERENCES forms(id) ON DELETE CASCADE,
-  company_id UUID NOT NULL REFERENCES authz_companies(id) ON DELETE CASCADE,  -- Denormalized for query performance
+  tenant_id UUID NOT NULL REFERENCES authz_tenants(id) ON DELETE CASCADE,  -- Denormalized for query performance
   -- Immutable submission data (Q27a: submissions are immutable)
   submitted_data JSONB NOT NULL,  -- Key-value pairs of field responses
   lead_email VARCHAR(255),
@@ -290,15 +290,15 @@ CREATE TABLE submissions (
 );
 
 -- Indexes for performance (multi-tenancy aware)
-CREATE INDEX idx_forms_company_id ON forms(company_id);
-CREATE INDEX idx_forms_company_status ON forms(company_id, status);  -- Composite for common query
+CREATE INDEX idx_forms_tenant_id ON forms(tenant_id);
+CREATE INDEX idx_forms_company_status ON forms(tenant_id, status);  -- Composite for common query
 CREATE INDEX idx_forms_created_by ON forms(created_by_authz_user_id);
 CREATE INDEX idx_form_fields_form_id ON form_fields(form_id);
-CREATE INDEX idx_form_fields_company_id ON form_fields(company_id);
+CREATE INDEX idx_form_fields_tenant_id ON form_fields(tenant_id);
 CREATE INDEX idx_submissions_form_id ON submissions(form_id);
-CREATE INDEX idx_submissions_company_id ON submissions(company_id);
+CREATE INDEX idx_submissions_tenant_id ON submissions(tenant_id);
 CREATE INDEX idx_submissions_deleted_at ON submissions(deleted_at) WHERE deleted_at IS NOT NULL;  -- Partial index
-CREATE INDEX idx_submissions_lead_status ON submissions(company_id, lead_status);  -- For lead management views
+CREATE INDEX idx_submissions_lead_status ON submissions(tenant_id, lead_status);  -- For lead management views
 CREATE INDEX idx_submissions_submitted_at ON submissions(submitted_at);
 ```
 
@@ -330,7 +330,7 @@ CREATE INDEX idx_authz_users_feature_roles_forms
 
 **Role Assignment:**
 - Company `admin` role can assign any form role via Settings > Team Members
-- Form roles are company-scoped (via authz_user's company_id)
+- Form roles are company-scoped (via authz_user's tenant_id)
 - New users have no form role by default (explicit grants required)
 ```
 

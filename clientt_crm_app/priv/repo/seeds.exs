@@ -46,8 +46,8 @@ company =
               AuthnUser
               |> Ash.Changeset.for_create(:register_with_password, %{
                 email: temp_admin_email,
-                password: "TempBootstrap123!",
-                password_confirmation: "TempBootstrap123!"
+                password: "Hang123!",
+                password_confirmation: "Hang123!"
               })
               |> Ash.create(authorize?: false)
 
@@ -85,7 +85,7 @@ IO.puts("\n👥 Setting up sample users for all roles...")
 for role <- roles do
   email = "sample_#{role}@clientt.com"
   display_name = "Sample #{String.capitalize(to_string(role))}"
-  password = "Sample#{String.capitalize(to_string(role))}123!"
+  password = "Hang123!"
 
   IO.puts("\n  📧 Processing #{email} (#{role})...")
 
@@ -121,7 +121,7 @@ for role <- roles do
   if authn_user do
     # Create or update the authorization user (AuthzUser)
     case AuthzUser
-         |> Ash.Query.filter(authn_user_id == ^authn_user.id and company_id == ^company.id)
+         |> Ash.Query.filter(authn_user_id == ^authn_user.id and tenant_id == ^company.id)
          |> Ash.read_one(authorize?: false) do
       {:ok, nil} ->
         IO.puts("    ➕ Creating authorization record...")
@@ -129,7 +129,7 @@ for role <- roles do
         case AuthzUser
              |> Ash.Changeset.for_create(:create, %{
                authn_user_id: authn_user.id,
-               company_id: company.id,
+               tenant_id: company.id,
                role: role,
                display_name: display_name
              })
@@ -174,7 +174,7 @@ IO.puts("")
 
 for role <- roles do
   email = "sample_#{role}@clientt.com"
-  password = "Sample#{String.capitalize(to_string(role))}123!"
+  password = "Hang123!"
   IO.puts("   • #{email}")
   IO.puts("     Role: #{role}")
   IO.puts("     Password: #{password}")
@@ -183,3 +183,305 @@ end
 
 IO.puts("🚀 You can now sign in with any of these accounts!")
 IO.puts(String.duplicate("=", 60))
+
+# Step 3: Create sample forms with various field types
+IO.puts("\n📋 Creating sample forms...")
+
+alias ClienttCrmApp.Forms.{Form, FormField}
+
+# Get the admin user to create forms
+admin_email = "sample_admin@clientt.com"
+
+{:ok, admin_authn_user} =
+  AuthnUser
+  |> Ash.Query.filter(email == ^admin_email)
+  |> Ash.read_one(authorize?: false)
+
+{:ok, admin_authz_user} =
+  AuthzUser
+  |> Ash.Query.filter(authn_user_id == ^admin_authn_user.id and tenant_id == ^company.id)
+  |> Ash.read_one(authorize?: false)
+
+# Sample Form 1: Contact Form (Published)
+IO.puts("  📝 Creating Contact Form...")
+
+contact_form =
+  case Form
+       |> Ash.Query.filter(tenant_id == ^company.id and slug == "contact-us")
+       |> Ash.read_one(authorize?: false) do
+    {:ok, nil} ->
+      {:ok, form} =
+        Form
+        |> Ash.Changeset.new()
+        |> Ash.Changeset.set_argument(:tenant_id, company.id)
+        |> Ash.Changeset.set_argument(:created_by_id, admin_authz_user.id)
+        |> Ash.Changeset.for_create(
+          :create,
+          %{
+            name: "Contact Us",
+            description: "Get in touch with our team",
+            branding: %{},
+            settings: %{}
+          }
+        )
+        |> Ash.create(authorize?: false)
+
+      IO.puts("    ✅ Contact Form created")
+      form
+
+    {:ok, existing_form} ->
+      IO.puts("    ✅ Contact Form already exists")
+      existing_form
+  end
+
+# Add fields to Contact Form
+contact_fields = [
+  %{
+    field_type: :text,
+    label: "Full Name",
+    placeholder: "John Doe",
+    help_text: "Please enter your full name",
+    required: true,
+    order_position: 1
+  },
+  %{
+    field_type: :email,
+    label: "Email",
+    placeholder: "john@example.com",
+    help_text: "We'll never share your email",
+    required: true,
+    order_position: 2
+  },
+  %{
+    field_type: :phone,
+    label: "Phone",
+    placeholder: "(555) 123-4567",
+    help_text: "Optional contact number",
+    required: false,
+    order_position: 3
+  },
+  %{
+    field_type: :textarea,
+    label: "Message",
+    placeholder: "How can we help you?",
+    help_text: "Tell us about your inquiry",
+    required: true,
+    order_position: 4,
+    validation_rules: %{"min_length" => 10, "max_length" => 500}
+  }
+]
+
+for field_data <- contact_fields do
+  case FormField
+       |> Ash.Query.filter(
+         form_id == ^contact_form.id and label == ^field_data.label
+       )
+       |> Ash.read_one(authorize?: false) do
+    {:ok, nil} ->
+      FormField
+      |> Ash.Changeset.new()
+      |> Ash.Changeset.set_argument(:form_id, contact_form.id)
+      |> Ash.Changeset.for_create(:create, field_data)
+      |> Ash.create(authorize?: false)
+
+      IO.puts("      ✅ Added field: #{field_data.label}")
+
+    {:ok, _existing} ->
+      IO.puts("      ✅ Field already exists: #{field_data.label}")
+  end
+end
+
+# Sample Form 2: Job Application Form (Published)
+IO.puts("\n  📝 Creating Job Application Form...")
+
+job_form =
+  case Form
+       |> Ash.Query.filter(tenant_id == ^company.id and slug == "job-application")
+       |> Ash.read_one(authorize?: false) do
+    {:ok, nil} ->
+      {:ok, form} =
+        Form
+        |> Ash.Changeset.new()
+        |> Ash.Changeset.set_argument(:tenant_id, company.id)
+        |> Ash.Changeset.set_argument(:created_by_id, admin_authz_user.id)
+        |> Ash.Changeset.for_create(
+          :create,
+          %{
+            name: "Job Application",
+            description: "Apply for open positions at our company",
+            branding: %{},
+            settings: %{}
+          }
+        )
+        |> Ash.create(authorize?: false)
+
+      IO.puts("    ✅ Job Application Form created")
+      form
+
+    {:ok, existing_form} ->
+      IO.puts("    ✅ Job Application Form already exists")
+      existing_form
+  end
+
+# Add fields to Job Application Form
+job_fields = [
+  %{
+    field_type: :text,
+    label: "Full Name",
+    placeholder: "Jane Smith",
+    required: true,
+    order_position: 1
+  },
+  %{
+    field_type: :email,
+    label: "Email Address",
+    placeholder: "jane@example.com",
+    required: true,
+    order_position: 2
+  },
+  %{
+    field_type: :select,
+    label: "Position",
+    required: true,
+    order_position: 3,
+    options: [
+      %{"label" => "Software Engineer", "value" => "software_engineer"},
+      %{"label" => "Product Manager", "value" => "product_manager"},
+      %{"label" => "Sales Representative", "value" => "sales_rep"},
+      %{"label" => "Customer Support", "value" => "customer_support"}
+    ]
+  },
+  %{
+    field_type: :number,
+    label: "Years of Experience",
+    placeholder: "5",
+    required: true,
+    order_position: 4,
+    validation_rules: %{"min" => 0, "max" => 50}
+  },
+  %{
+    field_type: :textarea,
+    label: "Cover Letter",
+    placeholder: "Tell us why you'd be a great fit...",
+    required: true,
+    order_position: 5,
+    validation_rules: %{"min_length" => 100, "max_length" => 2000}
+  },
+  %{
+    field_type: :checkbox,
+    label: "I agree to the terms and conditions",
+    required: true,
+    order_position: 6
+  }
+]
+
+for field_data <- job_fields do
+  case FormField
+       |> Ash.Query.filter(
+         form_id == ^job_form.id and label == ^field_data.label
+       )
+       |> Ash.read_one(authorize?: false) do
+    {:ok, nil} ->
+      FormField
+      |> Ash.Changeset.new()
+      |> Ash.Changeset.set_argument(:form_id, job_form.id)
+      |> Ash.Changeset.for_create(:create, field_data)
+      |> Ash.create(authorize?: false)
+
+      IO.puts("      ✅ Added field: #{field_data.label}")
+
+    {:ok, _existing} ->
+      IO.puts("      ✅ Field already exists: #{field_data.label}")
+  end
+end
+
+# Sample Form 3: Event Registration (Draft)
+IO.puts("\n  📝 Creating Event Registration Form...")
+
+event_form =
+  case Form
+       |> Ash.Query.filter(tenant_id == ^company.id and slug == "event-registration")
+       |> Ash.read_one(authorize?: false) do
+    {:ok, nil} ->
+      {:ok, form} =
+        Form
+        |> Ash.Changeset.new()
+        |> Ash.Changeset.set_argument(:tenant_id, company.id)
+        |> Ash.Changeset.set_argument(:created_by_id, admin_authz_user.id)
+        |> Ash.Changeset.for_create(
+          :create,
+          %{
+            name: "Event Registration",
+            description: "Register for our upcoming event",
+            branding: %{},
+            settings: %{}
+          }
+        )
+        |> Ash.create(authorize?: false)
+
+      IO.puts("    ✅ Event Registration Form created")
+      form
+
+    {:ok, existing_form} ->
+      IO.puts("    ✅ Event Registration Form already exists")
+      existing_form
+  end
+
+# Add fields to Event Registration Form
+event_fields = [
+  %{
+    field_type: :text,
+    label: "Attendee Name",
+    required: true,
+    order_position: 1
+  },
+  %{
+    field_type: :email,
+    label: "Email",
+    required: true,
+    order_position: 2
+  },
+  %{
+    field_type: :radio,
+    label: "Ticket Type",
+    required: true,
+    order_position: 3,
+    options: [
+      %{"label" => "General Admission", "value" => "general"},
+      %{"label" => "VIP", "value" => "vip"},
+      %{"label" => "Student", "value" => "student"}
+    ]
+  },
+  %{
+    field_type: :date,
+    label: "Preferred Date",
+    required: true,
+    order_position: 4
+  }
+]
+
+for field_data <- event_fields do
+  case FormField
+       |> Ash.Query.filter(
+         form_id == ^event_form.id and label == ^field_data.label
+       )
+       |> Ash.read_one(authorize?: false) do
+    {:ok, nil} ->
+      FormField
+      |> Ash.Changeset.new()
+      |> Ash.Changeset.set_argument(:form_id, event_form.id)
+      |> Ash.Changeset.for_create(:create, field_data)
+      |> Ash.create(authorize?: false)
+
+      IO.puts("      ✅ Added field: #{field_data.label}")
+
+    {:ok, _existing} ->
+      IO.puts("      ✅ Field already exists: #{field_data.label}")
+  end
+end
+
+IO.puts("\n✅ Sample forms created successfully!")
+IO.puts("\n📊 Forms Summary:")
+IO.puts("   • Contact Us (Published) - #{contact_form.id}")
+IO.puts("   • Job Application (Published) - #{job_form.id}")
+IO.puts("   • Event Registration (Draft) - #{event_form.id}")

@@ -106,8 +106,8 @@ This document captures all finalized decisions for the Forms Dashboard MVP (Phas
 
 **Required Indexes:**
 ```sql
-CREATE INDEX forms_company_id_index ON forms(company_id);
-CREATE INDEX submissions_company_id_index ON submissions(company_id);
+CREATE INDEX forms_tenant_id_index ON forms(tenant_id);
+CREATE INDEX submissions_tenant_id_index ON submissions(tenant_id);
 CREATE INDEX submissions_form_id_index ON submissions(form_id);
 CREATE INDEX submissions_status_index ON submissions(status);
 CREATE INDEX submissions_submitted_at_index ON submissions(submitted_at DESC);
@@ -211,7 +211,7 @@ CREATE INDEX submissions_submitted_at_index ON submissions(submitted_at DESC);
 **Decision:** ✅ **70% coverage (pragmatic for MVP)**
 
 **Focus testing on critical paths:**
-- Multi-tenancy data isolation (company_id filtering)
+- Multi-tenancy data isolation (tenant_id filtering)
 - Form CRUD operations
 - Submission handling and immutability
 - Authorization policies (form roles, permissions)
@@ -231,7 +231,7 @@ CREATE INDEX submissions_submitted_at_index ON submissions(submitted_at DESC);
 - Target: All pages load in under 1 second
 - Simpler benchmark to track and measure
 - Allows flexibility for complex UIs (form builder, analytics)
-- Focus on optimized SQL queries (indexes on company_id, status, submitted_at)
+- Focus on optimized SQL queries (indexes on tenant_id, status, submitted_at)
 - Monitor with Phoenix LiveDashboard in development
 - If any page consistently exceeds 1s, optimize that specific page
 
@@ -331,7 +331,7 @@ All track READMEs have been updated to reflect the finalized MVP scope:
 - Split database schema into "MVP Schema" and "Future Schema"
 - Added clear warnings about only implementing Forms domain for MVP
 - Updated field types (10 types, no file upload)
-- Added notes about multi-tenancy (company_id)
+- Added notes about multi-tenancy (tenant_id)
 
 ✅ **Track 4: Analytics** (`20251115-04-forms-analytics-kpis/README.md`)
 - Fixed track number (from 6 to 4)
@@ -357,15 +357,15 @@ All track READMEs have been updated to reflect the finalized MVP scope:
 
 All database tables must include:
 ```sql
-company_id UUID NOT NULL
+tenant_id UUID NOT NULL
 ```
 
 **Required indexes:**
 ```sql
-CREATE INDEX [table]_company_id_index ON [table](company_id);
+CREATE INDEX [table]_tenant_id_index ON [table](tenant_id);
 ```
 
-**Ash resource policies must filter by company_id for data isolation**
+**Ash resource policies must filter by tenant_id for data isolation**
 
 ---
 

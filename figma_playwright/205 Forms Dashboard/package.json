@@ -1,0 +1,15 @@
+{
+  "name": "figma-205-forms-dashboard-tests",
+  "version": "1.0.0",
+  "description": "Playwright tests for Figma 205 Forms Dashboard",
+  "scripts": {
+    "test": "npx playwright test",
+    "test:headed": "npx playwright test --headed",
+    "test:ui": "npx playwright test --ui",
+    "test:report": "npx playwright show-report",
+    "install:browsers": "npx playwright install"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0"
+  }
+}

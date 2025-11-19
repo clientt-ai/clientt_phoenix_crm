@@ -239,10 +239,10 @@ Domain events list consumers like "Notification Service", "Analytics", "Cache In
 **Verification**: Checked Authorization database schema and Forms specs
 
 **Authorization Tables** (implemented):
-- `authz_companies`
+- `authz_tenants`
 - `authz_users`
 - `authz_teams`
-- `authz_company_settings`
+- `authz_tenant_settings`
 - `authz_invitations` (not yet implemented, but specified)
 - `authz_audit_logs` (not yet implemented, but specified)
 
@@ -265,14 +265,14 @@ Domain events list consumers like "Notification Service", "Analytics", "Cache In
 Authorization domain uses `authz_` prefix for all tables, but Forms domain does not use any prefix.
 
 **Current State**:
-- Authorization: `authz_companies`, `authz_users`, `authz_teams`
+- Authorization: `authz_tenants`, `authz_users`, `authz_teams`
 - Forms: `forms`, `form_fields`, `submissions`, `notifications`
 
 **Recommendation**:
 **Option A** (Recommended): Use prefixes for all domains
 ```sql
 -- Authorization
-authz_companies
+authz_tenants
 authz_users
 authz_teams
 
@@ -323,8 +323,8 @@ Forms domain specs define foreign keys but don't consistently specify ON DELETE 
 -- Consistently specifies CASCADE behavior
 ALTER TABLE authz_users
   ADD CONSTRAINT fk_authz_users_company
-  FOREIGN KEY (company_id)
-  REFERENCES authz_companies(id)
+  FOREIGN KEY (tenant_id)
+  REFERENCES authz_tenants(id)
   ON DELETE CASCADE;  -- Explicit!
 ```
 
@@ -334,7 +334,7 @@ Add explicit ON DELETE behavior to all Forms domain foreign keys:
 -- Forms
 form_fields.form_id → forms.id (ON DELETE CASCADE)
 submissions.form_id → forms.id (ON DELETE RESTRICT or SET NULL)
-submissions.company_id → authz_companies.id (ON DELETE CASCADE)
+submissions.tenant_id → authz_tenants.id (ON DELETE CASCADE)
 notifications.user_id → authz_users.id (ON DELETE CASCADE)
 ```
 

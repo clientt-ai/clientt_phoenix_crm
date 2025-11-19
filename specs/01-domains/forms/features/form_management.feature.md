@@ -33,7 +33,7 @@ So that I can collect lead information from potential customers
 
 ```gherkin
 Given I am logged in as "admin@acme.com" with role "admin"
-And my company_id is "company-123"
+And my tenant_id is "company-123"
 When I create a form with:
   | field       | value                                 |
   | name        | Contact Us                            |
@@ -45,7 +45,7 @@ Then a Form record is created with:
   | name        | Contact Us                            |
   | slug        | contact-us                            |
   | status      | draft                                 |
-  | company_id  | company-123                           |
+  | tenant_id  | company-123                           |
   | created_by  | [authz_user_id]                       |
 And the forms.form_created event is published
 And I can see the form in my forms list
@@ -55,7 +55,7 @@ And I can see the form in my forms list
 - Slug auto-generated from name (e.g., "Contact Us" → "contact-us")
 - Status defaults to 'draft'
 - Branding and settings stored as JSONB
-- Multi-tenancy: company_id auto-set from current session
+- Multi-tenancy: tenant_id auto-set from current session
 
 ---
 
