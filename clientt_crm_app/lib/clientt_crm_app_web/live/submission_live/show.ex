@@ -190,7 +190,7 @@ defmodule ClienttCrmAppWeb.SubmissionLive.Show do
                   <select
                     name="status"
                     id="status"
-                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    class="select select-bordered select-sm w-full"
                   >
                     <option value="new" selected={@submission.status == :new}>New</option>
                     <option value="contacted" selected={@submission.status == :contacted}>
@@ -248,7 +248,7 @@ defmodule ClienttCrmAppWeb.SubmissionLive.Show do
                     <%= if @submission.submitter_email do %>
                       <a
                         href={"mailto:#{@submission.submitter_email}"}
-                        class="text-indigo-600 hover:text-indigo-900"
+                        class="text-primary hover:text-primary/80"
                       >
                         <%= @submission.submitter_email %>
                       </a>
@@ -334,7 +334,7 @@ defmodule ClienttCrmAppWeb.SubmissionLive.Show do
 
     cond do
       current_status == step_status ->
-        "#{base_class} font-semibold text-indigo-600"
+        "#{base_class} font-semibold text-primary"
 
       status_reached?(current_status, step_status) ->
         "#{base_class} text-green-600"

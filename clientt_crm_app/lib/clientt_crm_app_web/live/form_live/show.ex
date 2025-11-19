@@ -135,7 +135,7 @@ defmodule ClienttCrmAppWeb.FormLive.Show do
 
             <.link
               navigate={~p"/forms/#{@form.id}/edit"}
-              class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
+              class="btn btn-primary btn-sm"
             >
               Edit Form
             </.link>
@@ -179,7 +179,7 @@ defmodule ClienttCrmAppWeb.FormLive.Show do
                 <%= if @form.status == :draft do %>
                   <.link
                     navigate={~p"/forms/#{@form.id}/edit"}
-                    class="text-sm text-indigo-600 hover:text-indigo-900"
+                    class="text-sm text-primary hover:text-primary/80"
                   >
                     Edit Fields
                   </.link>
@@ -192,7 +192,7 @@ defmodule ClienttCrmAppWeb.FormLive.Show do
                   <%= if @form.status == :draft do %>
                     <.link
                       navigate={~p"/forms/#{@form.id}/edit"}
-                      class="mt-2 inline-flex items-center text-sm text-indigo-600 hover:text-indigo-900"
+                      class="mt-2 inline-flex items-center text-sm text-primary hover:text-primary/80"
                     >
                       Add fields to get started →
                     </.link>
@@ -260,7 +260,7 @@ defmodule ClienttCrmAppWeb.FormLive.Show do
                 <%= if @recent_submissions != [] do %>
                   <.link
                     navigate={~p"/forms/#{@form.id}/submissions"}
-                    class="text-sm text-indigo-600 hover:text-indigo-900"
+                    class="text-sm text-primary hover:text-primary/80"
                   >
                     View All
                   </.link>
