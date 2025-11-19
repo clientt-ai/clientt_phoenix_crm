@@ -15,8 +15,14 @@ module.exports = defineConfig({
 
   use: {
     baseURL: 'http://localhost:3000',
+    // Viewport set to 1080p to limit screenshot size (max 8000px)
+    viewport: { width: 1920, height: 1080 },
     trace: 'on-first-retry',
-    screenshot: 'only-on-failure',
+    // Screenshot on failure (viewport only, not full page)
+    screenshot: {
+      mode: 'only-on-failure',
+      fullPage: false,
+    },
     video: 'retain-on-failure',
   },
 

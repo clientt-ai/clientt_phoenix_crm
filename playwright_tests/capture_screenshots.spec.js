@@ -4,10 +4,9 @@ require('dotenv').config();
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:4002';
 
-// Generate unique test user for this run
-const timestamp = Date.now();
-const TEST_USER_EMAIL = `screenshot_test_${timestamp}@example.com`;
-const TEST_USER_PASSWORD = 'SecurePassword123!';
+// Use seed admin user (no email confirmation required)
+const TEST_USER_EMAIL = 'sample_admin@clientt.com';
+const TEST_USER_PASSWORD = 'Hang123!';
 
 // Run tests serially to share state
 test.describe.configure({ mode: 'serial' });
@@ -19,7 +18,7 @@ test.describe('Screenshot Capture - Major Screens', () => {
     await page.waitForLoadState('networkidle');
     await page.screenshot({
       path: 'screenshots/01-sign-in-page.png',
-      fullPage: true
+      fullPage: false
     });
   });
 
@@ -28,7 +27,7 @@ test.describe('Screenshot Capture - Major Screens', () => {
     await page.waitForLoadState('networkidle');
     await page.screenshot({
       path: 'screenshots/02-registration-page.png',
-      fullPage: true
+      fullPage: false
     });
   });
 
@@ -37,7 +36,7 @@ test.describe('Screenshot Capture - Major Screens', () => {
     await page.waitForLoadState('networkidle');
     await page.screenshot({
       path: 'screenshots/03-home-page.png',
-      fullPage: true
+      fullPage: false
     });
   });
 
@@ -46,43 +45,37 @@ test.describe('Screenshot Capture - Major Screens', () => {
     await page.waitForLoadState('networkidle');
     await page.screenshot({
       path: 'screenshots/04-password-reset-page.png',
-      fullPage: true
+      fullPage: false
     });
   });
 
-  test('05 - Register and Capture Forms Listing', async ({ page }) => {
-    // Register a new user
-    await page.goto(`${BASE_URL}/register`);
+  test('05 - Login and Capture Forms Listing', async ({ page }) => {
+    // Login with seed admin user
+    await page.goto(`${BASE_URL}/sign-in`);
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(500);
 
-    // Use visible inputs - the registration form is the one with password_confirmation
-    const confirmInput = page.locator('input[name="user[password_confirmation]"]');
-    await confirmInput.waitFor({ state: 'visible' });
-
-    // Find email and password in the same form section
     await page.locator('input[name="user[email]"]:visible').first().fill(TEST_USER_EMAIL);
     await page.locator('input[name="user[password]"]:visible').first().fill(TEST_USER_PASSWORD);
-    await confirmInput.fill(TEST_USER_PASSWORD);
 
-    await page.click('button[type="submit"]:has-text("Register")');
+    await page.click('button[type="submit"]:has-text("Sign in")');
     await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(1000);
 
-    // Navigate to forms
-    await page.goto(`${BASE_URL}/forms`);
+    // Navigate to forms with longer timeout
+    await page.goto(`${BASE_URL}/forms`, { timeout: 30000 });
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(500);
 
     await page.screenshot({
       path: 'screenshots/05-forms-listing-page.png',
-      fullPage: true
+      fullPage: false
     });
   });
 
   test('06 - Form Builder (New Form)', async ({ page }) => {
-    // Login with the user we just created
-    await page.goto(`${BASE_URL}/sign-in`);
+    // Login with seed admin user
+    await page.goto(`${BASE_URL}/sign-in`, { timeout: 30000 });
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(500);
 
@@ -100,13 +93,13 @@ test.describe('Screenshot Capture - Major Screens', () => {
 
     await page.screenshot({
       path: 'screenshots/06-form-builder-new.png',
-      fullPage: true
+      fullPage: false
     });
   });
 
   test('07 - Form Builder with Created Form', async ({ page }) => {
     // Login
-    await page.goto(`${BASE_URL}/sign-in`);
+    await page.goto(`${BASE_URL}/sign-in`, { timeout: 30000 });
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(500);
 
@@ -117,7 +110,7 @@ test.describe('Screenshot Capture - Major Screens', () => {
     await page.waitForTimeout(1000);
 
     // Create a form
-    await page.goto(`${BASE_URL}/forms/new`);
+    await page.goto(`${BASE_URL}/forms/new`, { timeout: 30000 });
     await page.waitForLoadState('networkidle');
 
     const formNameInput = page.locator('[data-testid="form-name-input"]');
@@ -148,13 +141,13 @@ test.describe('Screenshot Capture - Major Screens', () => {
 
     await page.screenshot({
       path: 'screenshots/07-form-builder-created.png',
-      fullPage: true
+      fullPage: false
     });
   });
 
   test('08 - Form with Fields Added', async ({ page }) => {
     // Login
-    await page.goto(`${BASE_URL}/sign-in`);
+    await page.goto(`${BASE_URL}/sign-in`, { timeout: 30000 });
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(500);
 
@@ -165,7 +158,7 @@ test.describe('Screenshot Capture - Major Screens', () => {
     await page.waitForTimeout(1000);
 
     // Create a form with fields
-    await page.goto(`${BASE_URL}/forms/new`);
+    await page.goto(`${BASE_URL}/forms/new`, { timeout: 30000 });
     await page.waitForLoadState('networkidle');
 
     const formNameInput = page.locator('[data-testid="form-name-input"]');
@@ -193,7 +186,7 @@ test.describe('Screenshot Capture - Major Screens', () => {
         await addFieldBtn.click();
         await page.waitForTimeout(500);
 
-        const fieldTypeSelect = page.locator('[data-testid="field-type-select"]');
+        const fieldTypeSelect = page.locator('select[data-testid="field-type-select"]');
         if (await fieldTypeSelect.isVisible()) {
           await fieldTypeSelect.selectOption('text');
         }
@@ -213,7 +206,7 @@ test.describe('Screenshot Capture - Major Screens', () => {
 
     await page.screenshot({
       path: 'screenshots/08-form-with-fields.png',
-      fullPage: true
+      fullPage: false
     });
   });
 
