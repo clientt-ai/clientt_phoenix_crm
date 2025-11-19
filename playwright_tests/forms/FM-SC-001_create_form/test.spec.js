@@ -6,6 +6,8 @@ const path = require('path');
  *
  * This test verifies that a user can create a new form with basic configuration
  * and that the form is saved successfully in the system.
+ *
+ * Updated for new 3-column builder UI with inline editing.
  */
 
 test.describe('FM-SC-001: Create New Form Successfully', () => {
@@ -36,8 +38,7 @@ test.describe('FM-SC-001: Create New Form Successfully', () => {
     await page.goto('/forms');
     await page.waitForLoadState('networkidle');
 
-    // Verify header and sidebar navigation are present on authenticated pages
-    await expect(page.locator('header')).toBeVisible();
+    // Verify sidebar navigation and page content are present
     await expect(page.locator('[data-testid="nav-forms"]')).toBeVisible();
     await expect(page.locator('h1')).toContainText('Forms');
     await screenshot(page, '03-forms-listing-page');
@@ -54,23 +55,22 @@ test.describe('FM-SC-001: Create New Form Successfully', () => {
     await expect(page.locator('[data-testid="form-builder"]')).toBeVisible();
     await screenshot(page, '04-form-builder-empty');
 
-    // Step 3: Enter form name
-    await page.fill('[data-testid="form-name-input"]', uniqueFormName);
+    // Step 3: Enter form name (inline editing)
+    const nameInput = page.locator('[data-testid="form-name-input"]');
+    await nameInput.fill(uniqueFormName);
+    // Trigger blur to ensure the value is saved
+    await nameInput.blur();
+    await page.waitForTimeout(500); // Wait for debounce
 
-    // Step 4: Enter form description
-    await page.fill(
-      '[data-testid="form-description-input"]',
-      'Collect customer feedback on product experience'
-    );
+    // Step 4: Enter form description (inline editing)
+    const descInput = page.locator('[data-testid="form-description-input"]');
+    await descInput.fill('Collect customer feedback on product experience');
+    await descInput.blur();
+    await page.waitForTimeout(500); // Wait for debounce
 
-    // Step 5: Select form category
-    await page.selectOption('[data-testid="form-category-select"]', 'customer-service');
-
-    // Step 6: Set form status
-    await page.selectOption('[data-testid="form-status-select"]', 'draft');
     await screenshot(page, '05-form-builder-filled');
 
-    // Step 7: Click Save button - wait for button to be ready first
+    // Step 5: Click Save button - wait for button to be ready first
     const saveButton = page.locator('[data-testid="save-form-button"]');
     await expect(saveButton).toBeVisible();
     await expect(saveButton).toBeEnabled();
@@ -79,7 +79,7 @@ test.describe('FM-SC-001: Create New Form Successfully', () => {
     console.log('Save button found, clicking...');
     await saveButton.click();
 
-    // Step 8: Verify success notification appears (allow time for LiveView to process)
+    // Step 6: Verify success notification appears (allow time for LiveView to process)
     // Use .first() to get the actual notification (not the hidden client/server error containers)
     const successNotification = page.locator('[data-testid="success-notification"]').first();
 
@@ -88,12 +88,7 @@ test.describe('FM-SC-001: Create New Form Successfully', () => {
     await expect(successNotification).toContainText('Form saved successfully');
     await screenshot(page, '06-form-saved-success');
 
-    // Step 9: Verify we're still on the form builder page (URL stays same after save)
-    // The form is saved but user stays on builder page
-
-    // Step 10: Navigate back to forms listing using the "Back to Forms" link
-    // Wait for notification to auto-dismiss before clicking navigation
-    // Notification may still be visible but should not block navigation
+    // Step 7: Navigate back to forms listing using the "Back" link
     await page.click('a[href="/forms"]');
     await page.waitForLoadState('networkidle');
 
@@ -106,22 +101,28 @@ test.describe('FM-SC-001: Create New Form Successfully', () => {
 
     // Verify form details in the listing
     await expect(formRow.locator('td').first()).toContainText(uniqueFormName);
-    await expect(formRow.locator('td').nth(1)).toContainText('Draft');
+    // Form status should be Draft by default
+    await expect(formRow.locator('[data-testid="form-status"]')).toContainText('Draft');
   });
 
   test('should validate required fields when creating form', async ({ page }) => {
     // Click on "Create New Form" button
     await page.click('[data-testid="create-form-button"]');
+    await page.waitForLoadState('networkidle');
     await screenshot(page, '08-create-form-empty');
 
-    // Try to save without filling required fields
+    // Clear the default title and try to save without filling it
+    const nameInput = page.locator('[data-testid="form-name-input"]');
+    await nameInput.fill('');
+    await nameInput.blur();
+    await page.waitForTimeout(500);
+
+    // Click save button
     await page.click('[data-testid="save-form-button"]');
 
     // Verify validation errors appear
-    await expect(page.locator('[data-testid="form-name-error"]')).toBeVisible();
-    await expect(page.locator('[data-testid="form-name-error"]')).toContainText(
-      'Form name is required'
-    );
+    await expect(page.locator('[data-testid="form-name-error"]')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('[data-testid="form-name-error"]')).toContainText('required');
     await screenshot(page, '09-validation-error-name-required');
   });
 
@@ -132,10 +133,19 @@ test.describe('FM-SC-001: Create New Form Successfully', () => {
     // Create first form
     await page.click('[data-testid="create-form-button"]');
     await page.waitForLoadState('networkidle');
+
     // Wait for form input to be ready
-    await expect(page.locator('[data-testid="form-name-input"]')).toBeVisible({ timeout: 10000 });
-    await page.fill('[data-testid="form-name-input"]', uniqueName);
-    await page.fill('[data-testid="form-description-input"]', 'Test description');
+    const nameInput = page.locator('[data-testid="form-name-input"]');
+    await expect(nameInput).toBeVisible({ timeout: 10000 });
+    await nameInput.fill(uniqueName);
+    await nameInput.blur();
+    await page.waitForTimeout(500);
+
+    const descInput = page.locator('[data-testid="form-description-input"]');
+    await descInput.fill('Test description');
+    await descInput.blur();
+    await page.waitForTimeout(500);
+
     await screenshot(page, '10-first-form-filled');
     await page.click('[data-testid="save-form-button"]');
 
@@ -143,18 +153,24 @@ test.describe('FM-SC-001: Create New Form Successfully', () => {
     await expect(page.locator('[data-testid="success-notification"]').first()).toBeVisible({ timeout: 10000 });
     await screenshot(page, '11-first-form-saved');
 
-    // Wait for notification to auto-dismiss before clicking navigation
-    // Notification may still be visible but should not block navigation
-
     // Try to create another form with the same name - navigate via UI
     await page.click('a[href="/forms"]');
     await page.waitForLoadState('networkidle');
     await page.click('[data-testid="create-form-button"]');
     await page.waitForLoadState('networkidle');
+
     // Wait for form input to be ready
-    await expect(page.locator('[data-testid="form-name-input"]')).toBeVisible({ timeout: 10000 });
-    await page.fill('[data-testid="form-name-input"]', uniqueName);
-    await page.fill('[data-testid="form-description-input"]', 'Another description');
+    const nameInput2 = page.locator('[data-testid="form-name-input"]');
+    await expect(nameInput2).toBeVisible({ timeout: 10000 });
+    await nameInput2.fill(uniqueName);
+    await nameInput2.blur();
+    await page.waitForTimeout(500);
+
+    const descInput2 = page.locator('[data-testid="form-description-input"]');
+    await descInput2.fill('Another description');
+    await descInput2.blur();
+    await page.waitForTimeout(500);
+
     await screenshot(page, '12-duplicate-form-filled');
     await page.click('[data-testid="save-form-button"]');
 
