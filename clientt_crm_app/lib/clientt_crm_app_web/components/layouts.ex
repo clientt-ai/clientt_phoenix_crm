@@ -178,9 +178,10 @@ defmodule ClienttCrmAppWeb.Layouts do
       <div class="h-full flex flex-col">
         <!-- Logo Section -->
         <div class="h-16 px-6 flex items-center border-b border-base-300">
-          <.link navigate={~p"/"} class="flex items-center gap-2">
-            <img src={~p"/images/logo.svg"} width="32" alt="Clientt CRM" />
-            <span class="text-lg font-bold">Clientt CRM</span>
+          <.link navigate={~p"/"} class="flex items-center gap-3">
+            <!-- Logo that switches based on theme -->
+            <img src={~p"/images/logo-light.svg"} class="h-8 dark:hidden" alt="Clientt CRM" />
+            <img src={~p"/images/logo-dark.svg"} class="h-8 hidden dark:block" alt="Clientt CRM" />
           </.link>
         </div>
 
@@ -226,6 +227,62 @@ defmodule ClienttCrmAppWeb.Layouts do
             <.sidebar_link disabled={true}>
               <.icon name="hero-building-office" class="w-4 h-4" />
               Companies
+              <.badge variant="info" class="ml-auto">Soon</.badge>
+            </.sidebar_link>
+          </.sidebar_module>
+
+          <!-- CPQ Module (Coming Soon) -->
+          <.sidebar_module
+            title="CPQ"
+            icon="hero-currency-dollar"
+            expanded={false}
+            disabled={true}
+          >
+            <.sidebar_link disabled={true}>
+              <.icon name="hero-document-text" class="w-4 h-4" />
+              Quotes
+              <.badge variant="info" class="ml-auto">Soon</.badge>
+            </.sidebar_link>
+          </.sidebar_module>
+
+          <!-- Billing Module (Coming Soon) -->
+          <.sidebar_module
+            title="Billing"
+            icon="hero-credit-card"
+            expanded={false}
+            disabled={true}
+          >
+            <.sidebar_link disabled={true}>
+              <.icon name="hero-banknotes" class="w-4 h-4" />
+              Invoices
+              <.badge variant="info" class="ml-auto">Soon</.badge>
+            </.sidebar_link>
+          </.sidebar_module>
+
+          <!-- Customer Portal (Coming Soon) -->
+          <.sidebar_module
+            title="Customer Portal"
+            icon="hero-globe-alt"
+            expanded={false}
+            disabled={true}
+          >
+            <.sidebar_link disabled={true}>
+              <.icon name="hero-user-circle" class="w-4 h-4" />
+              Portal Settings
+              <.badge variant="info" class="ml-auto">Soon</.badge>
+            </.sidebar_link>
+          </.sidebar_module>
+
+          <!-- Support Module (Coming Soon) -->
+          <.sidebar_module
+            title="Support"
+            icon="hero-lifebuoy"
+            expanded={false}
+            disabled={true}
+          >
+            <.sidebar_link disabled={true}>
+              <.icon name="hero-ticket" class="w-4 h-4" />
+              Tickets
               <.badge variant="info" class="ml-auto">Soon</.badge>
             </.sidebar_link>
           </.sidebar_module>

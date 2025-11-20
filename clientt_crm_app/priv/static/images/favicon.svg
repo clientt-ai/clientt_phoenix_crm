@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="58 58 460 460">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500&amp;display=swap');
+    </style>
+  </defs>
+
+  <!-- Blue circle background -->
+  <circle cx="288" cy="288" r="230" fill="#3B82C4"/>
+
+  <!-- t² inside circle - enlarged to fill circle -->
+  <text x="175" y="420" font-family="Montserrat, sans-serif" font-weight="500" font-size="400" fill="white">t</text>
+  <text x="340" y="230" font-family="Montserrat, sans-serif" font-weight="500" font-size="140" fill="white">2</text>
+</svg>

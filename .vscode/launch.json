@@ -1,0 +1,74 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Phoenix Server",
+      "type": "mix_task",
+      "request": "launch",
+      "task": "phx.server",
+      "projectDir": "${workspaceRoot}/clientt_crm_app",
+      "requireFiles": [
+        "test/**/test_helper.exs",
+        "test/**/*_test.exs"
+      ],
+      "env": {
+        "MIX_ENV": "dev"
+      }
+    },
+    {
+      "name": "Phoenix Server (Production Mode)",
+      "type": "mix_task",
+      "request": "launch",
+      "task": "phx.server",
+      "projectDir": "${workspaceRoot}/clientt_crm_app",
+      "env": {
+        "MIX_ENV": "prod",
+        "SECRET_KEY_BASE": "your-secret-key-base-here"
+      }
+    },
+    {
+      "name": "Mix Test",
+      "type": "mix_task",
+      "request": "launch",
+      "task": "test",
+      "projectDir": "${workspaceRoot}/clientt_crm_app",
+      "requireFiles": [
+        "test/**/test_helper.exs",
+        "test/**/*_test.exs"
+      ],
+      "env": {
+        "MIX_ENV": "test"
+      }
+    },
+    {
+      "name": "Mix Test (Current File)",
+      "type": "mix_task",
+      "request": "launch",
+      "task": "test",
+      "taskArgs": [
+        "${file}"
+      ],
+      "projectDir": "${workspaceRoot}/clientt_crm_app",
+      "requireFiles": [
+        "test/**/test_helper.exs",
+        "test/**/*_test.exs"
+      ],
+      "env": {
+        "MIX_ENV": "test"
+      }
+    },
+    {
+      "name": "IEx (Interactive Elixir)",
+      "type": "mix_task",
+      "request": "launch",
+      "task": "run",
+      "taskArgs": [
+        "--no-halt"
+      ],
+      "projectDir": "${workspaceRoot}/clientt_crm_app",
+      "env": {
+        "MIX_ENV": "dev"
+      }
+    }
+  ]
+}
