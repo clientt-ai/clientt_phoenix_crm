@@ -1,10 +1,10 @@
 // @ts-check
 const { test, expect } = require('@playwright/test');
-const path = require('path');
+const { createScreenshotHelper } = require('./screenshot-config');
 require('dotenv').config();
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:4002';
-const screenshotsDir = path.join(__dirname, '../playwright_screenshots/playwright_tests/navigation');
+const screenshot = createScreenshotHelper(__dirname);
 
 // Use seed admin user (no email confirmation required)
 const TEST_USER_EMAIL = 'sample_admin@clientt.com';
@@ -18,37 +18,25 @@ test.describe('Screenshot Capture - Major Screens', () => {
   test('01 - Sign In Page', async ({ page }) => {
     await page.goto(`${BASE_URL}/sign-in`);
     await page.waitForLoadState('networkidle');
-    await page.screenshot({
-      path: path.join(screenshotsDir, '01-sign-in-page.png'),
-      fullPage: false
-    });
+    await screenshot(page, '01-sign-in-page');
   });
 
   test('02 - Registration Page', async ({ page }) => {
     await page.goto(`${BASE_URL}/register`);
     await page.waitForLoadState('networkidle');
-    await page.screenshot({
-      path: path.join(screenshotsDir, '02-registration-page.png'),
-      fullPage: false
-    });
+    await screenshot(page, '02-registration-page');
   });
 
   test('03 - Home Page', async ({ page }) => {
     await page.goto(`${BASE_URL}/`);
     await page.waitForLoadState('networkidle');
-    await page.screenshot({
-      path: path.join(screenshotsDir, '03-home-page.png'),
-      fullPage: false
-    });
+    await screenshot(page, '03-home-page');
   });
 
   test('04 - Password Reset Page', async ({ page }) => {
     await page.goto(`${BASE_URL}/password-reset`);
     await page.waitForLoadState('networkidle');
-    await page.screenshot({
-      path: path.join(screenshotsDir, '04-password-reset-page.png'),
-      fullPage: false
-    });
+    await screenshot(page, '04-password-reset-page');
   });
 
   test('05 - Login and Capture Forms Listing', async ({ page }) => {
@@ -69,10 +57,7 @@ test.describe('Screenshot Capture - Major Screens', () => {
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(500);
 
-    await page.screenshot({
-      path: path.join(screenshotsDir, '05-forms-listing-page.png'),
-      fullPage: false
-    });
+    await screenshot(page, '05-forms-listing-page');
   });
 
   test('06 - Form Builder (New Form)', async ({ page }) => {
@@ -93,10 +78,7 @@ test.describe('Screenshot Capture - Major Screens', () => {
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(500);
 
-    await page.screenshot({
-      path: path.join(screenshotsDir, '06-form-builder-new.png'),
-      fullPage: false
-    });
+    await screenshot(page, '06-form-builder-new');
   });
 
   test('07 - Form Builder with Created Form', async ({ page }) => {
@@ -141,10 +123,7 @@ test.describe('Screenshot Capture - Major Screens', () => {
       }
     }
 
-    await page.screenshot({
-      path: path.join(screenshotsDir, '07-form-builder-created.png'),
-      fullPage: false
-    });
+    await screenshot(page, '07-form-builder-created');
   });
 
   test('08 - Form with Fields Added', async ({ page }) => {
@@ -206,10 +185,7 @@ test.describe('Screenshot Capture - Major Screens', () => {
       }
     }
 
-    await page.screenshot({
-      path: path.join(screenshotsDir, '08-form-with-fields.png'),
-      fullPage: false
-    });
+    await screenshot(page, '08-form-with-fields');
   });
 
 });
