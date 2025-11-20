@@ -40,144 +40,146 @@ npx playwright show-report
 
 ---
 
-## Form Tests
+## Module Tests
 
-### FM-SC-001: Create New Form Successfully
+### Forms Module
 
-**File:** `forms/FM-SC-001_create_form/test.spec.js`
+#### FM-SC-001: Create New Form Successfully
+
+**File:** `tests/modules/forms/FM-SC-001_create_form/test.spec.js`
 
 | Line | Test Name | Command |
 |------|-----------|---------|
-| 46 | should create a new form with valid data | `npx playwright test forms/FM-SC-001_create_form/test.spec.js:46 --project=chromium` |
-| 112 | should validate required fields when creating form | `npx playwright test forms/FM-SC-001_create_form/test.spec.js:112 --project=chromium` |
-| 128 | should handle form name uniqueness validation | `npx playwright test forms/FM-SC-001_create_form/test.spec.js:128 --project=chromium` |
+| 46 | should create a new form with valid data | `npx playwright test tests/modules/forms/FM-SC-001_create_form/test.spec.js:46 --project=chromium` |
+| 112 | should validate required fields when creating form | `npx playwright test tests/modules/forms/FM-SC-001_create_form/test.spec.js:112 --project=chromium` |
+| 128 | should handle form name uniqueness validation | `npx playwright test tests/modules/forms/FM-SC-001_create_form/test.spec.js:128 --project=chromium` |
 
-**Run all:** `npx playwright test forms/FM-SC-001_create_form --project=chromium`
+**Run all:** `npx playwright test tests/modules/forms/FM-SC-001_create_form --project=chromium`
 
 ---
 
-### FM-SC-002: Configure Form Fields and Validation
+#### FM-SC-002: Configure Form Fields and Validation
 
-**File:** `forms/FM-SC-002_configure_fields/test.spec.js`
+**File:** `tests/modules/forms/FM-SC-002_configure_fields/test.spec.js`
 
 | Line | Test Name | Command |
 |------|-----------|---------|
-| 69 | should add text input field with validation | `npx playwright test forms/FM-SC-002_configure_fields/test.spec.js:69 --project=chromium` |
-| 95 | should add email field | `npx playwright test forms/FM-SC-002_configure_fields/test.spec.js:95 --project=chromium` |
-| 118 | should add dropdown field with options | `npx playwright test forms/FM-SC-002_configure_fields/test.spec.js:118 --project=chromium` |
-| 143 | should add textarea field | `npx playwright test forms/FM-SC-002_configure_fields/test.spec.js:143 --project=chromium` |
-| 165 | should add number field | `npx playwright test forms/FM-SC-002_configure_fields/test.spec.js:165 --project=chromium` |
-| 187 | should configure multiple fields in sequence | `npx playwright test forms/FM-SC-002_configure_fields/test.spec.js:187 --project=chromium` |
+| 69 | should add text input field with validation | `npx playwright test tests/modules/forms/FM-SC-002_configure_fields/test.spec.js:69 --project=chromium` |
+| 95 | should add email field | `npx playwright test tests/modules/forms/FM-SC-002_configure_fields/test.spec.js:95 --project=chromium` |
+| 118 | should add dropdown field with options | `npx playwright test tests/modules/forms/FM-SC-002_configure_fields/test.spec.js:118 --project=chromium` |
+| 143 | should add textarea field | `npx playwright test tests/modules/forms/FM-SC-002_configure_fields/test.spec.js:143 --project=chromium` |
+| 165 | should add number field | `npx playwright test tests/modules/forms/FM-SC-002_configure_fields/test.spec.js:165 --project=chromium` |
+| 187 | should configure multiple fields in sequence | `npx playwright test tests/modules/forms/FM-SC-002_configure_fields/test.spec.js:187 --project=chromium` |
 
-**Run all:** `npx playwright test forms/FM-SC-002_configure_fields --project=chromium`
+**Run all:** `npx playwright test tests/modules/forms/FM-SC-002_configure_fields --project=chromium`
 
 ---
 
-### FM-SC-003: Form Creation with Fields
+#### FM-SC-003: Form Creation with Fields
 
-**File:** `forms/FM-SC-003_submit_valid/test.spec.js`
+**File:** `tests/modules/forms/FM-SC-003_submit_valid/test.spec.js`
 
 | Line | Test Name | Command |
 |------|-----------|---------|
-| 45 | should create form with fields for future submission testing | `npx playwright test forms/FM-SC-003_submit_valid/test.spec.js:45 --project=chromium` |
-| 89 | should publish form for submission | `npx playwright test forms/FM-SC-003_submit_valid/test.spec.js:89 --project=chromium` |
-| 126 | should display form preview with all fields | `npx playwright test forms/FM-SC-003_submit_valid/test.spec.js:126 --project=chromium` |
+| 45 | should create form with fields for future submission testing | `npx playwright test tests/modules/forms/FM-SC-003_submit_valid/test.spec.js:45 --project=chromium` |
+| 89 | should publish form for submission | `npx playwright test tests/modules/forms/FM-SC-003_submit_valid/test.spec.js:89 --project=chromium` |
+| 126 | should display form preview with all fields | `npx playwright test tests/modules/forms/FM-SC-003_submit_valid/test.spec.js:126 --project=chromium` |
 
-**Run all:** `npx playwright test forms/FM-SC-003_submit_valid --project=chromium`
+**Run all:** `npx playwright test tests/modules/forms/FM-SC-003_submit_valid --project=chromium`
 
 ---
 
-### FM-SC-004: Form Builder Validation
+#### FM-SC-004: Form Builder Validation
 
-**File:** `forms/FM-SC-004_validation_invalid/test.spec.js`
+**File:** `tests/modules/forms/FM-SC-004_validation_invalid/test.spec.js`
 
 | Line | Test Name | Command |
 |------|-----------|---------|
-| 44 | should show error when form name is empty | `npx playwright test forms/FM-SC-004_validation_invalid/test.spec.js:44 --project=chromium` |
-| 61 | should show error for duplicate form name | `npx playwright test forms/FM-SC-004_validation_invalid/test.spec.js:61 --project=chromium` |
-| 96 | should require field label when adding field | `npx playwright test forms/FM-SC-004_validation_invalid/test.spec.js:96 --project=chromium` |
-| 124 | should validate field configuration for select type | `npx playwright test forms/FM-SC-004_validation_invalid/test.spec.js:124 --project=chromium` |
-| 151 | should successfully create form after fixing validation errors | `npx playwright test forms/FM-SC-004_validation_invalid/test.spec.js:151 --project=chromium` |
-| 181 | should clear error when field is corrected | `npx playwright test forms/FM-SC-004_validation_invalid/test.spec.js:181 --project=chromium` |
-| 203 | should handle special characters in form name | `npx playwright test forms/FM-SC-004_validation_invalid/test.spec.js:203 --project=chromium` |
+| 44 | should show error when form name is empty | `npx playwright test tests/modules/forms/FM-SC-004_validation_invalid/test.spec.js:44 --project=chromium` |
+| 61 | should show error for duplicate form name | `npx playwright test tests/modules/forms/FM-SC-004_validation_invalid/test.spec.js:61 --project=chromium` |
+| 96 | should require field label when adding field | `npx playwright test tests/modules/forms/FM-SC-004_validation_invalid/test.spec.js:96 --project=chromium` |
+| 124 | should validate field configuration for select type | `npx playwright test tests/modules/forms/FM-SC-004_validation_invalid/test.spec.js:124 --project=chromium` |
+| 151 | should successfully create form after fixing validation errors | `npx playwright test tests/modules/forms/FM-SC-004_validation_invalid/test.spec.js:151 --project=chromium` |
+| 181 | should clear error when field is corrected | `npx playwright test tests/modules/forms/FM-SC-004_validation_invalid/test.spec.js:181 --project=chromium` |
+| 203 | should handle special characters in form name | `npx playwright test tests/modules/forms/FM-SC-004_validation_invalid/test.spec.js:203 --project=chromium` |
 
-**Run all:** `npx playwright test forms/FM-SC-004_validation_invalid --project=chromium`
+**Run all:** `npx playwright test tests/modules/forms/FM-SC-004_validation_invalid --project=chromium`
 
 ---
 
-### FM-SC-005: View and List All Forms
+#### FM-SC-005: View and List All Forms
 
-**File:** `forms/FM-SC-005_list_forms/test.spec.js`
+**File:** `tests/modules/forms/FM-SC-005_list_forms/test.spec.js`
 
 | Line | Test Name | Command |
 |------|-----------|---------|
-| 46 | should display forms listing page successfully | `npx playwright test forms/FM-SC-005_list_forms/test.spec.js:46 --project=chromium` |
-| 65 | should display existing forms in the table | `npx playwright test forms/FM-SC-005_list_forms/test.spec.js:65 --project=chromium` |
-| 97 | should navigate to form builder when clicking Create Form | `npx playwright test forms/FM-SC-005_list_forms/test.spec.js:97 --project=chromium` |
-| 108 | should navigate to form edit when clicking Edit link | `npx playwright test forms/FM-SC-005_list_forms/test.spec.js:108 --project=chromium` |
+| 46 | should display forms listing page successfully | `npx playwright test tests/modules/forms/FM-SC-005_list_forms/test.spec.js:46 --project=chromium` |
+| 65 | should display existing forms in the table | `npx playwright test tests/modules/forms/FM-SC-005_list_forms/test.spec.js:65 --project=chromium` |
+| 97 | should navigate to form builder when clicking Create Form | `npx playwright test tests/modules/forms/FM-SC-005_list_forms/test.spec.js:97 --project=chromium` |
+| 108 | should navigate to form edit when clicking Edit link | `npx playwright test tests/modules/forms/FM-SC-005_list_forms/test.spec.js:108 --project=chromium` |
 
-**Run all:** `npx playwright test forms/FM-SC-005_list_forms --project=chromium`
+**Run all:** `npx playwright test tests/modules/forms/FM-SC-005_list_forms --project=chromium`
 
 ---
 
-### FM-SC-006: Edit Existing Form
+#### FM-SC-006: Edit Existing Form
 
-**File:** `forms/FM-SC-006_edit_form/test.spec.js`
+**File:** `tests/modules/forms/FM-SC-006_edit_form/test.spec.js`
 
 | Line | Test Name | Command |
 |------|-----------|---------|
-| 91 | should load form edit page with pre-filled data | `npx playwright test forms/FM-SC-006_edit_form/test.spec.js:91 --project=chromium` |
-| 111 | should edit basic form information | `npx playwright test forms/FM-SC-006_edit_form/test.spec.js:111 --project=chromium` |
-| 134 | should edit existing form field | `npx playwright test forms/FM-SC-006_edit_form/test.spec.js:134 --project=chromium` |
-| 160 | should remove a field from the form | `npx playwright test forms/FM-SC-006_edit_form/test.spec.js:160 --project=chromium` |
-| 184 | should add a new field to existing form | `npx playwright test forms/FM-SC-006_edit_form/test.spec.js:184 --project=chromium` |
-| 208 | should maintain form ID when editing name | `npx playwright test forms/FM-SC-006_edit_form/test.spec.js:208 --project=chromium` |
-| 229 | should navigate from listing to edit and back | `npx playwright test forms/FM-SC-006_edit_form/test.spec.js:229 --project=chromium` |
-| 255 | should update multiple fields in sequence | `npx playwright test forms/FM-SC-006_edit_form/test.spec.js:255 --project=chromium` |
+| 91 | should load form edit page with pre-filled data | `npx playwright test tests/modules/forms/FM-SC-006_edit_form/test.spec.js:91 --project=chromium` |
+| 111 | should edit basic form information | `npx playwright test tests/modules/forms/FM-SC-006_edit_form/test.spec.js:111 --project=chromium` |
+| 134 | should edit existing form field | `npx playwright test tests/modules/forms/FM-SC-006_edit_form/test.spec.js:134 --project=chromium` |
+| 160 | should remove a field from the form | `npx playwright test tests/modules/forms/FM-SC-006_edit_form/test.spec.js:160 --project=chromium` |
+| 184 | should add a new field to existing form | `npx playwright test tests/modules/forms/FM-SC-006_edit_form/test.spec.js:184 --project=chromium` |
+| 208 | should maintain form ID when editing name | `npx playwright test tests/modules/forms/FM-SC-006_edit_form/test.spec.js:208 --project=chromium` |
+| 229 | should navigate from listing to edit and back | `npx playwright test tests/modules/forms/FM-SC-006_edit_form/test.spec.js:229 --project=chromium` |
+| 255 | should update multiple fields in sequence | `npx playwright test tests/modules/forms/FM-SC-006_edit_form/test.spec.js:255 --project=chromium` |
 
-**Run all:** `npx playwright test forms/FM-SC-006_edit_form --project=chromium`
+**Run all:** `npx playwright test tests/modules/forms/FM-SC-006_edit_form --project=chromium`
 
 ---
 
-### FM-SC-007: Delete Form Fields
+#### FM-SC-007: Delete Form Fields
 
-**File:** `forms/FM-SC-007_delete_form/test.spec.js`
+**File:** `tests/modules/forms/FM-SC-007_delete_form/test.spec.js`
 
 | Line | Test Name | Command |
 |------|-----------|---------|
-| 85 | should display delete button on form fields | `npx playwright test forms/FM-SC-007_delete_form/test.spec.js:85 --project=chromium` |
-| 95 | should show confirmation dialog when deleting field | `npx playwright test forms/FM-SC-007_delete_form/test.spec.js:95 --project=chromium` |
-| 115 | should cancel deletion when dismissing confirmation | `npx playwright test forms/FM-SC-007_delete_form/test.spec.js:115 --project=chromium` |
-| 141 | should successfully delete field when confirmed | `npx playwright test forms/FM-SC-007_delete_form/test.spec.js:141 --project=chromium` |
-| 167 | should delete multiple fields in sequence | `npx playwright test forms/FM-SC-007_delete_form/test.spec.js:167 --project=chromium` |
-| 192 | should persist deletion after page reload | `npx playwright test forms/FM-SC-007_delete_form/test.spec.js:192 --project=chromium` |
-| 218 | should show empty state when all fields deleted | `npx playwright test forms/FM-SC-007_delete_form/test.spec.js:218 --project=chromium` |
-| 243 | should still have add field button after deletion | `npx playwright test forms/FM-SC-007_delete_form/test.spec.js:243 --project=chromium` |
+| 85 | should display delete button on form fields | `npx playwright test tests/modules/forms/FM-SC-007_delete_form/test.spec.js:85 --project=chromium` |
+| 95 | should show confirmation dialog when deleting field | `npx playwright test tests/modules/forms/FM-SC-007_delete_form/test.spec.js:95 --project=chromium` |
+| 115 | should cancel deletion when dismissing confirmation | `npx playwright test tests/modules/forms/FM-SC-007_delete_form/test.spec.js:115 --project=chromium` |
+| 141 | should successfully delete field when confirmed | `npx playwright test tests/modules/forms/FM-SC-007_delete_form/test.spec.js:141 --project=chromium` |
+| 167 | should delete multiple fields in sequence | `npx playwright test tests/modules/forms/FM-SC-007_delete_form/test.spec.js:167 --project=chromium` |
+| 192 | should persist deletion after page reload | `npx playwright test tests/modules/forms/FM-SC-007_delete_form/test.spec.js:192 --project=chromium` |
+| 218 | should show empty state when all fields deleted | `npx playwright test tests/modules/forms/FM-SC-007_delete_form/test.spec.js:218 --project=chromium` |
+| 243 | should still have add field button after deletion | `npx playwright test tests/modules/forms/FM-SC-007_delete_form/test.spec.js:243 --project=chromium` |
 
-**Run all:** `npx playwright test forms/FM-SC-007_delete_form --project=chromium`
+**Run all:** `npx playwright test tests/modules/forms/FM-SC-007_delete_form --project=chromium`
 
 ---
 
-### FM-SC-008: Form Field Type Configuration
+#### FM-SC-008: Form Field Type Configuration
 
-**File:** `forms/FM-SC-008_field_types/test.spec.js`
+**File:** `tests/modules/forms/FM-SC-008_field_types/test.spec.js`
 
 | Line | Test Name | Command |
 |------|-----------|---------|
-| 71 | should add Text Input field | `npx playwright test forms/FM-SC-008_field_types/test.spec.js:71 --project=chromium` |
-| 91 | should add Email field | `npx playwright test forms/FM-SC-008_field_types/test.spec.js:91 --project=chromium` |
-| 108 | should add Number field | `npx playwright test forms/FM-SC-008_field_types/test.spec.js:108 --project=chromium` |
-| 125 | should add Date field | `npx playwright test forms/FM-SC-008_field_types/test.spec.js:125 --project=chromium` |
-| 141 | should add Select Dropdown field with options | `npx playwright test forms/FM-SC-008_field_types/test.spec.js:141 --project=chromium` |
-| 162 | should add Checkbox field | `npx playwright test forms/FM-SC-008_field_types/test.spec.js:162 --project=chromium` |
-| 179 | should add Radio Button field with options | `npx playwright test forms/FM-SC-008_field_types/test.spec.js:179 --project=chromium` |
-| 200 | should add Textarea field | `npx playwright test forms/FM-SC-008_field_types/test.spec.js:200 --project=chromium` |
-| 217 | should add Phone field | `npx playwright test forms/FM-SC-008_field_types/test.spec.js:217 --project=chromium` |
-| 233 | should add URL field | `npx playwright test forms/FM-SC-008_field_types/test.spec.js:233 --project=chromium` |
-| 250 | should add all field types to single form | `npx playwright test forms/FM-SC-008_field_types/test.spec.js:250 --project=chromium` |
-| 287 | should show correct field type in preview | `npx playwright test forms/FM-SC-008_field_types/test.spec.js:287 --project=chromium` |
+| 71 | should add Text Input field | `npx playwright test tests/modules/forms/FM-SC-008_field_types/test.spec.js:71 --project=chromium` |
+| 91 | should add Email field | `npx playwright test tests/modules/forms/FM-SC-008_field_types/test.spec.js:91 --project=chromium` |
+| 108 | should add Number field | `npx playwright test tests/modules/forms/FM-SC-008_field_types/test.spec.js:108 --project=chromium` |
+| 125 | should add Date field | `npx playwright test tests/modules/forms/FM-SC-008_field_types/test.spec.js:125 --project=chromium` |
+| 141 | should add Select Dropdown field with options | `npx playwright test tests/modules/forms/FM-SC-008_field_types/test.spec.js:141 --project=chromium` |
+| 162 | should add Checkbox field | `npx playwright test tests/modules/forms/FM-SC-008_field_types/test.spec.js:162 --project=chromium` |
+| 179 | should add Radio Button field with options | `npx playwright test tests/modules/forms/FM-SC-008_field_types/test.spec.js:179 --project=chromium` |
+| 200 | should add Textarea field | `npx playwright test tests/modules/forms/FM-SC-008_field_types/test.spec.js:200 --project=chromium` |
+| 217 | should add Phone field | `npx playwright test tests/modules/forms/FM-SC-008_field_types/test.spec.js:217 --project=chromium` |
+| 233 | should add URL field | `npx playwright test tests/modules/forms/FM-SC-008_field_types/test.spec.js:233 --project=chromium` |
+| 250 | should add all field types to single form | `npx playwright test tests/modules/forms/FM-SC-008_field_types/test.spec.js:250 --project=chromium` |
+| 287 | should show correct field type in preview | `npx playwright test tests/modules/forms/FM-SC-008_field_types/test.spec.js:287 --project=chromium` |
 
-**Run all:** `npx playwright test forms/FM-SC-008_field_types --project=chromium`
+**Run all:** `npx playwright test tests/modules/forms/FM-SC-008_field_types --project=chromium`
 
 ---
 
@@ -246,8 +248,14 @@ npx playwright show-report
 ## Bulk Commands
 
 ```bash
-# Run all form tests
-npx playwright test forms/ --project=chromium
+# Run all module tests
+npx playwright test tests/modules/ --project=chromium
+
+# Run all form module tests
+npx playwright test tests/modules/forms/ --project=chromium
+
+# Run all navigation module tests
+npx playwright test tests/modules/navigation/ --project=chromium
 
 # Run all feature tests
 npx playwright test tests/features/ --project=chromium

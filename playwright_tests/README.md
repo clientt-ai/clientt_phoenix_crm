@@ -15,6 +15,10 @@ This test suite is designed to:
 ```
 playwright_tests/
 ├── tests/
+│   ├── modules/             # Module-based test files (organized by feature/module)
+│   │   ├── forms/           # Form module tests (FM-SC-001 to FM-SC-008)
+│   │   ├── navigation/      # Navigation module tests (NAV-SC-001, etc.)
+│   │   └── {module_name}/   # Additional module tests go here
 │   ├── features/            # Feature-based test files (BDD scenarios)
 │   │   ├── authentication.spec.js
 │   │   └── navigation.spec.js
@@ -187,6 +191,32 @@ test('authenticated test', async ({ page }) => {
 ```
 
 ## Test Organization
+
+### Module Tests (`tests/modules/`)
+
+**NEW:** Module-based tests are organized by application module or feature area. Each module has its own directory containing related test scenarios.
+
+**Location:** `tests/modules/{module_name}/`
+
+**Current Modules:**
+- **forms/** - Form builder tests (FM-SC-001 to FM-SC-008)
+  - Create, configure, validate, list, edit, delete forms
+  - Field type testing and validation
+- **navigation/** - Navigation tests (NAV-SC-001, etc.)
+  - Sidebar navigation, routing, etc.
+
+**Adding New Module Tests:**
+
+When creating new module tests, place them in `tests/modules/{module_name}/`:
+
+```bash
+# Example: Creating a new contacts module test
+mkdir -p playwright_tests/tests/modules/contacts
+```
+
+Then create test files following the naming convention:
+- `{MODULE}-SC-{NUMBER}_{description}/test.spec.js`
+- Example: `CONT-SC-001_create_contact/test.spec.js`
 
 ### Feature Tests (`tests/features/`)
 
