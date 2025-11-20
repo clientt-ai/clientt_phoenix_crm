@@ -3,24 +3,20 @@
   "configurations": [
     {
       "name": "Phoenix Server",
-      "type": "mix_task",
+      "type": "node-terminal",
       "request": "launch",
-      "task": "phx.server",
-      "projectDir": "${workspaceRoot}/clientt_crm_app",
-      "requireFiles": [
-        "test/**/test_helper.exs",
-        "test/**/*_test.exs"
-      ],
+      "command": "cd ${workspaceFolder}/clientt_crm_app && mix phx.server",
+      "cwd": "${workspaceFolder}",
       "env": {
         "MIX_ENV": "dev"
       }
     },
     {
       "name": "Phoenix Server (Production Mode)",
-      "type": "mix_task",
+      "type": "node-terminal",
       "request": "launch",
-      "task": "phx.server",
-      "projectDir": "${workspaceRoot}/clientt_crm_app",
+      "command": "cd ${workspaceFolder}/clientt_crm_app && mix phx.server",
+      "cwd": "${workspaceFolder}",
       "env": {
         "MIX_ENV": "prod",
         "SECRET_KEY_BASE": "your-secret-key-base-here"
@@ -28,47 +24,89 @@
     },
     {
       "name": "Mix Test",
-      "type": "mix_task",
+      "type": "node-terminal",
       "request": "launch",
-      "task": "test",
-      "projectDir": "${workspaceRoot}/clientt_crm_app",
-      "requireFiles": [
-        "test/**/test_helper.exs",
-        "test/**/*_test.exs"
-      ],
+      "command": "cd ${workspaceFolder}/clientt_crm_app && mix test",
+      "cwd": "${workspaceFolder}",
       "env": {
         "MIX_ENV": "test"
       }
     },
     {
       "name": "Mix Test (Current File)",
-      "type": "mix_task",
+      "type": "node-terminal",
       "request": "launch",
-      "task": "test",
-      "taskArgs": [
-        "${file}"
-      ],
-      "projectDir": "${workspaceRoot}/clientt_crm_app",
-      "requireFiles": [
-        "test/**/test_helper.exs",
-        "test/**/*_test.exs"
-      ],
+      "command": "cd ${workspaceFolder}/clientt_crm_app && mix test ${relativeFile}",
+      "cwd": "${workspaceFolder}",
       "env": {
         "MIX_ENV": "test"
       }
     },
     {
       "name": "IEx (Interactive Elixir)",
-      "type": "mix_task",
+      "type": "node-terminal",
       "request": "launch",
-      "task": "run",
-      "taskArgs": [
-        "--no-halt"
-      ],
-      "projectDir": "${workspaceRoot}/clientt_crm_app",
+      "command": "cd ${workspaceFolder}/clientt_crm_app && iex -S mix",
+      "cwd": "${workspaceFolder}",
       "env": {
         "MIX_ENV": "dev"
       }
+    },
+    {
+      "name": "Playwright Tests",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "cd ${workspaceFolder}/playwright_tests && npx playwright test",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Playwright Tests (UI Mode)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "cd ${workspaceFolder}/playwright_tests && npx playwright test --ui",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Playwright Tests (Headed)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "cd ${workspaceFolder}/playwright_tests && npx playwright test --headed",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Playwright Tests (Debug)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "cd ${workspaceFolder}/playwright_tests && npx playwright test --debug",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Playwright Show Report",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "cd ${workspaceFolder}/playwright_tests && npx playwright show-report",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Figma Playwright Tests",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "cd ${workspaceFolder}/figma_playwright && npx playwright test",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Figma Playwright Tests (UI Mode)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "cd ${workspaceFolder}/figma_playwright && npx playwright test --ui",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Figma Playwright Tests (Headed)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "cd ${workspaceFolder}/figma_playwright && npx playwright test --headed",
+      "cwd": "${workspaceFolder}"
     }
   ]
 }
