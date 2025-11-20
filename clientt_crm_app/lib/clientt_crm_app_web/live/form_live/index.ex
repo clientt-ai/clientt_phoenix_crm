@@ -24,7 +24,7 @@ defmodule ClienttCrmAppWeb.FormLive.Index do
     conversion_rate = if Enum.sum(Enum.map(forms, & &1.view_count)) > 0 do
       total_submissions / Enum.sum(Enum.map(forms, & &1.view_count)) * 100
     else
-      0
+      0.0
     end
 
     {:ok,
@@ -36,7 +36,8 @@ defmodule ClienttCrmAppWeb.FormLive.Index do
      |> assign(:total_submissions, total_submissions)
      |> assign(:active_forms, active_forms)
      |> assign(:conversion_rate, Float.round(conversion_rate, 1))
-     |> assign(:page_title, "All Forms")}
+     |> assign(:page_title, "All Forms")
+     |> assign(:current_page, "forms")}
   end
 
   @impl true
@@ -229,7 +230,7 @@ defmodule ClienttCrmAppWeb.FormLive.Index do
                   </span>
                 </td>
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                  <%= format_date(form.inserted_at) %>
+                  <%= format_date(form.created_at) %>
                 </td>
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                   <%= format_date(form.updated_at) %>

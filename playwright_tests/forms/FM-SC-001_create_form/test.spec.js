@@ -50,9 +50,9 @@ test.describe('FM-SC-001: Create New Form Successfully', () => {
 
     // Step 1-2: Click on "Create New Form" button
     await page.click('[data-testid="create-form-button"]');
-    // Wait for LiveView to fully connect
-    await page.waitForLoadState('networkidle');
-    await expect(page.locator('[data-testid="form-builder"]')).toBeVisible();
+    // Wait for LiveView navigation to complete
+    await page.waitForURL('**/forms/new');
+    await expect(page.locator('[data-testid="form-builder"]')).toBeVisible({ timeout: 10000 });
     await screenshot(page, '04-form-builder-empty');
 
     // Step 3: Enter form name (inline editing)
@@ -108,7 +108,7 @@ test.describe('FM-SC-001: Create New Form Successfully', () => {
   test('should validate required fields when creating form', async ({ page }) => {
     // Click on "Create New Form" button
     await page.click('[data-testid="create-form-button"]');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms/new');
     await screenshot(page, '08-create-form-empty');
 
     // Clear the default title and try to save without filling it
@@ -132,7 +132,7 @@ test.describe('FM-SC-001: Create New Form Successfully', () => {
 
     // Create first form
     await page.click('[data-testid="create-form-button"]');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms/new');
 
     // Wait for form input to be ready
     const nameInput = page.locator('[data-testid="form-name-input"]');
@@ -155,9 +155,9 @@ test.describe('FM-SC-001: Create New Form Successfully', () => {
 
     // Try to create another form with the same name - navigate via UI
     await page.click('a[href="/forms"]');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms');
     await page.click('[data-testid="create-form-button"]');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms/new');
 
     // Wait for form input to be ready
     const nameInput2 = page.locator('[data-testid="form-name-input"]');

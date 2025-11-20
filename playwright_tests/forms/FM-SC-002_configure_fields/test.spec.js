@@ -40,12 +40,12 @@ test.describe('FM-SC-002: Configure Form Fields and Validation', () => {
     await page.click('form:has(input[name="user[email]"]) button[type="submit"]');
 
     // Wait for authentication to complete
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/dashboard');
     await screenshot(page, '02-after-login');
 
     // Navigate to forms page
     await page.goto('/forms');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms');
 
     // Verify sidebar navigation and page content are present
     await expect(page.locator('[data-testid="nav-forms"]')).toBeVisible();
@@ -55,7 +55,7 @@ test.describe('FM-SC-002: Configure Form Fields and Validation', () => {
     // Create a test form to configure
     const formName = `Config Test Form ${Date.now()}`;
     await page.click('[data-testid="create-form-button"]');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms/new');
 
     // Wait for form input to be ready and fill form details
     const nameInput = page.locator('[data-testid="form-name-input"]');

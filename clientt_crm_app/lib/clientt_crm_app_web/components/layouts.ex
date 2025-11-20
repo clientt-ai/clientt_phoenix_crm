@@ -192,7 +192,7 @@ defmodule ClienttCrmAppWeb.Layouts do
             icon="hero-document-text"
             expanded={true}
           >
-            <.sidebar_link navigate={~p"/forms/dashboard"} active={@current_page == "dashboard"} data-testid="nav-dashboard">
+            <.sidebar_link navigate={~p"/dashboard"} active={@current_page == "dashboard"} data-testid="nav-dashboard">
               <.icon name="hero-chart-bar" class="w-4 h-4" />
               Dashboard
             </.sidebar_link>
@@ -204,9 +204,10 @@ defmodule ClienttCrmAppWeb.Layouts do
               <.icon name="hero-plus-circle" class="w-4 h-4" />
               Form Builder
             </.sidebar_link>
-            <.sidebar_link navigate={~p"/forms/analytics"} active={@current_page == "analytics"} data-testid="nav-analytics">
+            <.sidebar_link disabled={true} data-testid="nav-analytics">
               <.icon name="hero-chart-pie" class="w-4 h-4" />
               Analytics
+              <.badge variant="info" class="ml-auto">Soon</.badge>
             </.sidebar_link>
           </.sidebar_module>
 
@@ -231,9 +232,10 @@ defmodule ClienttCrmAppWeb.Layouts do
 
           <!-- Settings -->
           <div class="mt-auto pt-4 border-t border-base-300">
-            <.sidebar_link navigate={~p"/settings"} active={@current_page == "settings"}>
+            <.sidebar_link disabled={true}>
               <.icon name="hero-cog-6-tooth" class="w-4 h-4" />
               Settings
+              <.badge variant="info" class="ml-auto">Soon</.badge>
             </.sidebar_link>
           </div>
         </nav>
@@ -411,11 +413,12 @@ defmodule ClienttCrmAppWeb.Layouts do
           </div>
         </li>
         <div class="divider my-0"></div>
-        <li>
-          <.link navigate={~p"/settings"}>
+        <li class="disabled opacity-50">
+          <span class="cursor-not-allowed">
             <.icon name="hero-cog-6-tooth" class="w-4 h-4" />
             Settings
-          </.link>
+            <span class="badge badge-sm badge-info ml-auto">Soon</span>
+          </span>
         </li>
         <li>
           <a href="/support">

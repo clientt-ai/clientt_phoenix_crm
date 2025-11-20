@@ -45,7 +45,7 @@ test.describe('FM-SC-008: Form Field Type Configuration', () => {
     // Create a new form for field type testing - click the Create Form button
     formName = `Field Types Test ${Date.now()}`;
     await page.click('[data-testid="create-form-button"]');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/forms/new');
 
     // Wait for form input to be ready
     await expect(page.locator('[data-testid="form-name-input"]')).toBeVisible({ timeout: 10000 });

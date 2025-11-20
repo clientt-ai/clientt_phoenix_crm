@@ -54,6 +54,49 @@ async function waitForNetworkIdle(page, timeout = 30000) {
 }
 
 /**
+ * Waits for LiveView navigation to complete by listening for the phx:page-loading-stop event.
+ * This is the correct way to wait for LiveView navigation instead of networkidle.
+ *
+ * @param {import('@playwright/test').Page} page - Playwright page object
+ * @param {number} [timeout=10000] - Timeout in milliseconds
+ * @returns {Promise<void>}
+ */
+async function waitForLiveView(page, timeout = 10000) {
+  await page.waitForFunction(() => {
+    return new Promise((resolve) => {
+      // If no navigation is in progress, resolve immediately
+      const checkReady = () => {
+        // Check if the page has a connected LiveView socket
+        if (window.liveSocket && window.liveSocket.isConnected()) {
+          resolve(true);
+          return true;
+        }
+        return false;
+      };
+
+      // Listen for the page-loading-stop event
+      const handler = () => {
+        window.removeEventListener('phx:page-loading-stop', handler);
+        resolve(true);
+      };
+
+      window.addEventListener('phx:page-loading-stop', handler);
+
+      // Also check if already ready (for cases where navigation already completed)
+      if (checkReady()) {
+        window.removeEventListener('phx:page-loading-stop', handler);
+      }
+
+      // Fallback timeout to resolve if no event fires (page might already be loaded)
+      setTimeout(() => {
+        window.removeEventListener('phx:page-loading-stop', handler);
+        resolve(true);
+      }, 500);
+    });
+  }, { timeout });
+}
+
+/**
  * Checks if an element exists in the DOM (doesn't have to be visible)
  *
  * @param {import('@playwright/test').Page} page - Playwright page object
@@ -126,6 +169,7 @@ module.exports = {
   fillForm,
   takeScreenshot,
   waitForNetworkIdle,
+  waitForLiveView,
   elementExists,
   clickWithRetry,
   getTextContent,
