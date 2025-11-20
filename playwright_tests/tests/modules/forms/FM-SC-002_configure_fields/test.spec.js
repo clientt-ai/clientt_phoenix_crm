@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const path = require('path');
+const { createScreenshotHelper } = require('../../../../screenshot-config');
 
 /**
  * FM-SC-002: Configure Form Fields and Validation
@@ -11,16 +11,8 @@ const path = require('path');
  */
 
 test.describe('FM-SC-002: Configure Form Fields and Validation', () => {
-  const screenshotsDir = path.join(__dirname, '../../playwright_screenshots/playwright_tests/forms', path.basename(__dirname));
+  const screenshot = createScreenshotHelper(__dirname);
   let formId;
-
-  // Helper function to capture screenshots with consistent naming
-  async function screenshot(page, name) {
-    await page.screenshot({
-      path: path.join(screenshotsDir, `${name}.png`),
-      fullPage: false
-    });
-  }
 
   // Helper to add a field from the palette
   async function addFieldFromPalette(page, fieldLabel) {
