@@ -40,4 +40,14 @@ defmodule ClienttCrmAppWeb.AuthOverrides do
       {"class", "btn btn-primary w-full"}
     ]
   end
+
+  # Override banner to show logo that switches based on theme
+  override Components.Banner do
+    set :root_class, "w-full flex justify-center mb-8"
+    set :image_url, "/images/logo-light.svg"
+    set :image_class, "w-full max-w-sm lg:max-w-96 dark:hidden"
+    set :dark_image_url, "/images/logo-dark.svg"
+    set :dark_image_class, "w-full max-w-sm lg:max-w-96 hidden dark:block"
+    set :href_url, "/"
+  end
 end
