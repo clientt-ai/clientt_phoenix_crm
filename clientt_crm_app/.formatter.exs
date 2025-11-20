@@ -7,7 +7,6 @@
     :ash,
     :reactor,
     :ecto,
-    :ecto_sql,
     :phoenix
   ],
   subdirectories: ["priv/*/migrations"],

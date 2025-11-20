@@ -1,0 +1,109 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start Phoenix Server",
+      "type": "shell",
+      "command": "mix phx.server",
+      "options": {
+        "cwd": "${workspaceFolder}/clientt_crm_app"
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "elixir",
+        "pattern": {
+          "regexp": "^([^:]+):(\\d+):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "message": 3
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^\\[info\\] Running",
+          "endsPattern": "^\\[info\\] Access ClienttCrmAppWeb.Endpoint at"
+        }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "Run Mix Tests",
+      "type": "shell",
+      "command": "mix test",
+      "options": {
+        "cwd": "${workspaceFolder}/clientt_crm_app"
+      },
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Format Elixir Code",
+      "type": "shell",
+      "command": "mix format",
+      "options": {
+        "cwd": "${workspaceFolder}/clientt_crm_app"
+      },
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Run Playwright Tests",
+      "type": "shell",
+      "command": "npx playwright test",
+      "options": {
+        "cwd": "${workspaceFolder}/playwright_tests"
+      },
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "Show Playwright Report",
+      "type": "shell",
+      "command": "npx playwright show-report",
+      "options": {
+        "cwd": "${workspaceFolder}/playwright_tests"
+      },
+      "presentation": {
+        "reveal": "never",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Install Dependencies",
+      "type": "shell",
+      "command": "mix deps.get",
+      "options": {
+        "cwd": "${workspaceFolder}/clientt_crm_app"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Setup Database",
+      "type": "shell",
+      "command": "mix ash.setup",
+      "options": {
+        "cwd": "${workspaceFolder}/clientt_crm_app"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    }
+  ]
+}

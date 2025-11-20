@@ -81,8 +81,8 @@ defmodule ClienttCrmAppWeb.FormLive.Index do
       <!-- Page Header -->
       <div class="sm:flex sm:items-center sm:justify-between mb-8">
         <div>
-          <h1 class="text-3xl font-bold tracking-tight text-gray-900">All Forms</h1>
-          <p class="mt-2 text-sm text-gray-700">
+          <h1 class="text-[38px] font-bold tracking-tight text-base-content leading-tight">All Forms</h1>
+          <p class="mt-2 text-sm text-base-content/60">
             Manage and track your forms
           </p>
         </div>
@@ -115,9 +115,9 @@ defmodule ClienttCrmAppWeb.FormLive.Index do
       </div>
 
       <!-- KPI Cards -->
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+      <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <!-- Total Forms -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div class="bg-base-100 rounded-lg shadow-md border border-base-300 p-6 transition-shadow hover:shadow-lg">
           <div class="flex items-center">
             <div class="flex-shrink-0 p-3 bg-primary/10 rounded-lg">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -125,14 +125,14 @@ defmodule ClienttCrmAppWeb.FormLive.Index do
               </svg>
             </div>
             <div class="ml-4">
-              <p class="text-sm font-medium text-gray-500">Total Forms</p>
-              <p class="text-2xl font-semibold text-gray-900"><%= @total_forms %></p>
+              <p class="text-sm font-medium text-base-content/60">Total Forms</p>
+              <p class="text-2xl font-semibold text-base-content"><%= @total_forms %></p>
             </div>
           </div>
         </div>
 
         <!-- Total Submissions -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div class="bg-base-100 rounded-lg shadow-md border border-base-300 p-6 transition-shadow hover:shadow-lg">
           <div class="flex items-center">
             <div class="flex-shrink-0 p-3 bg-purple-100 rounded-lg">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -140,64 +140,64 @@ defmodule ClienttCrmAppWeb.FormLive.Index do
               </svg>
             </div>
             <div class="ml-4">
-              <p class="text-sm font-medium text-gray-500">Total Submissions</p>
-              <p class="text-2xl font-semibold text-gray-900"><%= @total_submissions %></p>
+              <p class="text-sm font-medium text-base-content/60">Total Submissions</p>
+              <p class="text-2xl font-semibold text-base-content"><%= @total_submissions %></p>
             </div>
           </div>
         </div>
 
         <!-- Active Forms -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div class="bg-base-100 rounded-lg shadow-md border border-base-300 p-6 transition-shadow hover:shadow-lg">
           <div class="flex items-center">
-            <div class="flex-shrink-0 p-3 bg-green-100 rounded-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="flex-shrink-0 p-3 bg-success/10 rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
             <div class="ml-4">
-              <p class="text-sm font-medium text-gray-500">Active Forms</p>
-              <p class="text-2xl font-semibold text-gray-900"><%= @active_forms %></p>
+              <p class="text-sm font-medium text-base-content/60">Active Forms</p>
+              <p class="text-2xl font-semibold text-base-content"><%= @active_forms %></p>
             </div>
           </div>
         </div>
 
         <!-- Conversion Rate -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div class="bg-base-100 rounded-lg shadow-md border border-base-300 p-6 transition-shadow hover:shadow-lg">
           <div class="flex items-center">
-            <div class="flex-shrink-0 p-3 bg-orange-100 rounded-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="flex-shrink-0 p-3 bg-warning/10 rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
               </svg>
             </div>
             <div class="ml-4">
-              <p class="text-sm font-medium text-gray-500">Conversion Rate</p>
-              <p class="text-2xl font-semibold text-gray-900"><%= @conversion_rate %>%</p>
+              <p class="text-sm font-medium text-base-content/60">Conversion Rate</p>
+              <p class="text-2xl font-semibold text-base-content"><%= @conversion_rate %>%</p>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Forms Table -->
-      <div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
+      <div class="bg-base-100 shadow-md rounded-lg border border-base-300 overflow-hidden">
+        <table class="min-w-full divide-y divide-base-300">
+          <thead class="bg-base-200">
             <tr>
-              <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">
+              <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-base-content sm:pl-6">
                 Name
               </th>
-              <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+              <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-base-content">
                 Type
               </th>
-              <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+              <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-base-content">
                 Submissions
               </th>
-              <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+              <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-base-content">
                 Status
               </th>
-              <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+              <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-base-content">
                 Date Created
               </th>
-              <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+              <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-base-content">
                 Last Edited
               </th>
               <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
@@ -205,20 +205,20 @@ defmodule ClienttCrmAppWeb.FormLive.Index do
               </th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-200 bg-white">
+          <tbody class="divide-y divide-base-300 bg-base-100">
             <%= for form <- @filtered_forms do %>
-              <tr data-testid="form-card">
-                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                  <.link navigate={~p"/forms/#{form.id}"} data-testid="form-title" class="text-primary hover:text-primary/80">
+              <tr data-testid="form-card" class="hover:bg-base-200/50 transition-colors">
+                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-base-content sm:pl-6">
+                  <.link navigate={~p"/forms/#{form.id}"} data-testid="form-title" class="text-primary hover:text-primary/80 font-semibold">
                     <%= form.name %>
                   </.link>
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                  <span class="inline-flex items-center rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-base-content/60">
+                  <span class="inline-flex items-center rounded-md bg-base-200 px-2 py-1 text-xs font-medium text-base-content/70">
                     Form
                   </span>
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-base-content/60">
                   <%= form.submission_count %>
                 </td>
                 <td class="whitespace-nowrap px-3 py-4 text-sm">
@@ -229,10 +229,10 @@ defmodule ClienttCrmAppWeb.FormLive.Index do
                     <%= format_status(form.status) %>
                   </span>
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-base-content/60">
                   <%= format_date(form.created_at) %>
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-base-content/60">
                   <%= format_date(form.updated_at) %>
                 </td>
                 <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
