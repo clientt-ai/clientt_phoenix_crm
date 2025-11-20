@@ -1,8 +1,10 @@
 // @ts-check
 const { test, expect } = require('@playwright/test');
+const path = require('path');
 require('dotenv').config();
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:4002';
+const screenshotsDir = path.join(__dirname, '../playwright_screenshots/playwright_tests/navigation');
 
 // Use seed admin user (no email confirmation required)
 const TEST_USER_EMAIL = 'sample_admin@clientt.com';
@@ -17,7 +19,7 @@ test.describe('Screenshot Capture - Major Screens', () => {
     await page.goto(`${BASE_URL}/sign-in`);
     await page.waitForLoadState('networkidle');
     await page.screenshot({
-      path: 'screenshots/01-sign-in-page.png',
+      path: path.join(screenshotsDir, '01-sign-in-page.png'),
       fullPage: false
     });
   });
@@ -26,7 +28,7 @@ test.describe('Screenshot Capture - Major Screens', () => {
     await page.goto(`${BASE_URL}/register`);
     await page.waitForLoadState('networkidle');
     await page.screenshot({
-      path: 'screenshots/02-registration-page.png',
+      path: path.join(screenshotsDir, '02-registration-page.png'),
       fullPage: false
     });
   });
@@ -35,7 +37,7 @@ test.describe('Screenshot Capture - Major Screens', () => {
     await page.goto(`${BASE_URL}/`);
     await page.waitForLoadState('networkidle');
     await page.screenshot({
-      path: 'screenshots/03-home-page.png',
+      path: path.join(screenshotsDir, '03-home-page.png'),
       fullPage: false
     });
   });
@@ -44,7 +46,7 @@ test.describe('Screenshot Capture - Major Screens', () => {
     await page.goto(`${BASE_URL}/password-reset`);
     await page.waitForLoadState('networkidle');
     await page.screenshot({
-      path: 'screenshots/04-password-reset-page.png',
+      path: path.join(screenshotsDir, '04-password-reset-page.png'),
       fullPage: false
     });
   });
@@ -68,7 +70,7 @@ test.describe('Screenshot Capture - Major Screens', () => {
     await page.waitForTimeout(500);
 
     await page.screenshot({
-      path: 'screenshots/05-forms-listing-page.png',
+      path: path.join(screenshotsDir, '05-forms-listing-page.png'),
       fullPage: false
     });
   });
@@ -92,7 +94,7 @@ test.describe('Screenshot Capture - Major Screens', () => {
     await page.waitForTimeout(500);
 
     await page.screenshot({
-      path: 'screenshots/06-form-builder-new.png',
+      path: path.join(screenshotsDir, '06-form-builder-new.png'),
       fullPage: false
     });
   });
@@ -140,7 +142,7 @@ test.describe('Screenshot Capture - Major Screens', () => {
     }
 
     await page.screenshot({
-      path: 'screenshots/07-form-builder-created.png',
+      path: path.join(screenshotsDir, '07-form-builder-created.png'),
       fullPage: false
     });
   });
@@ -205,7 +207,7 @@ test.describe('Screenshot Capture - Major Screens', () => {
     }
 
     await page.screenshot({
-      path: 'screenshots/08-form-with-fields.png',
+      path: path.join(screenshotsDir, '08-form-with-fields.png'),
       fullPage: false
     });
   });

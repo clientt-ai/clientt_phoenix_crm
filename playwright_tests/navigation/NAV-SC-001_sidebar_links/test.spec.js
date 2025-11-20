@@ -9,7 +9,7 @@ const path = require('path');
  */
 
 test.describe('NAV-SC-001: Sidebar Navigation Links', () => {
-  const screenshotsDir = path.join(__dirname, 'screenshots');
+  const screenshotsDir = path.join(__dirname, '../../playwright_screenshots/playwright_tests/navigation', path.basename(__dirname));
 
   // Helper function to capture screenshots with consistent naming
   async function screenshot(page, name) {
