@@ -17,20 +17,27 @@
     <script>
       (() => {
         const setTheme = (theme) => {
-          if (theme === "system") {
-            localStorage.removeItem("phx:theme");
-            document.documentElement.removeAttribute("data-theme");
-          } else {
-            localStorage.setItem("phx:theme", theme);
-            document.documentElement.setAttribute("data-theme", theme);
-          }
+          localStorage.setItem("phx:theme", theme);
+          document.documentElement.setAttribute("data-theme", theme);
         };
-        if (!document.documentElement.hasAttribute("data-theme")) {
-          setTheme(localStorage.getItem("phx:theme") || "system");
-        }
-        window.addEventListener("storage", (e) => e.key === "phx:theme" && setTheme(e.newValue || "system"));
-        
-        window.addEventListener("phx:set-theme", (e) => setTheme(e.target.dataset.phxTheme));
+
+        // Initialize theme (default to light if none set)
+        const savedTheme = localStorage.getItem("phx:theme") || "light";
+        setTheme(savedTheme);
+
+        // Listen for storage changes (across tabs)
+        window.addEventListener("storage", (e) => {
+          if (e.key === "phx:theme" && e.newValue) {
+            setTheme(e.newValue);
+          }
+        });
+
+        // Toggle between light and dark
+        window.addEventListener("phx:toggle-theme", () => {
+          const currentTheme = document.documentElement.getAttribute("data-theme");
+          const newTheme = currentTheme === "dark" ? "light" : "dark";
+          setTheme(newTheme);
+        });
       })();
     </script>
   </head>
