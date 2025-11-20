@@ -9,7 +9,7 @@ const path = require('path');
  */
 
 test.describe('FM-SC-006: Edit Existing Form', () => {
-  const screenshotsDir = path.join(__dirname, 'screenshots');
+  const screenshotsDir = path.join(__dirname, '../../playwright_screenshots/playwright_tests/forms', path.basename(__dirname));
   let formName;
   let formUrl;
 

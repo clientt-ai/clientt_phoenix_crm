@@ -2,7 +2,7 @@
 const { test, expect } = require('@playwright/test');
 const path = require('path');
 
-const screenshotsDir = path.join(__dirname, 'screenshots', 'main');
+const screenshotsDir = path.join(__dirname, '../../playwright_screenshots/figma_playwright/205-forms-dashboard/main');
 
 test.describe('FG-SC-001: Figma Forms Dashboard - Screenshot Capture', () => {
 

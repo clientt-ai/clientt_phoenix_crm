@@ -2,7 +2,7 @@
 const { test, expect } = require('@playwright/test');
 const path = require('path');
 
-const screenshotsDir = path.join(__dirname, 'screenshots', 'form-builder');
+const screenshotsDir = path.join(__dirname, '../../playwright_screenshots/figma_playwright/205-forms-dashboard/form-builder');
 
 test.describe('FG-SC-002: Form Builder - Detailed Screenshots', () => {
 

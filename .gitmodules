@@ -1,0 +1,3 @@
+[submodule "playwright_screenshots"]
+	path = playwright_screenshots
+	url = https://github.com/clientt-ai/clientt_phoenix_crm_screenshots.git
