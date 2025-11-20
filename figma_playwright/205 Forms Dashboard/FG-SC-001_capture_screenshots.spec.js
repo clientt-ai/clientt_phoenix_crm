@@ -1,42 +1,12 @@
 // @ts-check
 const { test, expect } = require('@playwright/test');
-const path = require('path');
-
-const screenshotsDir = path.join(__dirname, '../../playwright_screenshots/figma_playwright/205-forms-dashboard/main');
+const { createThemeScreenshotHelper } = require('../screenshot-config');
 
 test.describe('FG-SC-001: Figma Forms Dashboard - Screenshot Capture', () => {
 
   test.describe.configure({ mode: 'serial' });
 
-  async function screenshot(page, name) {
-    // Take light mode screenshot
-    await page.evaluate(() => {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    });
-    await page.waitForTimeout(300);
-    await page.screenshot({
-      path: path.join(screenshotsDir, `${name}-light.png`),
-      fullPage: false
-    });
-
-    // Take dark mode screenshot
-    await page.evaluate(() => {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    });
-    await page.waitForTimeout(300);
-    await page.screenshot({
-      path: path.join(screenshotsDir, `${name}-dark.png`),
-      fullPage: false
-    });
-
-    // Reset to light mode for next test
-    await page.evaluate(() => {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    });
-  }
+  const screenshot = createThemeScreenshotHelper(__dirname, 'main');
 
   test('01 - Dashboard Page', async ({ page }) => {
     await page.goto('/');

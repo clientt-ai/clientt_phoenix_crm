@@ -15,26 +15,34 @@ This test suite is designed to:
 ```
 playwright_tests/
 ├── tests/
-│   ├── modules/             # Module-based test files (organized by feature/module)
-│   │   ├── forms/           # Form module tests (FM-SC-001 to FM-SC-008)
-│   │   ├── navigation/      # Navigation module tests (NAV-SC-001, etc.)
-│   │   └── {module_name}/   # Additional module tests go here
-│   ├── features/            # Feature-based test files (BDD scenarios)
+│   ├── modules/                      # Module-based test files (organized by feature/module)
+│   │   ├── direct_links/             # Direct URL navigation tests
+│   │   │   ├── unauthenticated/      # Public pages (sign-in, register, etc.)
+│   │   │   └── authenticated/        # Authenticated pages by role
+│   │   │       ├── admin/            # Admin role screenshots
+│   │   │       ├── manager/          # Manager role screenshots
+│   │   │       ├── user/             # User role screenshots
+│   │   │       └── form_admin/       # Form admin role screenshots
+│   │   ├── forms/                    # Form module tests (FM-SC-001 to FM-SC-008)
+│   │   ├── navigation/               # Navigation module tests (NAV-SC-001, etc.)
+│   │   └── {module_name}/            # Additional module tests go here
+│   ├── features/                     # Feature-based test files (BDD scenarios)
 │   │   ├── authentication.spec.js
 │   │   └── navigation.spec.js
-│   ├── examples/            # Example tests demonstrating patterns
+│   ├── examples/                     # Example tests demonstrating patterns
 │   │   └── using-page-objects.spec.js
-│   ├── support/             # Helper functions and utilities
-│   │   ├── auth-helpers.js      # Authentication helpers
-│   │   ├── test-helpers.js      # General test utilities
-│   │   └── pages/               # Page Object Models
+│   ├── support/                      # Helper functions and utilities
+│   │   ├── auth-helpers.js           # Authentication helpers
+│   │   ├── test-helpers.js           # General test utilities
+│   │   └── pages/                    # Page Object Models
 │   │       └── login-page.js
-│   └── fixtures/            # Test fixtures and setup
-│       └── authenticated.js     # Pre-authenticated test fixture
-├── playwright.config.js     # Playwright configuration
-├── package.json             # Node dependencies
-├── .env.example             # Environment variables template
-└── README.md               # This file
+│   └── fixtures/                     # Test fixtures and setup
+│       └── authenticated.js          # Pre-authenticated test fixture
+├── screenshot-config.js              # Centralized screenshot path helper
+├── playwright.config.js              # Playwright configuration
+├── package.json                      # Node dependencies
+├── .env.example                      # Environment variables template
+└── README.md                         # This file
 ```
 
 ## Prerequisites
@@ -132,6 +140,79 @@ npx playwright test --project=firefox
 npx playwright test --project=webkit
 ```
 
+## Screenshots
+
+### Using the Centralized Screenshot Helper
+
+All tests should use the centralized screenshot configuration helper for consistent paths:
+
+```javascript
+const { createScreenshotHelper } = require('../../../../screenshot-config');
+
+test.describe('My Test Suite', () => {
+  const screenshot = createScreenshotHelper(__dirname);
+
+  test('my test', async ({ page }) => {
+    await page.goto('/some-page');
+    await screenshot(page, '01-page-loaded');
+
+    await page.click('button');
+    await screenshot(page, '02-after-click');
+  });
+});
+```
+
+**Key Benefits:**
+- ✅ Works at any nesting depth - no manual path calculation
+- ✅ Screenshots automatically saved to correct location
+- ✅ Mirrors test directory structure in screenshots directory
+- ✅ All screenshots are 1920x1080 viewport (fullPage: false)
+
+**Screenshot Paths:**
+```
+Test: playwright_tests/tests/modules/forms/FM-SC-001_create_form/test.spec.js
+Screenshots: playwright_screenshots/playwright_tests/tests/modules/forms/FM-SC-001_create_form/
+
+Test: playwright_tests/tests/modules/direct_links/authenticated/admin/test.spec.js
+Screenshots: playwright_screenshots/playwright_tests/tests/modules/direct_links/authenticated/admin/
+```
+
+### Theme Variants (Light/Dark Mode)
+
+For tests that need both light and dark mode screenshots:
+
+```javascript
+const { createScreenshotHelper } = require('../../../../screenshot-config');
+
+test.describe('Theme Tests', () => {
+  const screenshot = createScreenshotHelper(__dirname);
+
+  async function captureThemeScreenshots(page, name) {
+    // Light mode
+    await page.evaluate(() => {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    });
+    await page.waitForTimeout(300);
+    await screenshot(page, `${name}-light`);
+
+    // Dark mode
+    await page.evaluate(() => {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    });
+    await page.waitForTimeout(300);
+    await screenshot(page, `${name}-dark`);
+  }
+
+  test('dashboard theme', async ({ page }) => {
+    await page.goto('/dashboard');
+    await captureThemeScreenshots(page, '01-dashboard');
+    // Creates: 01-dashboard-light.png and 01-dashboard-dark.png
+  });
+});
+```
+
 ## Writing Tests
 
 ### BDD Pattern
@@ -199,6 +280,10 @@ test('authenticated test', async ({ page }) => {
 **Location:** `tests/modules/{module_name}/`
 
 **Current Modules:**
+- **direct_links/** - Direct URL navigation and screenshot tests
+  - **unauthenticated/** - Public pages (sign-in, register, password-reset)
+  - **authenticated/** - Authenticated pages by role (admin, manager, user, form_admin)
+  - Tests light and dark mode themes for all pages
 - **forms/** - Form builder tests (FM-SC-001 to FM-SC-008)
   - Create, configure, validate, list, edit, delete forms
   - Field type testing and validation

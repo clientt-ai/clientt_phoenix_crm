@@ -41,33 +41,63 @@ const uniqueEmail = generateTestEmail(); // testuser1699999999@example.com
 ### Screenshot Helpers
 
 **IMPORTANT**: All screenshots must be 1080p (1920x1080) viewport only.
+**IMPORTANT**: Use the centralized screenshot configuration helper for all tests.
 
 ```javascript
-// Screenshot helper function pattern
-const path = require('path');
+const { createScreenshotHelper } = require('../../../../screenshot-config');
 
-async function screenshot(page, name) {
-  await page.screenshot({
-    path: path.join(__dirname, 'screenshots', `${name}.png`),
-    fullPage: false  // MUST be false - never use fullPage: true
+test.describe('My Tests', () => {
+  const screenshot = createScreenshotHelper(__dirname);
+
+  test('my test', async ({ page }) => {
+    await page.goto('/dashboard');
+    await screenshot(page, '01-dashboard');
+
+    await page.click('[data-testid="create-button"]');
+    await screenshot(page, '02-create-dialog');
   });
-}
-
-// Usage in test
-test('my test', async ({ page }) => {
-  await page.goto('/dashboard');
-  await screenshot(page, '01-dashboard');
-
-  await page.click('[data-testid="create-button"]');
-  await screenshot(page, '02-create-dialog');
 });
 ```
 
 **Screenshot Rules:**
-- Always use `fullPage: false`
-- Screenshots captured at 1920x1080 viewport only
-- Never exceed 8000 pixels in any dimension
-- Use descriptive names with step numbers (e.g., `01-sign-in`, `02-after-login`)
+- ✅ Always use `createScreenshotHelper(__dirname)`
+- ✅ Screenshots automatically saved to correct location based on test path
+- ✅ Works at any nesting depth
+- ✅ All screenshots are 1920x1080 viewport only (fullPage: false)
+- ✅ Use descriptive names with step numbers (e.g., `01-sign-in`, `02-after-login`)
+
+**For theme variants (light/dark mode):**
+
+```javascript
+const { createScreenshotHelper } = require('../../../../screenshot-config');
+
+test.describe('My Tests', () => {
+  const screenshot = createScreenshotHelper(__dirname);
+
+  async function captureThemeScreenshots(page, name) {
+    // Light mode
+    await page.evaluate(() => {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    });
+    await page.waitForTimeout(300);
+    await screenshot(page, `${name}-light`);
+
+    // Dark mode
+    await page.evaluate(() => {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    });
+    await page.waitForTimeout(300);
+    await screenshot(page, `${name}-dark`);
+  }
+
+  test('dashboard theme test', async ({ page }) => {
+    await page.goto('/dashboard');
+    await captureThemeScreenshots(page, '01-dashboard');
+  });
+});
+```
 
 ### General Test Helpers
 

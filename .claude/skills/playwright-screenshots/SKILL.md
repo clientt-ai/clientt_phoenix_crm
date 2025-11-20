@@ -10,22 +10,31 @@ This skill covers managing Playwright test screenshots stored in the centralized
 
 ```
 playwright_screenshots/
-├── playwright_tests/           # Phoenix CRM test suite screenshots
-│   ├── navigation/            # General navigation screenshots
-│   ├── authentication/        # Auth flow screenshots
-│   └── forms/                 # Form-specific test screenshots
-│       ├── FM-SC-001_create_form/
-│       ├── FM-SC-002_configure_fields/
-│       ├── FM-SC-003_submit_valid/
-│       ├── FM-SC-004_validation_invalid/
-│       ├── FM-SC-005_list_forms/
-│       ├── FM-SC-006_edit_form/
-│       ├── FM-SC-007_delete_form/
-│       └── FM-SC-008_field_types/
-└── figma_playwright/          # Figma design test screenshots
+├── playwright_tests/                    # Phoenix CRM test suite screenshots
+│   └── tests/
+│       └── modules/                      # Module-based test screenshots
+│           ├── direct_links/             # Direct URL navigation screenshots
+│           │   ├── unauthenticated/      # Public pages (sign-in, register, etc.)
+│           │   └── authenticated/        # Authenticated pages by role
+│           │       ├── admin/            # Admin role screenshots
+│           │       ├── manager/          # Manager role screenshots
+│           │       ├── user/             # User role screenshots
+│           │       └── form_admin/       # Form admin role screenshots
+│           ├── forms/                    # Form module screenshots
+│           │   ├── FM-SC-001_create_form/
+│           │   ├── FM-SC-002_configure_fields/
+│           │   ├── FM-SC-003_submit_valid/
+│           │   ├── FM-SC-004_validation_invalid/
+│           │   ├── FM-SC-005_list_forms/
+│           │   ├── FM-SC-006_edit_form/
+│           │   ├── FM-SC-007_delete_form/
+│           │   └── FM-SC-008_field_types/
+│           └── navigation/               # Navigation module screenshots
+│               └── NAV-SC-001_sidebar_links/
+└── figma_playwright/                    # Figma design test screenshots
     └── 205-forms-dashboard/
-        ├── main/              # Dashboard page screenshots
-        └── form-builder/      # Form builder component screenshots
+        ├── main/                         # Dashboard page screenshots
+        └── form-builder/                 # Form builder component screenshots
 ```
 
 ## Naming Conventions
@@ -36,45 +45,85 @@ playwright_screenshots/
 
 ## Path Configuration
 
-### For playwright_tests form specs
+### Using the Centralized Screenshot Helper (RECOMMENDED)
+
+**All tests should use the centralized screenshot configuration helper:**
 
 ```javascript
-const path = require('path');
+const { createScreenshotHelper } = require('../../../../screenshot-config');
 
 test.describe('FM-SC-XXX: Test Name', () => {
-  const screenshotsDir = path.join(
-    __dirname,
-    '../../playwright_screenshots/playwright_tests/forms',
-    path.basename(__dirname)
-  );
-
-  async function screenshot(page, name) {
-    await page.screenshot({
-      path: path.join(screenshotsDir, `${name}.png`),
-      fullPage: false
-    });
-  }
+  const screenshot = createScreenshotHelper(__dirname);
 
   // Use in tests:
-  await screenshot(page, '01-step-description');
+  test('my test', async ({ page }) => {
+    await page.goto('/some-page');
+    await screenshot(page, '01-step-description');
+  });
 });
 ```
 
-### For figma_playwright specs
+**Key Benefits:**
+- ✅ Works at any nesting depth
+- ✅ Automatically maintains correct folder structure
+- ✅ Screenshots mirror test directory structure
+- ✅ No manual path calculation needed
+
+**Path Calculation:**
+The helper automatically calculates the correct path based on `__dirname`:
+
+```javascript
+// For: playwright_tests/tests/modules/forms/FM-SC-001_create_form/test.spec.js
+// Screenshots go to: playwright_screenshots/playwright_tests/tests/modules/forms/FM-SC-001_create_form/
+
+// For: playwright_tests/tests/modules/direct_links/authenticated/admin/test.spec.js
+// Screenshots go to: playwright_screenshots/playwright_tests/tests/modules/direct_links/authenticated/admin/
+```
+
+### For figma_playwright Tests
+
+**Figma tests have their own screenshot helper** at `figma_playwright/screenshot-config.js`:
+
+```javascript
+const { createScreenshotHelper, createThemeScreenshotHelper } = require('../screenshot-config');
+
+test.describe('FG-SC-XXX: Test Name', () => {
+  // For regular screenshots
+  const screenshot = createScreenshotHelper(__dirname, 'subdirectory');
+
+  // For theme-aware screenshots (light/dark mode)
+  const screenshot = createThemeScreenshotHelper(__dirname, 'main');
+
+  test('my test', async ({ page }) => {
+    await page.goto('/page');
+    await screenshot(page, '01-screenshot-name');
+    // Creates: 01-screenshot-name-light.png and 01-screenshot-name-dark.png
+  });
+});
+```
+
+**Examples:**
+```javascript
+// For: figma_playwright/205 Forms Dashboard/FG-SC-001_capture_screenshots.spec.js
+const screenshot = createThemeScreenshotHelper(__dirname, 'main');
+// Screenshots go to: playwright_screenshots/figma_playwright/205-forms-dashboard/main/
+
+// For: figma_playwright/205 Forms Dashboard/FG-SC-002_form_builder_screenshots.spec.js
+const screenshot = createScreenshotHelper(__dirname, 'form-builder');
+// Screenshots go to: playwright_screenshots/figma_playwright/205-forms-dashboard/form-builder/
+```
+
+### Legacy Manual Path Configuration (NOT RECOMMENDED)
+
+Only use manual paths if you have a specific need:
 
 ```javascript
 const path = require('path');
 
-// For main dashboard screenshots
 const screenshotsDir = path.join(
   __dirname,
-  '../../playwright_screenshots/figma_playwright/205-forms-dashboard/main'
-);
-
-// For form builder screenshots
-const screenshotsDir = path.join(
-  __dirname,
-  '../../playwright_screenshots/figma_playwright/205-forms-dashboard/form-builder'
+  '../../playwright_screenshots/playwright_tests/forms',
+  path.basename(__dirname)
 );
 
 async function screenshot(page, name) {
@@ -87,30 +136,43 @@ async function screenshot(page, name) {
 
 ### For dark/light mode variants
 
-```javascript
-async function screenshot(page, name) {
-  // Light mode
-  await page.evaluate(() => {
-    document.documentElement.classList.remove('dark');
-    localStorage.setItem('theme', 'light');
-  });
-  await page.waitForTimeout(300);
-  await page.screenshot({
-    path: path.join(screenshotsDir, `${name}-light.png`),
-    fullPage: false
-  });
+Use the centralized helper with theme switching:
 
-  // Dark mode
-  await page.evaluate(() => {
-    document.documentElement.classList.add('dark');
-    localStorage.setItem('theme', 'dark');
+```javascript
+const { createScreenshotHelper } = require('../../../../screenshot-config');
+
+test.describe('My Tests', () => {
+  const screenshot = createScreenshotHelper(__dirname);
+
+  async function captureThemeScreenshots(page, name) {
+    // Light mode
+    await page.evaluate(() => {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    });
+    await page.waitForTimeout(300);
+    await screenshot(page, `${name}-light`);
+
+    // Dark mode
+    await page.evaluate(() => {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    });
+    await page.waitForTimeout(300);
+    await screenshot(page, `${name}-dark`);
+
+    // Reset to light mode
+    await page.evaluate(() => {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    });
+  }
+
+  test('my test', async ({ page }) => {
+    await page.goto('/dashboard');
+    await captureThemeScreenshots(page, '01-dashboard');
   });
-  await page.waitForTimeout(300);
-  await page.screenshot({
-    path: path.join(screenshotsDir, `${name}-dark.png`),
-    fullPage: false
-  });
-}
+});
 ```
 
 ## Git Submodule Commands
@@ -166,23 +228,33 @@ cd playwright_screenshots && git status
 
 ## Adding New Test Directories
 
-When adding new test scenarios:
+When adding new test scenarios, the screenshot directories are **automatically created** when you use the helper:
 
-1. Create directory in submodule:
+1. Create your test file in the appropriate location:
 ```bash
-mkdir -p playwright_screenshots/playwright_tests/forms/FM-SC-XXX_new_test
+mkdir -p playwright_tests/tests/modules/{module_name}/{TEST-SC-XXX_description}
 ```
 
-2. Update test spec with correct path:
+2. Use the screenshot helper in your test:
 ```javascript
-const screenshotsDir = path.join(
-  __dirname,
-  '../../playwright_screenshots/playwright_tests/forms',
-  path.basename(__dirname)
-);
+const { createScreenshotHelper } = require('../../../../screenshot-config');
+
+test.describe('TEST-SC-XXX: Description', () => {
+  const screenshot = createScreenshotHelper(__dirname);
+
+  test('my test', async ({ page }) => {
+    await page.goto('/page');
+    await screenshot(page, '01-screenshot-name');
+  });
+});
 ```
 
-3. Commit changes in both submodule and main repo.
+3. Screenshots will automatically be saved to the correct location:
+```
+playwright_screenshots/playwright_tests/tests/modules/{module_name}/{TEST-SC-XXX_description}/
+```
+
+4. Commit changes in both the test file and submodule.
 
 ## Repository URLs
 

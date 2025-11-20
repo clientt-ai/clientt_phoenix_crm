@@ -1,19 +1,12 @@
 // @ts-check
 const { test, expect } = require('@playwright/test');
-const path = require('path');
-
-const screenshotsDir = path.join(__dirname, '../../playwright_screenshots/figma_playwright/205-forms-dashboard/form-builder');
+const { createScreenshotHelper } = require('../screenshot-config');
 
 test.describe('FG-SC-002: Form Builder - Detailed Screenshots', () => {
 
   test.describe.configure({ mode: 'serial' });
 
-  async function screenshot(page, name) {
-    await page.screenshot({
-      path: path.join(screenshotsDir, `${name}.png`),
-      fullPage: false
-    });
-  }
+  const screenshot = createScreenshotHelper(__dirname, 'form-builder');
 
   async function navigateToFormBuilder(page) {
     await page.goto('/');
