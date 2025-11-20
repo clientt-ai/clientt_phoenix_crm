@@ -107,6 +107,13 @@
       "request": "launch",
       "command": "cd ${workspaceFolder}/figma_playwright && npx playwright test --headed",
       "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Figma Dev Server (Forms Dashboard)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "cd \"${workspaceFolder}/figma_src/205 Forms Dashboard\" && npm install --silent && npm run dev",
+      "cwd": "${workspaceFolder}"
     }
   ]
 }
