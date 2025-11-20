@@ -485,7 +485,7 @@ defmodule ClienttCrmAppWeb.Layouts do
         </li>
         <div class="divider my-0"></div>
         <li>
-          <a href="/auth/sign-out" data-method="delete" class="text-error">
+          <a href="/sign-out" class="text-error">
             <.icon name="hero-arrow-right-on-rectangle" class="w-4 h-4" />
             Sign Out
           </a>

@@ -283,7 +283,7 @@ defmodule ClienttCrmAppWeb.LayoutsTest do
       """)
 
       assert html =~ "Sign Out"
-      assert html =~ "/auth/sign-out"
+      assert html =~ "/sign-out"
     end
   end
 
