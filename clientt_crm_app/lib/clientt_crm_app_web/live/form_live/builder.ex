@@ -350,6 +350,23 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
     end
   end
 
+  @impl true
+  def handle_event("copy_embed_code", _params, socket) do
+    if socket.assigns.form do
+      embed_code = """
+      <script src="#{get_embed_base_url()}/embed/clientt-forms.js"></script>
+      <clientt-form form-id="#{socket.assigns.form.id}"></clientt-form>
+      """
+
+      {:noreply,
+       socket
+       |> push_event("copy_to_clipboard", %{text: embed_code})
+       |> put_flash(:info, "Embed code copied to clipboard!")}
+    else
+      {:noreply, socket}
+    end
+  end
+
   defp validate_form_settings(name) do
     errors = %{}
 
@@ -724,6 +741,53 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
               </button>
             </div>
           <% else %>
+            <!-- Embed Code Section -->
+            <%= if @form && @form.id do %>
+              <div class="p-4 border-b border-gray-200">
+                <div class="flex items-center gap-2 mb-4">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                  </svg>
+                  <h3 class="font-semibold text-gray-900">Embed Code</h3>
+                </div>
+
+                <p class="text-sm text-gray-500 mb-4">
+                  Add this code to your website to display the form
+                </p>
+
+                <div class="bg-gray-900 rounded-lg p-3 mb-3">
+                  <pre class="text-xs text-gray-300 whitespace-pre-wrap break-all"><code>&lt;script src="<%= get_embed_base_url() %>/embed/clientt-forms.js"&gt;&lt;/script&gt;
+&lt;clientt-form form-id="<%= @form.id %>"&gt;&lt;/clientt-form&gt;</code></pre>
+                </div>
+
+                <button
+                  phx-click="copy_embed_code"
+                  data-testid="copy-embed-code"
+                  class="btn btn-primary btn-sm w-full"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                  Copy Embed Code
+                </button>
+
+                <div class="mt-4">
+                  <p class="text-xs text-gray-500 mb-2">Form status:</p>
+                  <%= if @form.status == :published do %>
+                    <span class="badge badge-success badge-sm">Published - Ready to embed</span>
+                  <% else %>
+                    <span class="badge badge-warning badge-sm">Draft - Publish to enable embedding</span>
+                    <button
+                      phx-click="publish_form"
+                      class="btn btn-outline btn-sm w-full mt-2"
+                    >
+                      Publish Form
+                    </button>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+
             <!-- AI Assistant (Coming Soon) -->
             <div class="p-4">
               <div class="flex items-center gap-2 mb-4">
@@ -824,4 +888,8 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
   defp input_type(:url), do: "url"
   defp input_type(:date), do: "date"
   defp input_type(_), do: "text"
+
+  defp get_embed_base_url do
+    Application.get_env(:clientt_crm_app, :embed_base_url, "https://app.clientt.com")
+  end
 end

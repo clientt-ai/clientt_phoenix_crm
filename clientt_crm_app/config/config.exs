@@ -50,7 +50,9 @@ config :spark,
 config :clientt_crm_app,
   ecto_repos: [ClienttCrmApp.Repo],
   generators: [timestamp_type: :utc_datetime],
-  ash_domains: [ClienttCrmApp.Accounts, ClienttCrmApp.Authorization, ClienttCrmApp.Forms]
+  ash_domains: [ClienttCrmApp.Accounts, ClienttCrmApp.Authorization, ClienttCrmApp.Forms],
+  # Base URL for embeddable form widget (used in CORS and embed script)
+  embed_base_url: "https://app.clientt.com"
 
 # Configures the endpoint
 config :clientt_crm_app, ClienttCrmAppWeb.Endpoint,

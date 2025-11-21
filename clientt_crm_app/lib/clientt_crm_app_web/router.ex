@@ -21,6 +21,17 @@ defmodule ClienttCrmAppWeb.Router do
     plug :set_actor, :user
   end
 
+  # Public API pipeline for embeddable form widget (no auth, CORS enabled)
+  pipeline :public_api do
+    plug :accepts, ["json"]
+    plug ClienttCrmAppWeb.Plugs.PublicCors
+  end
+
+  # Pipeline for serving embed scripts (no CSRF protection needed)
+  pipeline :embed_script do
+    plug :accepts, ["html", "js"]
+  end
+
   scope "/", ClienttCrmAppWeb do
     pipe_through :browser
 
@@ -95,6 +106,23 @@ defmodule ClienttCrmAppWeb.Router do
         Elixir.AshAuthentication.Phoenix.Overrides.DaisyUI
       ]
     )
+  end
+
+  # Public API for embeddable form widget (no auth required)
+  scope "/api/public", ClienttCrmAppWeb do
+    pipe_through :public_api
+
+    get "/forms/:id", PublicFormController, :show
+    post "/forms/:id/submissions", PublicFormController, :submit
+    options "/forms/:id", PublicFormController, :options
+    options "/forms/:id/submissions", PublicFormController, :options
+  end
+
+  # Serve embed script (no CSRF protection needed for external scripts)
+  scope "/embed", ClienttCrmAppWeb do
+    pipe_through :embed_script
+
+    get "/clientt-forms.js", EmbedController, :script
   end
 
   # Other scopes may use custom stacks.

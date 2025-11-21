@@ -70,7 +70,9 @@ if config_env() == :prod do
   config :clientt_crm_app,
     token_signing_secret:
       System.get_env("TOKEN_SIGNING_SECRET") ||
-        raise("Missing environment variable `TOKEN_SIGNING_SECRET`!")
+        raise("Missing environment variable `TOKEN_SIGNING_SECRET`!"),
+    # Base URL for embeddable form widget (used in CORS and embed script)
+    embed_base_url: System.get_env("EMBED_BASE_URL") || "https://app.clientt.com"
 
   # ## SSL Support
   #

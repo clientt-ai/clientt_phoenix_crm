@@ -252,7 +252,23 @@ defmodule ClienttCrmApp.Forms.Form do
       allow_nil? true
       public? true
       default %{}
-      # Structure: %{redirect_url: "...", success_message: "...", collect_utm_params: true, allow_multiple_submissions: false}
+      # Structure:
+      # %{
+      #   # Existing settings
+      #   redirect_url: "...",                    # URL to redirect after successful submission
+      #   success_message: "Thank you!",         # Message shown after successful submission
+      #   collect_utm_params: true,              # Collect UTM parameters from URL
+      #   allow_multiple_submissions: false,     # Allow same user to submit multiple times
+      #
+      #   # Embed widget settings
+      #   show_success_message: true,            # Show success message in embed widget
+      #   callback_function: "onFormSubmit",     # JS callback function name (optional)
+      #   allowed_domains: [],                   # Domain whitelist for CORS (empty = allow all)
+      #
+      #   # Multi-step form settings
+      #   multi_step_enabled: false,             # Enable multi-step wizard mode
+      #   steps: []                              # Step configs: [%{name: "Step 1", field_ids: [...]}]
+      # }
     end
 
     attribute :status, :atom do

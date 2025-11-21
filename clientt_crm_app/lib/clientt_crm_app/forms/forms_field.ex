@@ -53,7 +53,7 @@ defmodule ClienttCrmApp.Forms.FormField do
 
     create :create do
       primary? true
-      accept [:field_type, :label, :placeholder, :help_text, :required, :order_position, :options, :validation_rules]
+      accept [:field_type, :label, :placeholder, :help_text, :required, :order_position, :step, :options, :validation_rules]
 
       argument :form_id, :uuid do
         allow_nil? false
@@ -94,7 +94,7 @@ defmodule ClienttCrmApp.Forms.FormField do
 
     update :update do
       primary? true
-      accept [:field_type, :label, :placeholder, :help_text, :required, :order_position, :options, :validation_rules]
+      accept [:field_type, :label, :placeholder, :help_text, :required, :order_position, :step, :options, :validation_rules]
       require_atomic? false
 
       # Only allow updating fields on draft forms
@@ -206,6 +206,15 @@ defmodule ClienttCrmApp.Forms.FormField do
       public? true
       default 0
       constraints min: 0
+    end
+
+    attribute :step, :integer do
+      allow_nil? true
+      public? true
+      default nil
+      # nil = single page form, 1+ = step number for multi-step forms
+      # When multi_step_enabled is true on the form, fields are grouped by step
+      constraints min: 1
     end
 
     attribute :options, {:array, :map} do

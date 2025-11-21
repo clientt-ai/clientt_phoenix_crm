@@ -67,7 +67,9 @@ config :clientt_crm_app, ClienttCrmAppWeb.Endpoint,
 # Enable dev routes for dashboard and mailbox
 config :clientt_crm_app,
   dev_routes: true,
-  token_signing_secret: "OAMj7UlsiesQt6qLo/15NRs65imL0SMc"
+  token_signing_secret: "OAMj7UlsiesQt6qLo/15NRs65imL0SMc",
+  # Local development URL for embed widget
+  embed_base_url: "http://localhost:4002"
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :default_formatter, format: "[$level] $message\n"
