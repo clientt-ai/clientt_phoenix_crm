@@ -66,6 +66,7 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
      |> assign(:selected_field, nil)
      |> assign(:expanded_categories, [:contacts, :general, :choices])
      |> assign(:show_fields_panel, true)
+     |> assign(:show_right_panel, true)
      |> assign(:form_errors, %{})
      |> assign(:field_errors, %{})
      |> assign(:form_title, form && form.name || "Form Title")
@@ -157,6 +158,11 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
   @impl true
   def handle_event("toggle_fields_panel", _params, socket) do
     {:noreply, assign(socket, :show_fields_panel, !socket.assigns.show_fields_panel)}
+  end
+
+  @impl true
+  def handle_event("toggle_right_panel", _params, socket) do
+    {:noreply, assign(socket, :show_right_panel, !socket.assigns.show_right_panel)}
   end
 
   @impl true
@@ -411,39 +417,34 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
   def render(assigns) do
     ~H"""
     <Layouts.flash_group flash={@flash} />
-    <div data-testid="form-builder" class="h-full flex flex-col">
-      <!-- Toolbar -->
-      <div class="border-b border-gray-200 bg-white px-4 py-3">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-4">
-            <.link navigate={~p"/forms"} class="flex items-center text-sm text-gray-500 hover:text-gray-700">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-              </svg>
-              Back
-            </.link>
-            <div>
-              <h1 class="text-2xl font-bold text-gray-900">Form Builder</h1>
-              <p class="text-sm text-gray-500">Create and customize your form with AI assistance</p>
-            </div>
+    <div data-testid="form-builder" class="h-full flex flex-col -m-4">
+      <!-- Page Header - matches Dashboard and All Forms pages -->
+      <div class="px-4 sm:px-6 lg:px-8 pt-4">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+          <div>
+            <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-base-content">Form Builder</h1>
+            <p class="mt-1 text-sm text-base-content/60">
+              Create and customize your form
+            </p>
           </div>
-          <div class="flex items-center gap-2">
+          <div class="mt-4 sm:mt-0 flex flex-wrap items-center gap-2">
             <button
               phx-click="toggle_fields_panel"
               class="btn btn-ghost btn-sm"
             >
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
               </svg>
               <%= if @show_fields_panel, do: "Hide Fields", else: "Show Fields" %>
             </button>
-            <button class="btn btn-ghost btn-sm" disabled>
+            <button
+              phx-click="toggle_right_panel"
+              class="btn btn-ghost btn-sm"
+            >
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
-              AI Assistant
-              <span class="badge badge-xs badge-warning ml-1">Soon</span>
+              <%= if @show_right_panel, do: "Hide Panel", else: "Show Panel" %>
             </button>
             <%= if @form && @form.id do %>
               <.link navigate={~p"/forms/#{@form.id}/preview"} class="btn btn-ghost btn-sm">
@@ -451,16 +452,8 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                 </svg>
-                Show Preview
+                Preview
               </.link>
-            <% else %>
-              <button class="btn btn-ghost btn-sm" disabled>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-                Show Preview
-              </button>
             <% end %>
             <button
               phx-click="save_form"
@@ -476,46 +469,14 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
         </div>
       </div>
 
-      <!-- Post-Submission Actions -->
-      <div class="border-b border-gray-200 bg-gray-50 px-4 py-3">
-        <div class="flex items-center justify-between">
-          <div>
-            <h3 class="text-sm font-medium text-gray-900">Post-Submission Actions</h3>
-            <p class="text-xs text-gray-500">Configure what happens after form submission</p>
-          </div>
-          <div class="flex items-center gap-2">
-            <button class="btn btn-ghost btn-sm opacity-50 cursor-not-allowed" disabled title="Coming soon">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              Book a Demo
-              <span class="badge badge-xs badge-warning ml-1">Soon</span>
-            </button>
-            <button class="btn btn-ghost btn-sm opacity-50 cursor-not-allowed" disabled title="Coming soon">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-              </svg>
-              Open Chatbot
-              <span class="badge badge-xs badge-warning ml-1">Soon</span>
-            </button>
-            <button class="btn btn-outline btn-sm">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
-              Redirect URL
-            </button>
-          </div>
-        </div>
-      </div>
-
       <!-- Main 3-Column Layout -->
-      <div class="flex-1 flex overflow-hidden">
+      <div class="flex-1 flex flex-col lg:flex-row overflow-hidden mx-4 sm:mx-6 lg:mx-8 mb-4 rounded-lg border border-base-300">
         <!-- Left Panel: Field Palette -->
         <%= if @show_fields_panel do %>
-          <div class="w-72 border-r border-gray-200 bg-white overflow-y-auto">
+          <div class="w-full lg:w-72 border-b lg:border-b-0 lg:border-r border-base-300 bg-base-100 overflow-y-auto max-h-48 lg:max-h-none">
             <div class="p-4">
-              <h3 class="text-sm font-semibold text-gray-900">Add Form Fields</h3>
-              <p class="text-xs text-gray-500 mt-1">Click to add fields to your form</p>
+              <h3 class="text-sm font-semibold text-base-content">Add Form Fields</h3>
+              <p class="text-xs text-base-content/60 mt-1">Click to add fields to your form</p>
             </div>
 
             <div class="px-2 pb-4">
@@ -524,15 +485,15 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
                   <button
                     phx-click="toggle_category"
                     phx-value-category={category_id}
-                    class="flex items-center justify-between w-full px-2 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded"
+                    class="flex items-center justify-between w-full px-2 py-2 text-sm font-medium text-base-content hover:bg-base-200 rounded"
                   >
                     <span class="flex items-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-base-content/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                       </svg>
                       <%= category_name %>
                     </span>
-                    <svg xmlns="http://www.w3.org/2000/svg" class={"h-4 w-4 text-gray-400 transition-transform #{if category_id in @expanded_categories, do: "rotate-90"}"} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" class={"h-4 w-4 text-base-content/50 transition-transform #{if category_id in @expanded_categories, do: "rotate-90"}"} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                     </svg>
                   </button>
@@ -544,9 +505,9 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
                           phx-click="add_field_type"
                           phx-value-type={field_type}
                           phx-value-label={field_label}
-                          class="flex flex-col items-center p-3 text-xs text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 hover:border-primary transition-colors"
+                          class="flex flex-col items-center p-3 text-xs text-base-content/70 bg-base-200 hover:bg-base-300 rounded-lg border border-base-300 hover:border-primary transition-colors"
                         >
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mb-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mb-1 text-base-content/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                           </svg>
                           <%= field_label %>
@@ -561,9 +522,9 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
         <% end %>
 
         <!-- Center Panel: Form Canvas -->
-        <div class="flex-1 overflow-y-auto bg-gray-100 p-6" phx-click="deselect_field">
+        <div class="flex-1 overflow-y-auto bg-base-200 p-4 sm:p-6" phx-click="deselect_field">
           <div class="max-w-2xl mx-auto">
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="bg-base-100 rounded-lg shadow-sm border border-base-300 p-6">
               <!-- Form Title & Description -->
               <div class="mb-6">
                 <input
@@ -574,10 +535,10 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
                   phx-debounce="300"
                   data-testid="form-name-input"
                   placeholder="Form Title"
-                  class="text-2xl font-bold text-gray-900 border-0 p-0 w-full focus:ring-0 placeholder-gray-300 hover:bg-gray-50 focus:bg-gray-50 rounded px-1 -mx-1"
+                  class="text-2xl font-bold text-base-content border-0 p-0 w-full focus:ring-0 placeholder-base-content/30 hover:bg-base-200 focus:bg-base-200 rounded px-1 -mx-1 bg-transparent"
                 />
                 <%= if @form_errors[:name] do %>
-                  <p data-testid="form-name-error" class="mt-1 text-sm text-red-600"><%= @form_errors[:name] %></p>
+                  <p data-testid="form-name-error" class="mt-1 text-sm text-error"><%= @form_errors[:name] %></p>
                 <% end %>
                 <textarea
                   phx-blur="update_description"
@@ -586,18 +547,18 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
                   data-testid="form-description-input"
                   placeholder="Add a description for your form..."
                   rows="2"
-                  class="mt-2 text-sm text-gray-500 border-0 p-0 w-full focus:ring-0 placeholder-gray-300 resize-none hover:bg-gray-50 focus:bg-gray-50 rounded px-1 -mx-1"
+                  class="mt-2 text-sm text-base-content/60 border-0 p-0 w-full focus:ring-0 placeholder-base-content/30 resize-none hover:bg-base-200 focus:bg-base-200 rounded px-1 -mx-1 bg-transparent"
                 ><%= @form_description %></textarea>
               </div>
 
               <!-- Fields List -->
               <div id="fields-container" class="space-y-3" phx-hook="FieldReorder">
                 <%= if @fields == [] do %>
-                  <div class="text-center py-12 border-2 border-dashed border-gray-200 rounded-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div class="text-center py-12 border-2 border-dashed border-base-300 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-base-content/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
-                    <p class="mt-2 text-sm text-gray-500">
+                    <p class="mt-2 text-sm text-base-content/60">
                       <%= if @form, do: "Click a field type to add it here", else: "Save form first, then add fields" %>
                     </p>
                   </div>
@@ -609,11 +570,11 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
                       data-testid="form-field"
                       data-field-id={field.id}
                       draggable="true"
-                      class={"relative p-4 rounded-lg border-2 cursor-pointer transition-all #{if @selected_field && @selected_field.id == field.id, do: "border-primary bg-primary/5", else: "border-gray-200 hover:border-gray-300"}"}
+                      class={"relative p-4 rounded-lg border-2 cursor-pointer transition-all #{if @selected_field && @selected_field.id == field.id, do: "border-primary bg-primary/5", else: "border-base-300 hover:border-base-content/30"}"}
                     >
                       <div class="flex items-start gap-3">
                         <!-- Drag Handle -->
-                        <div class="flex-shrink-0 mt-1 text-gray-400 cursor-move">
+                        <div class="flex-shrink-0 mt-1 text-base-content/40 cursor-move">
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
                             <circle cx="9" cy="5" r="1.5" />
                             <circle cx="15" cy="5" r="1.5" />
@@ -627,11 +588,11 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
                         <!-- Field Content -->
                         <div class="flex-1">
                           <div class="flex items-center gap-2 mb-1">
-                            <span class="font-medium text-gray-900"><%= field.label %></span>
+                            <span class="font-medium text-base-content"><%= field.label %></span>
                             <%= if field.required do %>
-                              <span class="text-red-500">*</span>
+                              <span class="text-error">*</span>
                             <% end %>
-                            <span class="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">
+                            <span class="text-xs text-base-content/50 bg-base-200 px-1.5 py-0.5 rounded">
                               <%= format_field_type(field.field_type) %>
                             </span>
                           </div>
@@ -643,7 +604,7 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
                           <button
                             phx-click="delete_field"
                             data-testid="delete-field-button"
-                            class="flex-shrink-0 text-gray-400 hover:text-red-500"
+                            class="flex-shrink-0 text-base-content/40 hover:text-error"
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -660,21 +621,22 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
         </div>
 
         <!-- Right Panel: Properties or AI Assistant -->
-        <div class="w-80 border-l border-gray-200 bg-white overflow-y-auto">
+        <%= if @show_right_panel do %>
+        <div class="w-full lg:w-80 border-t lg:border-t-0 lg:border-l border-base-300 bg-base-100 overflow-y-auto max-h-64 lg:max-h-none">
           <%= if @selected_field do %>
             <!-- Field Properties -->
             <div class="p-4">
               <div class="flex items-center gap-2 mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-base-content/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
-                <h3 class="font-semibold text-gray-900">Field Properties</h3>
+                <h3 class="font-semibold text-base-content">Field Properties</h3>
               </div>
 
               <form phx-change="update_field" class="space-y-4">
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Field Label</label>
+                  <label class="block text-sm font-medium text-base-content/70 mb-1">Field Label</label>
                   <input
                     type="text"
                     name="label"
@@ -685,7 +647,7 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
                 </div>
 
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Placeholder</label>
+                  <label class="block text-sm font-medium text-base-content/70 mb-1">Placeholder</label>
                   <input
                     type="text"
                     name="placeholder"
@@ -696,7 +658,7 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
                 </div>
 
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Description (Optional)</label>
+                  <label class="block text-sm font-medium text-base-content/70 mb-1">Description (Optional)</label>
                   <textarea
                     name="help_text"
                     rows="2"
@@ -707,7 +669,7 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
 
                 <%= if @selected_field.field_type in [:select, :radio] do %>
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Options (one per line)</label>
+                    <label class="block text-sm font-medium text-base-content/70 mb-1">Options (one per line)</label>
                     <textarea
                       name="options"
                       rows="3"
@@ -720,7 +682,7 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
                 <% end %>
 
                 <div class="flex items-center justify-between">
-                  <label class="text-sm font-medium text-gray-700">Required Field</label>
+                  <label class="text-sm font-medium text-base-content/70">Required Field</label>
                   <input
                     type="checkbox"
                     name="required"
@@ -743,20 +705,20 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
           <% else %>
             <!-- Embed Code Section -->
             <%= if @form && @form.id do %>
-              <div class="p-4 border-b border-gray-200">
+              <div class="p-4 border-b border-base-300">
                 <div class="flex items-center gap-2 mb-4">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
                   </svg>
-                  <h3 class="font-semibold text-gray-900">Embed Code</h3>
+                  <h3 class="font-semibold text-base-content">Embed Code</h3>
                 </div>
 
-                <p class="text-sm text-gray-500 mb-4">
+                <p class="text-sm text-base-content/60 mb-4">
                   Add this code to your website to display the form
                 </p>
 
-                <div class="bg-gray-900 rounded-lg p-3 mb-3">
-                  <pre class="text-xs text-gray-300 whitespace-pre-wrap break-all"><code>&lt;script src="<%= get_embed_base_url() %>/embed/clientt-forms.js"&gt;&lt;/script&gt;
+                <div class="bg-neutral rounded-lg p-3 mb-3">
+                  <pre class="text-xs text-neutral-content whitespace-pre-wrap break-all"><code>&lt;script src="<%= get_embed_base_url() %>/embed/clientt-forms.js"&gt;&lt;/script&gt;
 &lt;clientt-form form-id="<%= @form.id %>"&gt;&lt;/clientt-form&gt;</code></pre>
                 </div>
 
@@ -772,7 +734,7 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
                 </button>
 
                 <div class="mt-4">
-                  <p class="text-xs text-gray-500 mb-2">Form status:</p>
+                  <p class="text-xs text-base-content/60 mb-2">Form status:</p>
                   <%= if @form.status == :published do %>
                     <span class="badge badge-success badge-sm">Published - Ready to embed</span>
                   <% else %>
@@ -794,27 +756,28 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
                 </svg>
-                <h3 class="font-semibold text-gray-900">AI Forms Assistant</h3>
+                <h3 class="font-semibold text-base-content">AI Forms Assistant</h3>
                 <span class="badge badge-warning badge-xs">Coming Soon</span>
               </div>
 
-              <p class="text-sm text-gray-500 mb-4">
+              <p class="text-sm text-base-content/60 mb-4">
                 Get intelligent suggestions to improve your form
               </p>
 
               <div class="space-y-3 opacity-50">
-                <div class="p-3 bg-gray-50 rounded-lg">
-                  <p class="text-sm text-gray-700">Add phone number field for direct contact</p>
+                <div class="p-3 bg-base-200 rounded-lg">
+                  <p class="text-sm text-base-content">Add phone number field for direct contact</p>
                   <button class="btn btn-ghost btn-xs mt-2" disabled>Apply Suggestion</button>
                 </div>
-                <div class="p-3 bg-gray-50 rounded-lg">
-                  <p class="text-sm text-gray-700">Add message field for detailed feedback</p>
+                <div class="p-3 bg-base-200 rounded-lg">
+                  <p class="text-sm text-base-content">Add message field for detailed feedback</p>
                   <button class="btn btn-ghost btn-xs mt-2" disabled>Apply Suggestion</button>
                 </div>
               </div>
             </div>
           <% end %>
         </div>
+        <% end %>
       </div>
     </div>
     """
@@ -837,7 +800,7 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
         ~H"""
         <textarea
           rows="2"
-          class="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 text-sm"
+          class="mt-1 block w-full rounded-md border-base-300 bg-base-200 text-sm text-base-content"
           placeholder={@field.placeholder}
           disabled
         ></textarea>
@@ -845,7 +808,7 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
 
       :select ->
         ~H"""
-        <select class="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 text-sm" disabled>
+        <select class="mt-1 block w-full rounded-md border-base-300 bg-base-200 text-sm text-base-content" disabled>
           <option><%= @field.placeholder || "Select an option" %></option>
         </select>
         """
@@ -853,8 +816,8 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
       :checkbox ->
         ~H"""
         <div class="mt-1 flex items-center">
-          <input type="checkbox" class="h-4 w-4 rounded border-gray-300" disabled />
-          <span class="ml-2 text-sm text-gray-500"><%= @field.placeholder || "Checkbox option" %></span>
+          <input type="checkbox" class="h-4 w-4 rounded border-base-300" disabled />
+          <span class="ml-2 text-sm text-base-content/60"><%= @field.placeholder || "Checkbox option" %></span>
         </div>
         """
 
@@ -863,8 +826,8 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
         <div class="mt-1 space-y-1">
           <%= for option <- (@field.options || [%{label: "Option 1"}, %{label: "Option 2"}]) do %>
             <div class="flex items-center">
-              <input type="radio" class="h-4 w-4 border-gray-300" disabled />
-              <span class="ml-2 text-sm text-gray-500"><%= option["label"] || option[:label] %></span>
+              <input type="radio" class="h-4 w-4 border-base-300" disabled />
+              <span class="ml-2 text-sm text-base-content/60"><%= option["label"] || option[:label] %></span>
             </div>
           <% end %>
         </div>
@@ -874,7 +837,7 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
         ~H"""
         <input
           type={input_type(@field.field_type)}
-          class="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 text-sm"
+          class="mt-1 block w-full rounded-md border-base-300 bg-base-200 text-sm text-base-content"
           placeholder={@field.placeholder || "Enter #{@field.label}"}
           disabled
         />

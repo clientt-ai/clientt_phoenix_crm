@@ -37,11 +37,41 @@ defmodule ClienttCrmAppWeb.DashboardLive do
   def render(assigns) do
     ~H"""
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <h1 class="text-3xl font-bold tracking-tight text-base-content mb-6">
-        Dashboard
-      </h1>
+      <!-- Page Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+        <div>
+          <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-base-content">
+            Form Dashboard
+          </h1>
+          <p class="mt-1 text-sm text-base-content/60">
+            Track your forms, submissions, and leads
+          </p>
+        </div>
+        <div class="mt-4 sm:mt-0 flex items-center gap-3">
+          <.link
+            navigate={~p"/forms"}
+            class="btn btn-ghost btn-sm"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            View All Forms
+          </.link>
+          <.link
+            navigate={~p"/forms/new"}
+            data-testid="create-form-button"
+            class="btn btn-primary btn-sm"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Create New Form
+          </.link>
+        </div>
+      </div>
 
-      <div class="bg-base-100 shadow sm:rounded-lg mb-6">
+      <!-- Welcome Card -->
+      <div class="bg-base-100 shadow-md rounded-lg border border-base-300 mb-6">
         <div class="px-4 py-5 sm:p-6">
           <h3 class="text-base font-semibold leading-6 text-base-content">
             Welcome, <%= @current_user.email %>!
@@ -54,7 +84,7 @@ defmodule ClienttCrmAppWeb.DashboardLive do
 
       <!-- Stats Cards -->
       <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <div class="overflow-hidden rounded-lg bg-base-100 px-4 py-5 shadow sm:p-6">
+        <div class="overflow-hidden rounded-lg bg-base-100 px-4 py-5 shadow-md border border-base-300 sm:p-6 transition-shadow hover:shadow-lg">
           <dt class="truncate text-sm font-medium text-base-content/60">Total Forms</dt>
           <dd class="mt-1 text-3xl font-semibold tracking-tight text-base-content">
             <%= length(@forms) %>
@@ -69,7 +99,7 @@ defmodule ClienttCrmAppWeb.DashboardLive do
           </div>
         </div>
 
-        <div class="overflow-hidden rounded-lg bg-base-100 px-4 py-5 shadow sm:p-6">
+        <div class="overflow-hidden rounded-lg bg-base-100 px-4 py-5 shadow-md border border-base-300 sm:p-6 transition-shadow hover:shadow-lg">
           <dt class="truncate text-sm font-medium text-base-content/60">Published Forms</dt>
           <dd class="mt-1 text-3xl font-semibold tracking-tight text-base-content">
             <%= count_by_status(@forms, :published) %>
@@ -84,14 +114,14 @@ defmodule ClienttCrmAppWeb.DashboardLive do
           </div>
         </div>
 
-        <div class="overflow-hidden rounded-lg bg-base-100 px-4 py-5 shadow sm:p-6">
+        <div class="overflow-hidden rounded-lg bg-base-100 px-4 py-5 shadow-md border border-base-300 sm:p-6 transition-shadow hover:shadow-lg">
           <dt class="truncate text-sm font-medium text-base-content/60">Total Submissions</dt>
           <dd class="mt-1 text-3xl font-semibold tracking-tight text-base-content">
             <%= total_submissions(@forms) %>
           </dd>
         </div>
 
-        <div class="overflow-hidden rounded-lg bg-base-100 px-4 py-5 shadow sm:p-6">
+        <div class="overflow-hidden rounded-lg bg-base-100 px-4 py-5 shadow-md border border-base-300 sm:p-6 transition-shadow hover:shadow-lg">
           <dt class="truncate text-sm font-medium text-base-content/60">New Leads</dt>
           <dd class="mt-1 text-3xl font-semibold tracking-tight text-base-content">
             <%= count_submissions_by_status(@recent_submissions, :new) %>
@@ -101,7 +131,7 @@ defmodule ClienttCrmAppWeb.DashboardLive do
 
       <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
         <!-- Quick Actions -->
-        <div class="bg-base-100 shadow sm:rounded-lg">
+        <div class="bg-base-100 shadow-md rounded-lg border border-base-300">
           <div class="px-4 py-5 sm:p-6">
             <h3 class="text-base font-semibold leading-6 text-base-content mb-4">
               Quick Actions
@@ -157,7 +187,7 @@ defmodule ClienttCrmAppWeb.DashboardLive do
         </div>
 
         <!-- Recent Submissions -->
-        <div class="bg-base-100 shadow sm:rounded-lg">
+        <div class="bg-base-100 shadow-md rounded-lg border border-base-300">
           <div class="px-4 py-5 sm:p-6">
             <h3 class="text-base font-semibold leading-6 text-base-content mb-4">
               Recent Submissions
@@ -226,7 +256,7 @@ defmodule ClienttCrmAppWeb.DashboardLive do
 
       <!-- Active Forms -->
       <%= if @forms != [] do %>
-        <div class="mt-8 bg-base-100 shadow sm:rounded-lg">
+        <div class="mt-8 bg-base-100 shadow-md rounded-lg border border-base-300">
           <div class="px-4 py-5 sm:p-6">
             <div class="flex items-center justify-between mb-4">
               <h3 class="text-base font-semibold leading-6 text-base-content">
