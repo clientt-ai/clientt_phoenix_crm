@@ -37,16 +37,16 @@ defmodule ClienttCrmAppWeb.DashboardLive do
   def render(assigns) do
     ~H"""
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <h1 class="text-3xl font-bold tracking-tight text-gray-900 mb-6">
+      <h1 class="text-3xl font-bold tracking-tight text-base-content mb-6">
         Dashboard
       </h1>
 
-      <div class="bg-white shadow sm:rounded-lg mb-6">
+      <div class="bg-base-100 shadow sm:rounded-lg mb-6">
         <div class="px-4 py-5 sm:p-6">
-          <h3 class="text-base font-semibold leading-6 text-gray-900">
+          <h3 class="text-base font-semibold leading-6 text-base-content">
             Welcome, <%= @current_user.email %>!
           </h3>
-          <div class="mt-2 max-w-xl text-sm text-gray-500">
+          <div class="mt-2 max-w-xl text-sm text-base-content/60">
             <p>Track your forms, submissions, and leads from your CRM dashboard.</p>
           </div>
         </div>
@@ -54,9 +54,9 @@ defmodule ClienttCrmAppWeb.DashboardLive do
 
       <!-- Stats Cards -->
       <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6">
-          <dt class="truncate text-sm font-medium text-gray-500">Total Forms</dt>
-          <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900">
+        <div class="overflow-hidden rounded-lg bg-base-100 px-4 py-5 shadow sm:p-6">
+          <dt class="truncate text-sm font-medium text-base-content/60">Total Forms</dt>
+          <dd class="mt-1 text-3xl font-semibold tracking-tight text-base-content">
             <%= length(@forms) %>
           </dd>
           <div class="mt-2">
@@ -69,9 +69,9 @@ defmodule ClienttCrmAppWeb.DashboardLive do
           </div>
         </div>
 
-        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6">
-          <dt class="truncate text-sm font-medium text-gray-500">Published Forms</dt>
-          <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900">
+        <div class="overflow-hidden rounded-lg bg-base-100 px-4 py-5 shadow sm:p-6">
+          <dt class="truncate text-sm font-medium text-base-content/60">Published Forms</dt>
+          <dd class="mt-1 text-3xl font-semibold tracking-tight text-base-content">
             <%= count_by_status(@forms, :published) %>
           </dd>
           <div class="mt-2">
@@ -84,16 +84,16 @@ defmodule ClienttCrmAppWeb.DashboardLive do
           </div>
         </div>
 
-        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6">
-          <dt class="truncate text-sm font-medium text-gray-500">Total Submissions</dt>
-          <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900">
+        <div class="overflow-hidden rounded-lg bg-base-100 px-4 py-5 shadow sm:p-6">
+          <dt class="truncate text-sm font-medium text-base-content/60">Total Submissions</dt>
+          <dd class="mt-1 text-3xl font-semibold tracking-tight text-base-content">
             <%= total_submissions(@forms) %>
           </dd>
         </div>
 
-        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6">
-          <dt class="truncate text-sm font-medium text-gray-500">New Leads</dt>
-          <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900">
+        <div class="overflow-hidden rounded-lg bg-base-100 px-4 py-5 shadow sm:p-6">
+          <dt class="truncate text-sm font-medium text-base-content/60">New Leads</dt>
+          <dd class="mt-1 text-3xl font-semibold tracking-tight text-base-content">
             <%= count_submissions_by_status(@recent_submissions, :new) %>
           </dd>
         </div>
@@ -101,22 +101,22 @@ defmodule ClienttCrmAppWeb.DashboardLive do
 
       <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
         <!-- Quick Actions -->
-        <div class="bg-white shadow sm:rounded-lg">
+        <div class="bg-base-100 shadow sm:rounded-lg">
           <div class="px-4 py-5 sm:p-6">
-            <h3 class="text-base font-semibold leading-6 text-gray-900 mb-4">
+            <h3 class="text-base font-semibold leading-6 text-base-content mb-4">
               Quick Actions
             </h3>
             <div class="grid grid-cols-1 gap-3">
               <.link
                 navigate={~p"/forms/new"}
-                class="flex items-center justify-between rounded-md border border-gray-300 px-4 py-3 hover:border-primary hover:bg-primary/5 transition-colors"
+                class="flex items-center justify-between rounded-md border border-base-300 px-4 py-3 hover:border-primary hover:bg-primary/5 transition-colors"
               >
                 <div>
-                  <p class="font-medium text-gray-900">Create New Form</p>
-                  <p class="text-sm text-gray-500">Build a new lead capture form</p>
+                  <p class="font-medium text-base-content">Create New Form</p>
+                  <p class="text-sm text-base-content/60">Build a new lead capture form</p>
                 </div>
                 <svg
-                  class="h-5 w-5 text-gray-400"
+                  class="h-5 w-5 text-base-content/40"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -132,14 +132,14 @@ defmodule ClienttCrmAppWeb.DashboardLive do
 
               <.link
                 navigate={~p"/forms"}
-                class="flex items-center justify-between rounded-md border border-gray-300 px-4 py-3 hover:border-primary hover:bg-primary/5 transition-colors"
+                class="flex items-center justify-between rounded-md border border-base-300 px-4 py-3 hover:border-primary hover:bg-primary/5 transition-colors"
               >
                 <div>
-                  <p class="font-medium text-gray-900">Manage Forms</p>
-                  <p class="text-sm text-gray-500">View and edit your forms</p>
+                  <p class="font-medium text-base-content">Manage Forms</p>
+                  <p class="text-sm text-base-content/60">View and edit your forms</p>
                 </div>
                 <svg
-                  class="h-5 w-5 text-gray-400"
+                  class="h-5 w-5 text-base-content/40"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -157,16 +157,16 @@ defmodule ClienttCrmAppWeb.DashboardLive do
         </div>
 
         <!-- Recent Submissions -->
-        <div class="bg-white shadow sm:rounded-lg">
+        <div class="bg-base-100 shadow sm:rounded-lg">
           <div class="px-4 py-5 sm:p-6">
-            <h3 class="text-base font-semibold leading-6 text-gray-900 mb-4">
+            <h3 class="text-base font-semibold leading-6 text-base-content mb-4">
               Recent Submissions
             </h3>
 
             <%= if @recent_submissions == [] do %>
               <div class="text-center py-6">
                 <svg
-                  class="mx-auto h-12 w-12 text-gray-400"
+                  class="mx-auto h-12 w-12 text-base-content/40"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -178,25 +178,25 @@ defmodule ClienttCrmAppWeb.DashboardLive do
                     d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
                   />
                 </svg>
-                <p class="mt-2 text-sm text-gray-500">No submissions yet.</p>
-                <p class="mt-1 text-xs text-gray-400">
+                <p class="mt-2 text-sm text-base-content/60">No submissions yet.</p>
+                <p class="mt-1 text-xs text-base-content/40">
                   Publish a form to start receiving submissions.
                 </p>
               </div>
             <% else %>
-              <ul class="divide-y divide-gray-200 max-h-80 overflow-y-auto">
+              <ul class="divide-y divide-base-300 max-h-80 overflow-y-auto">
                 <%= for submission <- Enum.take(@recent_submissions, 5) do %>
                   <li class="py-3">
                     <.link
                       navigate={~p"/submissions/#{submission.id}"}
-                      class="block hover:bg-gray-50 -mx-2 px-2 py-1 rounded-md"
+                      class="block hover:bg-base-200 -mx-2 px-2 py-1 rounded-md"
                     >
                       <div class="flex items-center justify-between">
                         <div class="flex-1 min-w-0">
-                          <p class="text-sm font-medium text-gray-900 truncate">
+                          <p class="text-sm font-medium text-base-content truncate">
                             <%= submission.submitter_email || "Anonymous" %>
                           </p>
-                          <p class="text-xs text-gray-500">
+                          <p class="text-xs text-base-content/60">
                             <%= format_relative_time(submission.submitted_at) %>
                           </p>
                         </div>
@@ -213,8 +213,8 @@ defmodule ClienttCrmAppWeb.DashboardLive do
               </ul>
 
               <%= if length(@recent_submissions) > 5 do %>
-                <div class="mt-3 pt-3 border-t border-gray-200">
-                  <p class="text-xs text-gray-500 text-center">
+                <div class="mt-3 pt-3 border-t border-base-300">
+                  <p class="text-xs text-base-content/60 text-center">
                     Showing 5 of <%= length(@recent_submissions) %> recent submissions
                   </p>
                 </div>
@@ -226,10 +226,10 @@ defmodule ClienttCrmAppWeb.DashboardLive do
 
       <!-- Active Forms -->
       <%= if @forms != [] do %>
-        <div class="mt-8 bg-white shadow sm:rounded-lg">
+        <div class="mt-8 bg-base-100 shadow sm:rounded-lg">
           <div class="px-4 py-5 sm:p-6">
             <div class="flex items-center justify-between mb-4">
-              <h3 class="text-base font-semibold leading-6 text-gray-900">
+              <h3 class="text-base font-semibold leading-6 text-base-content">
                 Your Forms
               </h3>
               <.link
@@ -244,7 +244,7 @@ defmodule ClienttCrmAppWeb.DashboardLive do
               <%= for form <- Enum.take(@forms, 6) do %>
                 <.link
                   navigate={~p"/forms/#{form.id}"}
-                  class="relative rounded-lg border border-gray-300 bg-white px-4 py-4 shadow-sm hover:border-primary/70 hover:shadow-md transition-all"
+                  class="relative rounded-lg border border-base-300 bg-base-100 px-4 py-4 shadow-sm hover:border-primary/70 hover:shadow-md transition-all"
                 >
                   <div class="flex items-center justify-between mb-2">
                     <span class={[
@@ -254,13 +254,13 @@ defmodule ClienttCrmAppWeb.DashboardLive do
                       <%= format_status(form.status) %>
                     </span>
                   </div>
-                  <h4 class="text-sm font-medium text-gray-900 mb-1">
+                  <h4 class="text-sm font-medium text-base-content mb-1">
                     <%= form.name %>
                   </h4>
-                  <p class="text-xs text-gray-500 line-clamp-2 mb-3">
+                  <p class="text-xs text-base-content/60 line-clamp-2 mb-3">
                     <%= form.description %>
                   </p>
-                  <div class="flex items-center justify-between text-xs text-gray-500">
+                  <div class="flex items-center justify-between text-xs text-base-content/60">
                     <span><%= form.submission_count %> submissions</span>
                     <span><%= form.view_count %> views</span>
                   </div>
@@ -286,15 +286,15 @@ defmodule ClienttCrmAppWeb.DashboardLive do
     Enum.reduce(forms, 0, fn f, acc -> acc + f.submission_count end)
   end
 
-  defp status_badge_class(:draft), do: "bg-gray-100 text-gray-800"
-  defp status_badge_class(:published), do: "bg-green-100 text-green-800"
-  defp status_badge_class(:archived), do: "bg-yellow-100 text-yellow-800"
+  defp status_badge_class(:draft), do: "bg-base-200 text-base-content"
+  defp status_badge_class(:published), do: "bg-success/20 text-success dark:bg-success/30"
+  defp status_badge_class(:archived), do: "bg-warning/20 text-warning dark:bg-warning/30"
 
-  defp submission_status_class(:new), do: "bg-blue-100 text-blue-800"
-  defp submission_status_class(:contacted), do: "bg-yellow-100 text-yellow-800"
-  defp submission_status_class(:qualified), do: "bg-purple-100 text-purple-800"
-  defp submission_status_class(:converted), do: "bg-green-100 text-green-800"
-  defp submission_status_class(:spam), do: "bg-red-100 text-red-800"
+  defp submission_status_class(:new), do: "bg-info/20 text-info dark:bg-info/30"
+  defp submission_status_class(:contacted), do: "bg-warning/20 text-warning dark:bg-warning/30"
+  defp submission_status_class(:qualified), do: "bg-accent/20 text-accent dark:bg-accent/30"
+  defp submission_status_class(:converted), do: "bg-success/20 text-success dark:bg-success/30"
+  defp submission_status_class(:spam), do: "bg-error/20 text-error dark:bg-error/30"
 
   defp format_status(status), do: status |> Atom.to_string() |> String.capitalize()
 
