@@ -66,6 +66,7 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
      |> assign(:selected_field, nil)
      |> assign(:expanded_categories, [:contacts, :general, :choices])
      |> assign(:show_fields_panel, true)
+     |> assign(:show_right_panel, true)
      |> assign(:form_errors, %{})
      |> assign(:field_errors, %{})
      |> assign(:form_title, form && form.name || "Form Title")
@@ -157,6 +158,11 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
   @impl true
   def handle_event("toggle_fields_panel", _params, socket) do
     {:noreply, assign(socket, :show_fields_panel, !socket.assigns.show_fields_panel)}
+  end
+
+  @impl true
+  def handle_event("toggle_right_panel", _params, socket) do
+    {:noreply, assign(socket, :show_right_panel, !socket.assigns.show_right_panel)}
   end
 
   @impl true
@@ -411,39 +417,34 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
   def render(assigns) do
     ~H"""
     <Layouts.flash_group flash={@flash} />
-    <div data-testid="form-builder" class="h-full flex flex-col">
-      <!-- Toolbar -->
-      <div class="border-b border-base-300 bg-base-100 px-4 py-3">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-4">
-            <.link navigate={~p"/forms"} class="flex items-center text-sm text-base-content/60 hover:text-base-content">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-              </svg>
-              Back
-            </.link>
-            <div>
-              <h1 class="text-2xl font-bold text-base-content">Form Builder</h1>
-              <p class="text-sm text-base-content/60">Create and customize your form with AI assistance</p>
-            </div>
+    <div data-testid="form-builder" class="h-full flex flex-col -m-4">
+      <!-- Page Header - matches Dashboard and All Forms pages -->
+      <div class="px-4 sm:px-6 lg:px-8 pt-4">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+          <div>
+            <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-base-content">Form Builder</h1>
+            <p class="mt-1 text-sm text-base-content/60">
+              Create and customize your form
+            </p>
           </div>
-          <div class="flex items-center gap-2">
+          <div class="mt-4 sm:mt-0 flex flex-wrap items-center gap-2">
             <button
               phx-click="toggle_fields_panel"
               class="btn btn-ghost btn-sm"
             >
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
               </svg>
               <%= if @show_fields_panel, do: "Hide Fields", else: "Show Fields" %>
             </button>
-            <button class="btn btn-ghost btn-sm" disabled>
+            <button
+              phx-click="toggle_right_panel"
+              class="btn btn-ghost btn-sm"
+            >
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
-              AI Assistant
-              <span class="badge badge-xs badge-warning ml-1">Soon</span>
+              <%= if @show_right_panel, do: "Hide Panel", else: "Show Panel" %>
             </button>
             <%= if @form && @form.id do %>
               <.link navigate={~p"/forms/#{@form.id}/preview"} class="btn btn-ghost btn-sm">
@@ -451,16 +452,8 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                 </svg>
-                Show Preview
+                Preview
               </.link>
-            <% else %>
-              <button class="btn btn-ghost btn-sm" disabled>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-                Show Preview
-              </button>
             <% end %>
             <button
               phx-click="save_form"
@@ -476,43 +469,11 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
         </div>
       </div>
 
-      <!-- Post-Submission Actions -->
-      <div class="border-b border-base-300 bg-base-200 px-4 py-3">
-        <div class="flex items-center justify-between">
-          <div>
-            <h3 class="text-sm font-medium text-base-content">Post-Submission Actions</h3>
-            <p class="text-xs text-base-content/60">Configure what happens after form submission</p>
-          </div>
-          <div class="flex items-center gap-2">
-            <button class="btn btn-ghost btn-sm opacity-50 cursor-not-allowed" disabled title="Coming soon">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              Book a Demo
-              <span class="badge badge-xs badge-warning ml-1">Soon</span>
-            </button>
-            <button class="btn btn-ghost btn-sm opacity-50 cursor-not-allowed" disabled title="Coming soon">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-              </svg>
-              Open Chatbot
-              <span class="badge badge-xs badge-warning ml-1">Soon</span>
-            </button>
-            <button class="btn btn-outline btn-sm">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
-              Redirect URL
-            </button>
-          </div>
-        </div>
-      </div>
-
       <!-- Main 3-Column Layout -->
-      <div class="flex-1 flex overflow-hidden">
+      <div class="flex-1 flex flex-col lg:flex-row overflow-hidden mx-4 sm:mx-6 lg:mx-8 mb-4 rounded-lg border border-base-300">
         <!-- Left Panel: Field Palette -->
         <%= if @show_fields_panel do %>
-          <div class="w-72 border-r border-base-300 bg-base-100 overflow-y-auto">
+          <div class="w-full lg:w-72 border-b lg:border-b-0 lg:border-r border-base-300 bg-base-100 overflow-y-auto max-h-48 lg:max-h-none">
             <div class="p-4">
               <h3 class="text-sm font-semibold text-base-content">Add Form Fields</h3>
               <p class="text-xs text-base-content/60 mt-1">Click to add fields to your form</p>
@@ -561,7 +522,7 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
         <% end %>
 
         <!-- Center Panel: Form Canvas -->
-        <div class="flex-1 overflow-y-auto bg-base-200 p-6" phx-click="deselect_field">
+        <div class="flex-1 overflow-y-auto bg-base-200 p-4 sm:p-6" phx-click="deselect_field">
           <div class="max-w-2xl mx-auto">
             <div class="bg-base-100 rounded-lg shadow-sm border border-base-300 p-6">
               <!-- Form Title & Description -->
@@ -660,7 +621,8 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
         </div>
 
         <!-- Right Panel: Properties or AI Assistant -->
-        <div class="w-80 border-l border-base-300 bg-base-100 overflow-y-auto">
+        <%= if @show_right_panel do %>
+        <div class="w-full lg:w-80 border-t lg:border-t-0 lg:border-l border-base-300 bg-base-100 overflow-y-auto max-h-64 lg:max-h-none">
           <%= if @selected_field do %>
             <!-- Field Properties -->
             <div class="p-4">
@@ -815,6 +777,7 @@ defmodule ClienttCrmAppWeb.FormLive.Builder do
             </div>
           <% end %>
         </div>
+        <% end %>
       </div>
     </div>
     """

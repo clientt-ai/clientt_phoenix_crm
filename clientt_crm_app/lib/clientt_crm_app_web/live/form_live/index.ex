@@ -79,14 +79,14 @@ defmodule ClienttCrmAppWeb.FormLive.Index do
     ~H"""
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <!-- Page Header -->
-      <div class="sm:flex sm:items-center sm:justify-between mb-8">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
         <div>
-          <h1 class="text-[38px] font-bold tracking-tight text-base-content leading-tight">All Forms</h1>
-          <p class="mt-2 text-sm text-base-content/60">
+          <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-base-content">All Forms</h1>
+          <p class="mt-1 text-sm text-base-content/60">
             Manage and track your forms
           </p>
         </div>
-        <div class="mt-4 sm:mt-0 flex items-center gap-3">
+        <div class="mt-4 sm:mt-0 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <!-- Search -->
           <div class="relative">
             <input
@@ -95,9 +95,9 @@ defmodule ClienttCrmAppWeb.FormLive.Index do
               value={@search_query}
               phx-keyup="search"
               phx-value-query={@search_query}
-              class="input input-bordered input-sm w-64 pl-9"
+              class="input input-bordered input-sm w-full sm:w-64 pl-9"
             />
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>
@@ -134,8 +134,8 @@ defmodule ClienttCrmAppWeb.FormLive.Index do
         <!-- Total Submissions -->
         <div class="bg-base-100 rounded-lg shadow-md border border-base-300 p-6 transition-shadow hover:shadow-lg">
           <div class="flex items-center">
-            <div class="flex-shrink-0 p-3 bg-purple-100 rounded-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="flex-shrink-0 p-3 bg-secondary/10 rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
               </svg>
             </div>
@@ -258,9 +258,9 @@ defmodule ClienttCrmAppWeb.FormLive.Index do
 
             <%= if @filtered_forms == [] do %>
               <tr>
-                <td colspan="7" class="px-3 py-12 text-center text-sm text-gray-500" data-testid="no-results">
+                <td colspan="7" class="px-3 py-12 text-center text-sm text-base-content/60" data-testid="no-results">
                   <svg
-                    class="mx-auto h-12 w-12 text-gray-400"
+                    class="mx-auto h-12 w-12 text-base-content/30"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -273,13 +273,13 @@ defmodule ClienttCrmAppWeb.FormLive.Index do
                     />
                   </svg>
                   <%= if @search_query != "" do %>
-                    <h3 class="mt-2 text-sm font-semibold text-gray-900">No forms found</h3>
-                    <p class="mt-1 text-sm text-gray-500">
+                    <h3 class="mt-2 text-sm font-semibold text-base-content">No forms found</h3>
+                    <p class="mt-1 text-sm text-base-content/60">
                       No forms match your search "<%= @search_query %>"
                     </p>
                   <% else %>
-                    <h3 class="mt-2 text-sm font-semibold text-gray-900">No forms</h3>
-                    <p class="mt-1 text-sm text-gray-500">
+                    <h3 class="mt-2 text-sm font-semibold text-base-content">No forms</h3>
+                    <p class="mt-1 text-sm text-base-content/60">
                       Get started by creating a new form.
                     </p>
                   <% end %>
@@ -305,9 +305,9 @@ defmodule ClienttCrmAppWeb.FormLive.Index do
     """
   end
 
-  defp status_badge_class(:draft), do: "bg-gray-100 text-gray-700"
-  defp status_badge_class(:published), do: "bg-green-100 text-green-700"
-  defp status_badge_class(:archived), do: "bg-yellow-100 text-yellow-700"
+  defp status_badge_class(:draft), do: "bg-base-200 text-base-content"
+  defp status_badge_class(:published), do: "bg-success/20 text-success"
+  defp status_badge_class(:archived), do: "bg-warning/20 text-warning"
 
   defp format_status(status), do: status |> Atom.to_string() |> String.capitalize()
 
