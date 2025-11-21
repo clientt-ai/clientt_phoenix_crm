@@ -53,60 +53,61 @@ The Forms List screen provides a comprehensive view of all forms with advanced f
 
 ### 1. Page Header & Search
 
-**Layout**: Flex container with space-between
+**Layout**: Follows the standard page header pattern (see `specs/05-ui-design/screens/shared/page-header-pattern.md`)
 
 **Elements**:
 - **Title**: "All Forms"
-  - Typography: `text-[38px] font-bold`
-- **Search Bar**:
-  - Input with search icon (Heroicon: `hero-magnifying-glass`)
-  - Placeholder: "Search forms..."
-  - Width: `400px`
-  - Debounced search (300ms)
-- **Filter Button**: Opens filter dropdown
-  - Options: Status, Date Range, Calendar Sync
-- **Sort Dropdown**:
-  - Options: Name (A-Z), Recent, Submissions, Conversion
-- **Create Form Button**: Primary gradient button
+  - Typography: `text-2xl md:text-3xl font-bold tracking-tight text-base-content`
+- **Description**: "Manage and track your forms"
+  - Typography: `mt-1 text-sm text-base-content/60`
+- **Actions**:
+  - Search input with icon (left-aligned within input)
+  - Primary Button: "Create New Form" (navigates to `/forms/new`)
+
+**Responsive Behavior**:
+- Mobile (<640px): Title, description, search, and button stack vertically
+- Tablet/Desktop (≥640px): Title on left, search + button on right
 
 **LiveView Implementation**:
-```elixir
-<div class="flex items-center justify-between mb-6">
-  <h1 class="text-[38px] font-bold">All Forms</h1>
-  <div class="flex gap-3">
-    <form phx-change="search" phx-submit="search">
-      <.input
-        type="search"
-        name="query"
-        value={@search_query}
+```heex
+<!-- Page Header -->
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+  <div>
+    <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-base-content">All Forms</h1>
+    <p class="mt-1 text-sm text-base-content/60">
+      Manage and track your forms
+    </p>
+  </div>
+  <div class="mt-4 sm:mt-0 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+    <!-- Search -->
+    <div class="relative">
+      <input
+        type="text"
         placeholder="Search forms..."
-        class="w-[400px]"
-      >
-        <:leading_icon><.icon name="hero-magnifying-glass" /></:leading_icon>
-      </.input>
-    </form>
-
-    <.dropdown>
-      <:trigger><.button variant="outline">Filter</.button></:trigger>
-      <.dropdown_item phx-click="filter" phx-value-status="active">Active</.dropdown_item>
-      <.dropdown_item phx-click="filter" phx-value-status="draft">Draft</.dropdown_item>
-      <.dropdown_item phx-click="filter" phx-value-status="paused">Paused</.dropdown_item>
-    </.dropdown>
-
-    <.dropdown>
-      <:trigger><.button variant="outline">Sort</.button></:trigger>
-      <.dropdown_item phx-click="sort" phx-value-by="name">Name (A-Z)</.dropdown_item>
-      <.dropdown_item phx-click="sort" phx-value-by="recent">Most Recent</.dropdown_item>
-      <.dropdown_item phx-click="sort" phx-value-by="submissions">Most Submissions</.dropdown_item>
-    </.dropdown>
-
-    <.button variant="primary-gradient" phx-click="create_form">
-      <.icon name="hero-plus" class="w-4 h-4 mr-2" />
-      Create Form
-    </.button>
+        value={@search_query}
+        phx-keyup="search"
+        phx-value-query={@search_query}
+        class="input input-bordered input-sm w-full sm:w-64 pl-9"
+      />
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
+    </div>
+    <.link
+      navigate={~p"/forms/new"}
+      data-testid="create-form-button"
+      class="btn btn-primary btn-sm"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+      </svg>
+      Create New Form
+    </.link>
   </div>
 </div>
 ```
+
+**Implementation Status**: ✅ Implemented in `lib/clientt_crm_app_web/live/form_live/index.ex`
 
 ---
 

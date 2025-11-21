@@ -180,6 +180,46 @@ HEEx allows interpolation via `{...}` and `<%= ... %>`, but `<%= %>` **only** wo
 </div>
 ```
 
+## Page Header Pattern
+
+All pages should use the consistent page header pattern with DaisyUI semantic classes:
+
+```heex
+<!-- Page Header -->
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+  <div>
+    <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-base-content">
+      Page Title
+    </h1>
+    <p class="mt-1 text-sm text-base-content/60">
+      Description text
+    </p>
+  </div>
+  <div class="mt-4 sm:mt-0 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+    <!-- Action buttons -->
+  </div>
+</div>
+```
+
+**Typography:**
+| Element | Classes |
+|---------|---------|
+| Page Title | `text-2xl md:text-3xl font-bold tracking-tight text-base-content` |
+| Description | `mt-1 text-sm text-base-content/60` |
+
+## Dark Mode with DaisyUI
+
+**Always** use DaisyUI semantic classes for dark mode compatibility:
+
+| Instead of | Use |
+|------------|-----|
+| `text-gray-900`, `text-black` | `text-base-content` |
+| `text-gray-600` | `text-base-content/60` |
+| `text-gray-400` | `text-base-content/40` |
+| `bg-white` | `bg-base-100` |
+| `bg-gray-100` | `bg-base-200` |
+| `border-gray-200` | `border-base-300` |
+
 ## Summary
 
 - Use `.html.heex` or `~H` for templates
@@ -189,3 +229,5 @@ HEEx allows interpolation via `{...}` and `<%= ... %>`, but `<%= %>` **only** wo
 - Use `[...]` for class lists with conditional classes
 - Use `{...}` in attributes, `<%= ... %>` for block constructs in bodies
 - Use `<%!-- --%>` for HEEx comments
+- Use consistent page header pattern with responsive layout
+- Use DaisyUI semantic classes for dark mode support

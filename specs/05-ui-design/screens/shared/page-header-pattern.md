@@ -1,6 +1,6 @@
 # Page Header Pattern
 
-> **Last Updated:** 2024-11-21
+> **Last Updated:** 2025-11-21
 > **Status:** Implemented
 
 ## Overview
