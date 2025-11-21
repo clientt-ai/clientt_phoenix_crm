@@ -11,6 +11,12 @@
     "test:codegen": "playwright codegen http://localhost:4002",
     "test:report": "playwright show-report",
     "test:feature": "playwright test tests/features/",
+    "test:link-checker": "playwright test --config=playwright.link-checker.config.js",
+    "test:link-checker:admin": "ROLE=admin playwright test --config=playwright.link-checker.config.js",
+    "test:link-checker:manager": "ROLE=manager playwright test --config=playwright.link-checker.config.js",
+    "test:link-checker:user": "ROLE=user playwright test --config=playwright.link-checker.config.js",
+    "test:link-checker:form_admin": "ROLE=form_admin playwright test --config=playwright.link-checker.config.js",
+    "test:link-checker:report": "open test-results/link-checker-report.html",
     "install:browsers": "playwright install --with-deps"
   },
   "keywords": [
