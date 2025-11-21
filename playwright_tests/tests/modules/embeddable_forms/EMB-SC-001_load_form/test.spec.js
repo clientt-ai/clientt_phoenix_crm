@@ -1,27 +1,26 @@
 // @ts-check
 const { test, expect } = require('@playwright/test');
 const path = require('path');
+const { createScreenshotHelper } = require('../../../../screenshot-config');
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:4002';
 
 /**
- * EMB-SC-001: Form Loading Tests
+ * EMB-SC-001: Embeddable Form Loading Tests
  *
  * Tests for loading embeddable forms on external websites.
+ * The embed widget allows customers to place forms on their own sites
+ * using a simple script tag and custom HTML element.
  */
-test.describe('EMB-SC-001: Embed Form Loading', () => {
-  let testFormId;
-
-  test.beforeAll(async ({ browser }) => {
-    // Create a test form via the app before running embed tests
-    // This would typically be done via API or database seeding
-    // For now, we'll use an existing published form or skip if none available
-  });
+test.describe('EMB-SC-001: Embeddable Form Loading', () => {
+  // Helper function to capture screenshots with consistent naming
+  const screenshot = createScreenshotHelper(__dirname);
 
   test.beforeEach(async ({ page }) => {
     // Load the test HTML page
     const testPagePath = path.join(__dirname, '..', 'test-page.html');
     await page.goto(`file://${testPagePath}`);
+    await screenshot(page, '01-test-page-loaded');
   });
 
   test('should load embed script successfully', async ({ page }) => {
@@ -42,6 +41,7 @@ test.describe('EMB-SC-001: Embed Form Loading', () => {
     });
 
     expect(customElementDefined).toBe(true);
+    await screenshot(page, '02-script-loaded-successfully');
   });
 
   test('should show error when form-id attribute is missing', async ({ page }) => {
@@ -56,6 +56,7 @@ test.describe('EMB-SC-001: Embed Form Loading', () => {
 
     // Wait for error message to appear
     await page.waitForSelector('.clientt-error-summary', { timeout: 5000 });
+    await screenshot(page, '03-error-missing-form-id');
 
     const errorText = await page.textContent('.clientt-error-summary');
     expect(errorText).toContain('Form ID is required');
@@ -73,6 +74,7 @@ test.describe('EMB-SC-001: Embed Form Loading', () => {
 
     // Wait for error message to appear
     await page.waitForSelector('.clientt-error-summary', { timeout: 10000 });
+    await screenshot(page, '04-error-invalid-form-id');
 
     const errorText = await page.textContent('.clientt-error-summary');
     expect(errorText).toContain('Form not found');
@@ -97,6 +99,7 @@ test.describe('EMB-SC-001: Embed Form Loading', () => {
     // Check for loading spinner
     const spinner = await page.waitForSelector('.clientt-spinner', { timeout: 2000 });
     expect(spinner).toBeTruthy();
+    await screenshot(page, '05-loading-spinner-visible');
   });
 
   test('should inject styles into document head', async ({ page }) => {
@@ -120,6 +123,7 @@ test.describe('EMB-SC-001: Embed Form Loading', () => {
 
     expect(styleContent).toContain('clientt-form');
     expect(styleContent).toContain('--clientt-primary-color');
+    await screenshot(page, '06-styles-injected');
   });
 
   test('should apply custom CSS variables from host page', async ({ page }) => {
@@ -137,6 +141,7 @@ test.describe('EMB-SC-001: Embed Form Loading', () => {
     });
 
     expect(customColor).toBe('#FF5722');
+    await screenshot(page, '07-custom-css-variables-applied');
   });
 });
 
@@ -144,7 +149,9 @@ test.describe('EMB-SC-001: Embed Form Loading', () => {
  * Integration test with a real published form
  * These tests require a published form to exist in the database
  */
-test.describe('EMB-SC-001: Form Loading - Integration', () => {
+test.describe('EMB-SC-001: Embeddable Form Loading - Integration', () => {
+  const screenshot = createScreenshotHelper(__dirname);
+
   test.skip('should load and render a published form', async ({ page }) => {
     // This test requires a real published form ID
     // Skip by default, enable when running against a seeded database
@@ -158,6 +165,7 @@ test.describe('EMB-SC-001: Form Loading - Integration', () => {
     // Navigate to test page
     const testPagePath = path.join(__dirname, '..', 'test-page.html');
     await page.goto(`file://${testPagePath}`);
+    await screenshot(page, '08-integration-test-page');
 
     // Load embed script
     await page.addScriptTag({ url: `${BASE_URL}/embed/clientt-forms.js` });
@@ -170,6 +178,7 @@ test.describe('EMB-SC-001: Form Loading - Integration', () => {
 
     // Wait for form to load
     await page.waitForSelector('.clientt-form-title', { timeout: 10000 });
+    await screenshot(page, '09-published-form-loaded');
 
     // Verify form elements
     const title = await page.textContent('.clientt-form-title');
@@ -178,9 +187,11 @@ test.describe('EMB-SC-001: Form Loading - Integration', () => {
     // Verify at least one field rendered
     const fields = await page.$$('.clientt-field');
     expect(fields.length).toBeGreaterThan(0);
+    await screenshot(page, '10-form-fields-rendered');
 
     // Verify submit button exists
     const submitBtn = await page.$('button[type="submit"]');
     expect(submitBtn).toBeTruthy();
+    await screenshot(page, '11-submit-button-visible');
   });
 });
