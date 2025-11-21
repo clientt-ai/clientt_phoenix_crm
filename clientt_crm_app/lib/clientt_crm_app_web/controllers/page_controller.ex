@@ -10,7 +10,7 @@ defmodule ClienttCrmAppWeb.PageController do
 
       _user ->
         # Authenticated, redirect to dashboard
-        redirect(conn, to: ~p"/dashboard")
+        redirect(conn, to: ~p"/forms_dashboard")
     end
   end
 end

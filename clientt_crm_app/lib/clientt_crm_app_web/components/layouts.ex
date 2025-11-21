@@ -174,7 +174,7 @@ defmodule ClienttCrmAppWeb.Layouts do
             icon="hero-document-text"
             expanded={true}
           >
-            <.sidebar_link navigate={~p"/dashboard"} active={@current_page == "dashboard"} data-testid="nav-dashboard">
+            <.sidebar_link navigate={~p"/forms_dashboard"} active={@current_page == "dashboard"} data-testid="nav-dashboard">
               <.icon name="hero-chart-bar" class="w-4 h-4" />
               Dashboard
             </.sidebar_link>
