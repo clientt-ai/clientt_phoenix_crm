@@ -38,6 +38,56 @@
           const newTheme = currentTheme === "dark" ? "light" : "dark";
           setTheme(newTheme);
         });
+
+        // Sidebar toggle
+        const setSidebar = (open) => {
+          localStorage.setItem("phx:sidebar", open ? "open" : "closed");
+          const sidebar = document.getElementById("app-sidebar");
+          const header = document.getElementById("app-header");
+          const main = document.getElementById("app-main");
+
+          if (sidebar) {
+            if (open) {
+              sidebar.classList.remove("-translate-x-full");
+              sidebar.classList.add("translate-x-0");
+            } else {
+              sidebar.classList.remove("translate-x-0");
+              sidebar.classList.add("-translate-x-full");
+            }
+          }
+          if (header) {
+            if (open) {
+              header.classList.remove("left-0");
+              header.classList.add("left-64");
+            } else {
+              header.classList.remove("left-64");
+              header.classList.add("left-0");
+            }
+          }
+          if (main) {
+            if (open) {
+              main.classList.remove("ml-0");
+              main.classList.add("ml-64");
+            } else {
+              main.classList.remove("ml-64");
+              main.classList.add("ml-0");
+            }
+          }
+        };
+
+        // Initialize sidebar state
+        window.sidebarOpen = localStorage.getItem("phx:sidebar") !== "closed";
+
+        // Toggle sidebar
+        window.addEventListener("phx:toggle-sidebar", () => {
+          window.sidebarOpen = !window.sidebarOpen;
+          setSidebar(window.sidebarOpen);
+        });
+
+        // Apply initial sidebar state after DOM loads
+        document.addEventListener("DOMContentLoaded", () => {
+          setSidebar(window.sidebarOpen);
+        });
       })();
     </script>
   </head>

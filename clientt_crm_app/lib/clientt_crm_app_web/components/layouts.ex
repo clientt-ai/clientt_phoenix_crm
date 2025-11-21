@@ -65,12 +65,12 @@ defmodule ClienttCrmAppWeb.Layouts do
   def theme_toggle(assigns) do
     ~H"""
     <button
-      class="btn btn-ghost btn-circle w-9 h-9"
+      class="flex items-center justify-center w-9 h-9 rounded-lg hover:bg-base-200 transition-colors"
       phx-click={JS.dispatch("phx:toggle-theme")}
       aria-label="Toggle theme"
     >
-      <.icon name="hero-sun" class="w-4 h-4 [[data-theme=light]_&]:block [[data-theme=dark]_&]:hidden" />
-      <.icon name="hero-moon" class="w-4 h-4 [[data-theme=light]_&]:hidden [[data-theme=dark]_&]:block" />
+      <.icon name="hero-sun" class="w-5 h-5 text-base-content/60 [[data-theme=light]_&]:block [[data-theme=dark]_&]:hidden" />
+      <.icon name="hero-moon" class="w-5 h-5 text-base-content/60 [[data-theme=light]_&]:hidden [[data-theme=dark]_&]:block" />
     </button>
     """
   end
@@ -96,18 +96,21 @@ defmodule ClienttCrmAppWeb.Layouts do
 
   def app_header(assigns) do
     ~H"""
-    <header class={[
-      "h-16 bg-base-100 border-b border-base-300 fixed top-0 right-0 z-30",
-      "transition-all duration-300",
-      @sidebar_open && "left-64" || "left-0"
-    ]}>
+    <header
+      id="app-header"
+      class={[
+        "h-16 bg-base-100 border-b border-base-300 fixed top-0 right-0 z-30",
+        "transition-all duration-300",
+        "left-64"
+      ]}
+    >
       <div class="h-full px-6 flex items-center justify-between">
         <!-- Left Section -->
         <div class="flex items-center gap-4 flex-1 max-w-xl">
           <!-- Sidebar Toggle -->
           <button
-            phx-click="toggle_sidebar"
-            class="p-2 rounded-lg hover:bg-base-200 transition-colors"
+            phx-click={JS.dispatch("phx:toggle-sidebar")}
+            class="flex items-center justify-center w-9 h-9 rounded-lg hover:bg-base-200 transition-colors"
             aria-label="Toggle sidebar"
           >
             <.icon name="hero-bars-3" class="w-5 h-5 text-base-content/60" />
@@ -150,12 +153,15 @@ defmodule ClienttCrmAppWeb.Layouts do
 
   def sidebar(assigns) do
     ~H"""
-    <aside class={[
-      "h-screen bg-base-100 border-r border-base-300 fixed top-0 left-0 z-40",
-      "transition-transform duration-300",
-      @open && "translate-x-0" || "-translate-x-full",
-      "w-64"
-    ]}>
+    <aside
+      id="app-sidebar"
+      class={[
+        "h-screen bg-base-100 border-r border-base-300 fixed top-0 left-0 z-40",
+        "transition-transform duration-300",
+        "translate-x-0",
+        "w-64"
+      ]}
+    >
       <div class="h-full flex flex-col">
         <!-- Logo Section -->
         <div class="h-16 px-6 flex items-center border-b border-base-300">
@@ -397,9 +403,9 @@ defmodule ClienttCrmAppWeb.Layouts do
   def notifications_dropdown(assigns) do
     ~H"""
     <div class="dropdown dropdown-end">
-      <label tabindex="0" class="btn btn-ghost btn-circle">
+      <label tabindex="0" class="flex items-center justify-center w-9 h-9 rounded-lg hover:bg-base-200 transition-colors cursor-pointer">
         <div class="indicator">
-          <.icon name="hero-bell" class="w-5 h-5" />
+          <.icon name="hero-bell" class="w-5 h-5 text-base-content/60" />
           <%= if @count > 0 do %>
             <span class="badge badge-sm badge-primary indicator-item">
               {@count}
@@ -441,16 +447,14 @@ defmodule ClienttCrmAppWeb.Layouts do
   def profile_dropdown(assigns) do
     ~H"""
     <div class="dropdown dropdown-end">
-      <label tabindex="0" class="btn btn-ghost gap-2">
+      <label tabindex="0" class="flex items-center justify-center w-9 h-9 rounded-lg hover:bg-base-200 transition-colors cursor-pointer">
         <div class="avatar placeholder">
-          <div class="bg-neutral text-neutral-content rounded-full w-8">
+          <div class="bg-neutral text-neutral-content rounded-full w-7">
             <span class="text-xs">
               {(to_string(@user.email) || "U") |> String.first() |> String.upcase()}
             </span>
           </div>
         </div>
-        <span class="hidden lg:inline">{@user.email}</span>
-        <.icon name="hero-chevron-down" class="w-4 h-4" />
       </label>
       <ul
         tabindex="0"

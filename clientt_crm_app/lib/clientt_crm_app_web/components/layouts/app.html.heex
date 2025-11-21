@@ -10,10 +10,10 @@
   unread_notifications={assigns[:unread_notifications] || 0}
 />
 
-<main class={[
-  "min-h-screen pt-16 transition-all duration-300",
-  (assigns[:sidebar_open] || true) && "ml-64" || "ml-0"
-]}>
+<main
+  id="app-main"
+  class="min-h-screen pt-16 transition-all duration-300 ml-64"
+>
   <div class="p-6">
     {@inner_content}
   </div>

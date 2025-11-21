@@ -2,7 +2,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Phoenix Server",
+      "name": "Phoenix Server (Terminal)",
       "type": "node-terminal",
       "request": "launch",
       "command": "cd ${workspaceFolder}/clientt_crm_app && mix phx.server",
@@ -11,6 +11,13 @@
         "MIX_ENV": "dev"
       }
     },
+    {
+      "name": "Figma Dev Server (Forms Dashboard)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "cd \"${workspaceFolder}/figma_src/205 Forms Dashboard\" && npm install --silent && npm run dev",
+      "cwd": "${workspaceFolder}"
+    }
     {
       "name": "Phoenix Server (Production Mode)",
       "type": "node-terminal",
@@ -106,13 +113,6 @@
       "type": "node-terminal",
       "request": "launch",
       "command": "cd ${workspaceFolder}/figma_playwright && npx playwright test --headed",
-      "cwd": "${workspaceFolder}"
-    },
-    {
-      "name": "Figma Dev Server (Forms Dashboard)",
-      "type": "node-terminal",
-      "request": "launch",
-      "command": "cd \"${workspaceFolder}/figma_src/205 Forms Dashboard\" && npm install --silent && npm run dev",
       "cwd": "${workspaceFolder}"
     }
   ]

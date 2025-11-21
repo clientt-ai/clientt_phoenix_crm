@@ -29,10 +29,25 @@ defmodule ClienttCrmAppWeb.LiveUserAuth do
     if socket.assigns[:current_user] do
       # Load user's primary company (first active authz_user)
       socket = load_user_company(socket)
+
+      # Add sidebar state and attach event handler
+      socket =
+        socket
+        |> assign(:sidebar_open, true)
+        |> Phoenix.LiveView.attach_hook(:sidebar_toggle, :handle_event, &handle_sidebar_event/3)
+
       {:cont, socket}
     else
       {:halt, Phoenix.LiveView.redirect(socket, to: ~p"/sign-in")}
     end
+  end
+
+  defp handle_sidebar_event("toggle_sidebar", _params, socket) do
+    {:halt, assign(socket, :sidebar_open, !socket.assigns.sidebar_open)}
+  end
+
+  defp handle_sidebar_event(_event, _params, socket) do
+    {:cont, socket}
   end
 
   defp load_user_company(socket) do
