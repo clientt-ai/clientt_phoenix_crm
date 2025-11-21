@@ -163,6 +163,66 @@ Ensure **clean typography, spacing, and layout balance** for a refined, premium 
 - Use proper line heights for readability
 - Ensure adequate contrast ratios
 
+### Page Header Pattern
+
+All pages should follow a consistent page header pattern:
+
+```heex
+<!-- Page Header -->
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+  <div>
+    <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-base-content">
+      Page Title
+    </h1>
+    <p class="mt-1 text-sm text-base-content/60">
+      Description text
+    </p>
+  </div>
+  <div class="mt-4 sm:mt-0 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+    <!-- Action buttons -->
+  </div>
+</div>
+```
+
+**Key Classes:**
+- **Title**: `text-2xl md:text-3xl font-bold tracking-tight text-base-content`
+- **Description**: `mt-1 text-sm text-base-content/60`
+- **Actions container**: `mt-4 sm:mt-0 flex flex-col sm:flex-row items-stretch sm:items-center gap-3`
+
+**Responsive Behavior:**
+- Mobile (<640px): Title and actions stack vertically, actions stretch full width
+- Tablet/Desktop (≥640px): Title and actions side by side
+
+### Dark Mode Support
+
+Use DaisyUI semantic color classes for automatic dark mode support:
+
+| Purpose | Use | Avoid |
+|---------|-----|-------|
+| Primary text | `text-base-content` | `text-gray-900`, `text-black` |
+| Secondary text | `text-base-content/60` | `text-gray-600` |
+| Muted text | `text-base-content/40` | `text-gray-400` |
+| Primary background | `bg-base-100` | `bg-white` |
+| Secondary background | `bg-base-200` | `bg-gray-100` |
+| Borders | `border-base-300` | `border-gray-200` |
+
+**Status Badge Pattern:**
+```elixir
+defp status_badge_class(:draft), do: "bg-base-200 text-base-content"
+defp status_badge_class(:published), do: "bg-success/20 text-success"
+defp status_badge_class(:archived), do: "bg-warning/20 text-warning"
+```
+
+### Card Styling
+
+Consistent card pattern across all pages:
+
+```heex
+<div class="bg-base-100 rounded-lg shadow-md border border-base-300 p-6 transition-shadow hover:shadow-lg">
+  <!-- Card content -->
+</div>
+```
+
 ### Delightful Details
 
 Focus on **delightful details**:
@@ -207,3 +267,5 @@ Focus on **delightful details**:
 - Build custom components, avoid daisyUI
 - Import vendor deps into app.js/app.css
 - Focus on world-class UI with micro-interactions and delightful details
+- Use consistent page header pattern across all pages
+- Use DaisyUI semantic classes for dark mode support (`text-base-content`, `bg-base-100`, etc.)

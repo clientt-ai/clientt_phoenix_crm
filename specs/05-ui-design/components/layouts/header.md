@@ -538,5 +538,44 @@ From `specs/05-ui-design/design-tokens.md`:
 
 ---
 
-**Last Updated**: 2025-11-17
+**Last Updated**: 2024-11-21
 **Maintained By**: ClienttCRM Design Team
+
+---
+
+## Page Header Pattern (In-Page Headers)
+
+For page-level headers within content areas (distinct from the global navigation header above), see the standard page header pattern: `specs/05-ui-design/screens/shared/page-header-pattern.md`
+
+### Quick Reference
+
+```heex
+<!-- Page Header -->
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+  <div>
+    <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-base-content">
+      Page Title
+    </h1>
+    <p class="mt-1 text-sm text-base-content/60">
+      Description text
+    </p>
+  </div>
+  <div class="mt-4 sm:mt-0 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+    <!-- Action buttons -->
+  </div>
+</div>
+```
+
+### Key Classes
+
+| Element | Classes |
+|---------|---------|
+| Title | `text-2xl md:text-3xl font-bold tracking-tight text-base-content` |
+| Description | `mt-1 text-sm text-base-content/60` |
+| Actions | `mt-4 sm:mt-0 flex flex-col sm:flex-row items-stretch sm:items-center gap-3` |
+
+### Implementations
+
+- **Form Dashboard**: `lib/clientt_crm_app_web/live/dashboard_live.ex`
+- **All Forms**: `lib/clientt_crm_app_web/live/form_live/index.ex`
+- **Form Builder**: `lib/clientt_crm_app_web/live/form_live/builder.ex`

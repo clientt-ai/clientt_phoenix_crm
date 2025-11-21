@@ -92,19 +92,41 @@ The Form Builder is a drag-and-drop interface that enables admins and managers t
 
 ### 1. Header Bar
 
+**Layout**: Follows the standard page header pattern with additional toolbar elements (see `specs/05-ui-design/screens/shared/page-header-pattern.md`)
+
+**Elements**:
+- **Title**: "Form Builder"
+  - Typography: `text-2xl md:text-3xl font-bold tracking-tight text-base-content`
+- **Description**: "Create and customize your form"
+  - Typography: `mt-1 text-sm text-base-content/60`
+- **Actions** (responsive toolbar):
+  - Panel toggle buttons: "Hide/Show Fields", "Hide/Show Panel"
+  - Preview link
+  - Save Button: Primary action
+
+**Responsive Behavior**:
+- Desktop: Full three-column layout with visible sidebars
+- Tablet: Collapsible sidebars with toggle buttons
+- Mobile: Stacked single-column with tab-based navigation
+
 | Element | Component | Props/Assigns | Event Handler |
 |---------|-----------|---------------|---------------|
 | Form Name | `<.input type="text">` | `value={@form.name}` | `phx-change="update_name"` |
+| Fields Toggle | `<.button variant="ghost">` | `show_fields_panel` state | `phx-click="toggle_fields_panel"` |
+| Panel Toggle | `<.button variant="ghost">` | `show_right_panel` state | `phx-click="toggle_right_panel"` |
+| Preview Link | `<.link>` | `navigate={preview_url}` | - |
 | Save Button | `<.button variant="primary">` | `disabled={!@form_valid}` | `phx-click="save_draft"` |
-| Publish Button | `<.button variant="success">` | `disabled={!@can_publish}` | `phx-click="publish_form"` |
-| Close | `<.link navigate={~p"/forms"}>` | - | - |
 
 **State:**
 ```elixir
 @form_valid - boolean - All fields have valid configuration
 @can_publish - boolean - Form has at least 1 field
 @form - Form changeset
+@show_fields_panel - boolean - Left sidebar visibility (default: true)
+@show_right_panel - boolean - Right sidebar visibility (default: true)
 ```
+
+**Implementation Status**: ✅ Implemented in `lib/clientt_crm_app_web/live/form_live/builder.ex`
 
 ---
 

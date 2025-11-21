@@ -52,37 +52,51 @@ The Forms Dashboard is the primary landing page for the Forms module, providing 
 
 ### 1. Page Header
 
-**Layout**: Flex container with space-between alignment
+**Layout**: Follows the standard page header pattern (see `specs/05-ui-design/screens/shared/page-header-pattern.md`)
 
 **Elements**:
-- **Title**: "Forms Dashboard"
-  - Typography: `text-[38px] font-bold` (from design-tokens.md)
-  - Color: `base-content`
-- **Subtitle**: "Monitor your form performance and submissions"
-  - Typography: `text-sm text-muted-foreground`
+- **Title**: "Form Dashboard"
+  - Typography: `text-2xl md:text-3xl font-bold tracking-tight text-base-content`
+- **Description**: "Track your forms, submissions, and leads"
+  - Typography: `mt-1 text-sm text-base-content/60`
 - **Quick Actions**:
-  - Primary Button: "Create Form" (primary gradient)
-  - Secondary Button: "AI Generate" (accent gradient with sparkle icon)
+  - Ghost Button: "View All Forms" (navigates to `/forms`)
+  - Primary Button: "Create New Form" (primary, navigates to `/forms/new`)
+
+**Responsive Behavior**:
+- Mobile (<640px): Title and actions stack vertically, actions stretch full width
+- Tablet/Desktop (≥640px): Title and actions side by side
 
 **LiveView Implementation**:
-```elixir
-<div class="flex items-center justify-between mb-8">
+```heex
+<!-- Page Header -->
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
   <div>
-    <h1 class="text-[38px] font-bold">Forms Dashboard</h1>
-    <p class="text-sm text-muted-foreground">Monitor your form performance and submissions</p>
+    <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-base-content">
+      Form Dashboard
+    </h1>
+    <p class="mt-1 text-sm text-base-content/60">
+      Track your forms, submissions, and leads
+    </p>
   </div>
-  <div class="flex gap-2">
-    <.button variant="primary-gradient" phx-click="create_form">
-      <.icon name="hero-plus" class="w-4 h-4 mr-2" />
-      Create Form
-    </.button>
-    <.button variant="accent-gradient" phx-click="open_ai_assistant">
-      <.icon name="hero-sparkles" class="w-4 h-4 mr-2" />
-      AI Generate
-    </.button>
+  <div class="mt-4 sm:mt-0 flex items-center gap-3">
+    <.link navigate={~p"/forms"} class="btn btn-ghost btn-sm">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+      View All Forms
+    </.link>
+    <.link navigate={~p"/forms/new"} data-testid="create-form-button" class="btn btn-primary btn-sm">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+      </svg>
+      Create New Form
+    </.link>
   </div>
 </div>
 ```
+
+**Implementation Status**: ✅ Implemented in `lib/clientt_crm_app_web/live/dashboard_live.ex`
 
 ---
 
