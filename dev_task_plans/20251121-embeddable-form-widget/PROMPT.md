@@ -4,6 +4,43 @@
 
 Create an embeddable form widget that customers can place on external websites (like Wix) using a custom HTML element. The widget fetches form metadata from our Phoenix/Ash backend, renders the form with style inheritance via CSS variables, and submits data back to our server.
 
+---
+
+## Success Criteria
+
+This task is complete when ALL of the following are true:
+
+### Backend
+- [ ] `EMBED_BASE_URL` environment variable configured with default `https://app.clientt.com`
+- [ ] Public API endpoint `GET /api/public/forms/:id` returns form metadata and increments view count
+- [ ] Public API endpoint `POST /api/public/forms/:id/submissions` creates submissions with validation
+- [ ] CORS middleware allows configurable domain restrictions per form
+- [ ] Form model `settings` extended with embed configuration fields
+- [ ] FormField model has `step` attribute for multi-step support
+
+### Frontend Embed Widget
+- [ ] `clientt-forms.js` served from `/embed/clientt-forms.js`
+- [ ] Custom element `<clientt-form>` renders forms from API
+- [ ] All 10 field types render correctly (text, email, textarea, select, checkbox, radio, number, date, phone, url)
+- [ ] CSS variables allow style customization without Shadow DOM
+- [ ] Client-side validation works for all validation_rules
+- [ ] Server-side validation errors display inline AND as summary
+- [ ] Multi-step forms work with progress indicator and navigation
+- [ ] Lazy loading works with `lazy` attribute
+- [ ] Success behaviors work: message display, callback function, redirect
+
+### Form Builder UI
+- [ ] Embed settings section with success message toggle, callback function, allowed domains
+- [ ] Multi-step configuration UI (enable toggle, step management)
+- [ ] Embed code preview with copy-to-clipboard
+
+### Playwright Tests Pass
+- [ ] All new Playwright tests in `playwright_tests/tests/modules/embed/` pass
+- [ ] Existing form tests continue to pass
+- [ ] `npx playwright test tests/modules/embed/ --project=chromium` exits with 0
+
+---
+
 ## Embed Tag Format
 
 ```html
@@ -274,16 +311,150 @@ Add CORS plug/middleware that:
 
 ---
 
-## Testing Considerations
+## Playwright Tests
 
-- Create Playwright tests for embed widget functionality
-- Test on a mock external page (HTML file that includes the embed)
-- Test CORS behavior
-- Test all field types render correctly
-- Test validation (client and server)
-- Test multi-step navigation
-- Test success behaviors (message, callback, redirect)
-- Test lazy loading
+All tests should be placed in `playwright_tests/tests/modules/embed/`.
+
+### Test Structure
+
+```
+playwright_tests/tests/modules/embed/
+├── EMB-SC-001_load_form/
+│   └── test.spec.js           # Form loading and rendering
+├── EMB-SC-002_field_types/
+│   └── test.spec.js           # All 10 field types render correctly
+├── EMB-SC-003_validation/
+│   └── test.spec.js           # Client-side and server-side validation
+├── EMB-SC-004_submission/
+│   └── test.spec.js           # Form submission flow
+├── EMB-SC-005_success_behaviors/
+│   └── test.spec.js           # Message, callback, redirect
+├── EMB-SC-006_multi_step/
+│   └── test.spec.js           # Multi-step form navigation
+├── EMB-SC-007_lazy_loading/
+│   └── test.spec.js           # Lazy load with IntersectionObserver
+├── EMB-SC-008_css_variables/
+│   └── test.spec.js           # Style customization via CSS variables
+└── EMB-SC-009_error_handling/
+    └── test.spec.js           # Network errors, invalid form ID, etc.
+```
+
+### Test Scenarios
+
+#### EMB-SC-001: Form Loading
+- [ ] Should load form when script and custom element are added to page
+- [ ] Should display loading spinner while fetching metadata
+- [ ] Should render form with correct title and description
+- [ ] Should handle invalid form ID gracefully (show error message)
+- [ ] Should increment view_count when form is loaded
+
+#### EMB-SC-002: Field Type Rendering
+- [ ] Should render text input field
+- [ ] Should render email input field
+- [ ] Should render textarea field
+- [ ] Should render select dropdown with options
+- [ ] Should render checkbox field
+- [ ] Should render radio buttons with options
+- [ ] Should render number input with min/max attributes
+- [ ] Should render date picker
+- [ ] Should render phone input (tel)
+- [ ] Should render URL input
+- [ ] Should display labels, placeholders, and help text
+- [ ] Should show required indicator for required fields
+
+#### EMB-SC-003: Validation
+- [ ] Should validate required fields on submit
+- [ ] Should validate min_length constraint
+- [ ] Should validate max_length constraint
+- [ ] Should validate min_value for number fields
+- [ ] Should validate max_value for number fields
+- [ ] Should validate email format
+- [ ] Should validate URL format
+- [ ] Should show inline errors next to fields
+- [ ] Should show error summary at top of form
+- [ ] Should clear errors when field is corrected
+
+#### EMB-SC-004: Form Submission
+- [ ] Should submit form data to API endpoint
+- [ ] Should show loading state on submit button
+- [ ] Should disable form during submission
+- [ ] Should handle successful submission
+- [ ] Should handle server validation errors
+- [ ] Should handle network errors gracefully
+
+#### EMB-SC-005: Success Behaviors
+- [ ] Should display success message when show_success_message is true
+- [ ] Should call JavaScript callback function when callback_function is set
+- [ ] Should redirect to URL when redirect_url is set
+- [ ] Should handle multiple success behaviors in correct order
+
+#### EMB-SC-006: Multi-Step Forms
+- [ ] Should render step progress indicator
+- [ ] Should show only fields for current step
+- [ ] Should navigate to next step on Next button click
+- [ ] Should navigate to previous step on Previous button click
+- [ ] Should validate current step before allowing Next
+- [ ] Should show Submit button only on final step
+- [ ] Should submit all step data together
+
+#### EMB-SC-007: Lazy Loading
+- [ ] Should not load form when lazy attribute is set and element not visible
+- [ ] Should load form when element scrolls into view
+- [ ] Should show placeholder before form is loaded
+- [ ] Should load immediately when lazy attribute is not set
+
+#### EMB-SC-008: CSS Variables
+- [ ] Should inherit font-family from parent by default
+- [ ] Should apply custom --clientt-primary-color
+- [ ] Should apply custom --clientt-error-color
+- [ ] Should apply custom --clientt-border-color
+- [ ] Should apply custom input styling variables
+- [ ] Should apply custom button styling variables
+
+#### EMB-SC-009: Error Handling
+- [ ] Should show error when form ID is missing
+- [ ] Should show error when form ID is invalid/not found
+- [ ] Should show error when API is unreachable
+- [ ] Should show error when form is not published
+- [ ] Should handle CORS rejection gracefully
+
+### Test Setup
+
+Tests will use a mock HTML page that includes the embed:
+
+```html
+<!-- playwright_tests/tests/modules/embed/test-page.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Embed Test Page</title>
+  <style>
+    /* Custom CSS variable overrides for testing */
+    clientt-form {
+      --clientt-primary-color: #FF0000;
+    }
+  </style>
+</head>
+<body>
+  <h1>External Website Simulation</h1>
+  <script src="http://localhost:4002/embed/clientt-forms.js"></script>
+  <clientt-form form-id="TEST_FORM_ID"></clientt-form>
+</body>
+</html>
+```
+
+### Running Tests
+
+```bash
+# Run all embed tests
+npx playwright test tests/modules/embed/ --project=chromium
+
+# Run specific test file
+npx playwright test tests/modules/embed/EMB-SC-001_load_form/test.spec.js --project=chromium
+
+# Run in headed mode for debugging
+npx playwright test tests/modules/embed/ --project=chromium --headed
+```
 
 ---
 
