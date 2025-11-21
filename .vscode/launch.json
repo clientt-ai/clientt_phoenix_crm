@@ -114,6 +114,27 @@
       "request": "launch",
       "command": "cd ${workspaceFolder}/figma_playwright && npx playwright test --headed",
       "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Link Checker (All Roles)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "cd ${workspaceFolder}/playwright_tests && npm run test:link-checker",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Link Checker (Admin Only)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "cd ${workspaceFolder}/playwright_tests && npm run test:link-checker:admin",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Link Checker (Show Report)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "cd ${workspaceFolder}/playwright_tests && npm run test:link-checker:report",
+      "cwd": "${workspaceFolder}"
     }
   ]
 }

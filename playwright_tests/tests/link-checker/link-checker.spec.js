@@ -361,11 +361,20 @@ async function clickAndCheck(page, element, role, currentUrl) {
     // Check HTTP status via response if available (for initial page loads)
     const responseStatus = page.url().includes('/404') || page.url().includes('/500');
 
-    if (hasErrorTitle || hasPhoenixError || hasErrorContainer || responseStatus) {
+    // Check for Phoenix debug error page (development mode)
+    // This is the red error page with stack traces
+    const hasPhoenixDebugError = await page.locator('.phoenix-error, .plug-exception, [data-phoenix-error]').count() > 0;
+
+    // Check page content for common error indicators
+    const pageContent = await page.content();
+    const hasErrorContent = /Internal Server Error|RuntimeError|ArgumentError|KeyError|FunctionClauseError|Protocol\.UndefinedError|Ecto\.NoResultsError|Phoenix\.Router\.NoRouteError/i.test(pageContent);
+
+    if (hasErrorTitle || hasPhoenixError || hasErrorContainer || responseStatus || hasPhoenixDebugError || hasErrorContent) {
+      const errorType = hasPhoenixDebugError || hasErrorContent ? 'critical' : 'warning';
       errors.push({
         type: 'error_page',
-        severity: 'warning',
-        message: `Error page detected: title="${pageTitle}"`,
+        severity: errorType,
+        message: `Error page detected: title="${pageTitle}"${hasErrorContent ? ' (contains exception)' : ''}`,
         url: page.url(),
       });
     }
@@ -419,7 +428,7 @@ async function clickAndCheck(page, element, role, currentUrl) {
 /**
  * Crawl pages starting from the current page
  */
-async function crawlPages(page, role, visitedUrls, maxDepth = 3, currentDepth = 0) {
+async function crawlPages(page, role, visitedUrls, maxDepth = 8, currentDepth = 0) {
   if (currentDepth >= maxDepth) return;
 
   const currentUrl = page.url();
