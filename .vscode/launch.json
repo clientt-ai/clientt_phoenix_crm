@@ -17,7 +17,7 @@
       "request": "launch",
       "command": "cd \"${workspaceFolder}/figma_src/205 Forms Dashboard\" && npm install --silent && npm run dev",
       "cwd": "${workspaceFolder}"
-    }
+    },
     {
       "name": "Phoenix Server (Production Mode)",
       "type": "node-terminal",
