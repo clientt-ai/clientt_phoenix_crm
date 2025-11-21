@@ -98,21 +98,42 @@
       "name": "Figma Playwright Tests",
       "type": "node-terminal",
       "request": "launch",
-      "command": "cd ${workspaceFolder}/figma_playwright && npx playwright test",
+      "command": "cd ${workspaceFolder}/figma_playwright && npx playwright test --grep-invert \"FG-SC\"",
       "cwd": "${workspaceFolder}"
     },
     {
       "name": "Figma Playwright Tests (UI Mode)",
       "type": "node-terminal",
       "request": "launch",
-      "command": "cd ${workspaceFolder}/figma_playwright && npx playwright test --ui",
+      "command": "cd ${workspaceFolder}/figma_playwright && npx playwright test --ui --grep-invert \"FG-SC\"",
       "cwd": "${workspaceFolder}"
     },
     {
       "name": "Figma Playwright Tests (Headed)",
       "type": "node-terminal",
       "request": "launch",
-      "command": "cd ${workspaceFolder}/figma_playwright && npx playwright test --headed",
+      "command": "cd ${workspaceFolder}/figma_playwright && npx playwright test --headed --grep-invert \"FG-SC\"",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Figma Playwright Screenshots",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "cd ${workspaceFolder}/figma_playwright && npx playwright test --grep \"FG-SC\"",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Figma Playwright Screenshots (UI Mode)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "cd ${workspaceFolder}/figma_playwright && npx playwright test --ui --grep \"FG-SC\"",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Figma Playwright Screenshots (Headed)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "cd ${workspaceFolder}/figma_playwright && npx playwright test --headed --grep \"FG-SC\"",
       "cwd": "${workspaceFolder}"
     },
     {
