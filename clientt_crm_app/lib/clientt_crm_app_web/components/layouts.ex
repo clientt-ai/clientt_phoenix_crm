@@ -195,7 +195,17 @@ defmodule ClienttCrmAppWeb.Layouts do
             <.sidebar_link disabled={true} data-testid="nav-analytics">
               <.icon name="hero-chart-pie" class="w-4 h-4" />
               Analytics
-              <.badge variant="info" class="ml-auto">Soon</.badge>
+              <.badge variant="info" class="ml-auto text-xs">Soon</.badge>
+            </.sidebar_link>
+            <.sidebar_link disabled={true} data-testid="nav-calendar">
+              <.icon name="hero-calendar" class="w-4 h-4" />
+              Calendar
+              <.badge variant="info" class="ml-auto text-xs">Soon</.badge>
+            </.sidebar_link>
+            <.sidebar_link disabled={true} data-testid="nav-chat-agents">
+              <.icon name="hero-chat-bubble-left-right" class="w-4 h-4" />
+              Chat Agents
+              <.badge variant="info" class="ml-auto text-xs">Soon</.badge>
             </.sidebar_link>
           </.sidebar_module>
 
@@ -205,16 +215,17 @@ defmodule ClienttCrmAppWeb.Layouts do
             icon="hero-users"
             expanded={false}
             disabled={true}
+            badge="Soon"
           >
             <.sidebar_link disabled={true}>
               <.icon name="hero-user-group" class="w-4 h-4" />
               Contacts
-              <.badge variant="info" class="ml-auto">Soon</.badge>
+              <.badge variant="info" class="ml-auto text-xs">Soon</.badge>
             </.sidebar_link>
             <.sidebar_link disabled={true}>
               <.icon name="hero-building-office" class="w-4 h-4" />
               Companies
-              <.badge variant="info" class="ml-auto">Soon</.badge>
+              <.badge variant="info" class="ml-auto text-xs">Soon</.badge>
             </.sidebar_link>
           </.sidebar_module>
 
@@ -224,11 +235,12 @@ defmodule ClienttCrmAppWeb.Layouts do
             icon="hero-currency-dollar"
             expanded={false}
             disabled={true}
+            badge="Soon"
           >
             <.sidebar_link disabled={true}>
               <.icon name="hero-document-text" class="w-4 h-4" />
               Quotes
-              <.badge variant="info" class="ml-auto">Soon</.badge>
+              <.badge variant="info" class="ml-auto text-xs">Soon</.badge>
             </.sidebar_link>
           </.sidebar_module>
 
@@ -238,11 +250,12 @@ defmodule ClienttCrmAppWeb.Layouts do
             icon="hero-credit-card"
             expanded={false}
             disabled={true}
+            badge="Soon"
           >
             <.sidebar_link disabled={true}>
               <.icon name="hero-banknotes" class="w-4 h-4" />
               Invoices
-              <.badge variant="info" class="ml-auto">Soon</.badge>
+              <.badge variant="info" class="ml-auto text-xs">Soon</.badge>
             </.sidebar_link>
           </.sidebar_module>
 
@@ -252,11 +265,12 @@ defmodule ClienttCrmAppWeb.Layouts do
             icon="hero-globe-alt"
             expanded={false}
             disabled={true}
+            badge="Soon"
           >
             <.sidebar_link disabled={true}>
               <.icon name="hero-user-circle" class="w-4 h-4" />
               Portal Settings
-              <.badge variant="info" class="ml-auto">Soon</.badge>
+              <.badge variant="info" class="ml-auto text-xs">Soon</.badge>
             </.sidebar_link>
           </.sidebar_module>
 
@@ -266,11 +280,12 @@ defmodule ClienttCrmAppWeb.Layouts do
             icon="hero-lifebuoy"
             expanded={false}
             disabled={true}
+            badge="Soon"
           >
             <.sidebar_link disabled={true}>
               <.icon name="hero-ticket" class="w-4 h-4" />
               Tickets
-              <.badge variant="info" class="ml-auto">Soon</.badge>
+              <.badge variant="info" class="ml-auto text-xs">Soon</.badge>
             </.sidebar_link>
           </.sidebar_module>
 
@@ -279,7 +294,7 @@ defmodule ClienttCrmAppWeb.Layouts do
             <.sidebar_link disabled={true}>
               <.icon name="hero-cog-6-tooth" class="w-4 h-4" />
               Settings
-              <.badge variant="info" class="ml-auto">Soon</.badge>
+              <.badge variant="info" class="ml-auto text-xs">Soon</.badge>
             </.sidebar_link>
           </div>
         </nav>
@@ -297,6 +312,7 @@ defmodule ClienttCrmAppWeb.Layouts do
   attr :icon, :atom, required: true
   attr :expanded, :boolean, default: false
   attr :disabled, :boolean, default: false
+  attr :badge, :string, default: nil
   slot :inner_block, required: true
 
   def sidebar_module(assigns) do
@@ -320,6 +336,9 @@ defmodule ClienttCrmAppWeb.Layouts do
       >
         <.icon name={@icon} class="w-5 h-5" />
         <span class="flex-1 text-left">{@title}</span>
+        <%= if @badge do %>
+          <.badge variant="info" class="text-xs">{@badge}</.badge>
+        <% end %>
         <%= if !@disabled do %>
           <.icon
             name="hero-chevron-down"
