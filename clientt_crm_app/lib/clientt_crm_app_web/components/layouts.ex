@@ -294,32 +294,43 @@ defmodule ClienttCrmAppWeb.Layouts do
   slot :inner_block, required: true
 
   def sidebar_module(assigns) do
+    module_id = "sidebar-module-#{String.downcase(String.replace(assigns.title, " ", "-"))}"
+    assigns = assign(assigns, :module_id, module_id)
+
     ~H"""
-    <div class="mb-4">
+    <div class="mb-4" id={@module_id}>
       <button
         class={[
           "w-full flex items-center gap-2 px-3 py-2 text-sm font-semibold rounded-lg",
           "hover:bg-base-200 transition-colors",
           @disabled && "opacity-50 cursor-not-allowed"
         ]}
-        phx-click={!@disabled && "toggle_sidebar_module"}
-        phx-value-module={@title}
+        phx-click={
+          !@disabled &&
+            JS.toggle(to: "##{@module_id}-content")
+            |> JS.toggle(to: "##{@module_id}-chevron-down")
+            |> JS.toggle(to: "##{@module_id}-chevron-right")
+        }
       >
         <.icon name={@icon} class="w-5 h-5" />
         <span class="flex-1 text-left">{@title}</span>
         <%= if !@disabled do %>
           <.icon
-            name={if @expanded, do: "hero-chevron-down", else: "hero-chevron-right"}
-            class="w-4 h-4"
+            name="hero-chevron-down"
+            id={"#{@module_id}-chevron-down"}
+            class={["w-4 h-4", !@expanded && "hidden"]}
+          />
+          <.icon
+            name="hero-chevron-right"
+            id={"#{@module_id}-chevron-right"}
+            class={["w-4 h-4", @expanded && "hidden"]}
           />
         <% end %>
       </button>
 
-      <%= if @expanded do %>
-        <div class="mt-1 ml-2 space-y-1">
-          {render_slot(@inner_block)}
-        </div>
-      <% end %>
+      <div id={"#{@module_id}-content"} class={["mt-1 ml-2 space-y-1", !@expanded && "hidden"]}>
+        {render_slot(@inner_block)}
+      </div>
     </div>
     """
   end
